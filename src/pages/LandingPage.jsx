@@ -91,7 +91,7 @@ const LandingPage = () => {
                 <div className="flex items-center space-x-2 text-red-600">
                   <Phone className="h-5 w-5" />
                   <span className="font-medium text-sm">
-                    Crisis Support: Call 988 (Suicide & Crisis Lifeline) for immediate help
+                    Crisis Support (India): Call 14416 (Tele-MANAS) or 112 for immediate help
                   </span>
                 </div>
               </div>
@@ -321,11 +321,11 @@ const LandingPage = () => {
                 <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
-                href="tel:988"
+                href="tel:14416"
                 className="group border-2 border-white text-white hover:bg-white hover:text-gray-900 px-10 py-5 rounded-2xl font-semibold text-lg transition-all duration-200 inline-flex items-center"
               >
                 <Phone className="mr-3 h-6 w-6 group-hover:scale-110 transition-transform" />
-                Need Help Now? Call 988
+                Need Help Now? Call 14416
               </a>
             </div>
 

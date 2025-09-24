@@ -184,10 +184,10 @@ const Login = () => {
               <p className="text-xs text-gray-500">
                 Need immediate help?{' '}
                 <a
-                  href="tel:988"
+                  href="tel:14416"
                   className="font-medium text-danger-600 hover:text-danger-500"
                 >
-                  Call 988 (Crisis Lifeline)
+                  Call Tele-MANAS 14416
                 </a>
               </p>
             </div>

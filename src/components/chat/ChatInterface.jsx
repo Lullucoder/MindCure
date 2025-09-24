@@ -12,7 +12,7 @@ const generateAIResponse = (userMessage, conversationHistory = []) => {
   
   if (isCrisis) {
     return {
-      response: "I'm very concerned about what you've shared. Your life has value, and there are people who want to help you. Please reach out for immediate support:\n\n• Call 988 (Suicide & Crisis Lifeline) - Available 24/7\n• Text 'HELLO' to 741741 (Crisis Text Line)\n• Go to your nearest emergency room\n• Call 911\n\nWould you like me to help you find local crisis resources or talk about what's troubling you?",
+      response: "I'm very concerned about what you've shared. Your life has value, and there are people who want to help you. Please reach out for immediate support:\n\n• Call 14416 (Tele-MANAS) - Available 24/7\n• Call 1800-599-0019 (KIRAN Helpline)\n• Go to your nearest emergency room\n• Call 112 (Emergency Services)\n\nWould you like me to help you find local crisis resources or talk about what's troubling you?",
       sentiment: { needsAttention: true, score: 0.1 }
     };
   }
@@ -145,7 +145,7 @@ const ChatInterface = () => {
           const crisisMessage = {
             id: Date.now() + 2,
             role: 'system',
-            content: "🚨 I want to make sure you get the immediate support you need. Here are crisis resources:\n\n📞 988 - Suicide & Crisis Lifeline (24/7)\n💬 Text HOME to 741741 - Crisis Text Line\n🏥 Go to your nearest emergency room\n🚑 Call 911 for immediate emergency help\n\nYou are not alone. Professional counselors are standing by to help.",
+            content: "🚨 I want to make sure you get the immediate support you need. Here are crisis resources:\n\n📞 14416 - Tele-MANAS (24/7)\n� 1800-599-0019 - KIRAN Helpline (24/7)\n🏥 Go to your nearest emergency room\n🚑 Call 112 for immediate emergency help\n\nYou are not alone. Professional counselors are standing by to help.",
             timestamp: new Date(),
             isAlert: true
           };
@@ -158,7 +158,7 @@ const ChatInterface = () => {
       const errorMessage = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: "I'm sorry, I'm having trouble responding right now. Your message is important to me. Please try again in a moment. If you need immediate support, please call 988 (Crisis Lifeline) or reach out to a trusted person. 💙",
+        content: "I'm sorry, I'm having trouble responding right now. Your message is important to me. Please try again in a moment. If you need immediate support, please call 14416 (Tele-MANAS) or reach out to a trusted person. 💙",
         timestamp: new Date(),
         isError: true
       };
@@ -210,7 +210,7 @@ const ChatInterface = () => {
               <Shield className="h-5 w-5 text-blue-500 mt-0.5" />
               <div className="text-sm text-blue-700">
                 <p className="font-medium">Remember:</p>
-                <p>• This is a safe, judgment-free space • Your conversations are private • For emergencies, call 988 or 911</p>
+                <p>• This is a safe, judgment-free space • Your conversations are private • For emergencies, call 14416 or 112</p>
               </div>
             </div>
           </div>
@@ -220,7 +220,7 @@ const ChatInterface = () => {
             <div className="flex items-center space-x-2 text-red-800 text-sm">
               <AlertTriangle className="h-4 w-4" />
               <span className="font-medium">
-                Crisis Support: If you're in immediate danger, call 911. For mental health crisis, call 988.
+                Crisis Support: If you're in immediate danger, call 112. For mental health crisis, call 14416.
               </span>
             </div>
           </div>

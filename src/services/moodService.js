@@ -1,18 +1,116 @@
-import { 
-  collection, 
-  addDoc, 
-  query, 
-  where, 
-  orderBy, 
-  limit, 
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc
-} from 'firebase/firestore';
-import { db } from './firebase';
 
-const moodService = {
+
+// --- MOCK IMPLEMENTATION FOR OFFLINE DEMO ---
+const MOCK_DELAY = 500; // Simulate network latency
+
+const getMockMoodData = () => {
+  try {
+    const data = localStorage.getItem('mockMoodEntries');
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error reading mock mood data from localStorage:', error);
+    return [];
+  }
+};
+
+const saveMockMoodData = (data) => {
+  try {
+    localStorage.setItem('mockMoodEntries', JSON.stringify(data));
+  } catch (error) {
+    console.error('Error saving mock mood data to localStorage:', error);
+  }
+};
+
+const mockMoodService = {
+  async addMoodEntry(userId, moodData) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        let entries = getMockMoodData();
+        const newEntry = {
+          id: `mock_${Date.now()}`,
+          userId,
+          ...moodData,
+          timestamp: moodData.timestamp || new Date(),
+          createdAt: new Date()
+        };
+        entries.push(newEntry);
+        saveMockMoodData(entries);
+        resolve(newEntry);
+      }, MOCK_DELAY);
+    });
+  },
+
+  async getUserMoodEntries(userId, limitCount = 30) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const entries = getMockMoodData()
+          .filter(entry => entry.userId === userId)
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+          .slice(0, limitCount);
+        resolve(entries);
+      }, MOCK_DELAY);
+    });
+  },
+
+  async deleteMoodEntry(userId, entryId) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        let entries = getMockMoodData();
+        const filteredEntries = entries.filter(entry => !(entry.id === entryId && entry.userId === userId));
+        saveMockMoodData(filteredEntries);
+        resolve(true);
+      }, MOCK_DELAY);
+    });
+  },
+
+  async getMoodStatistics(userId, days = 30) {
+    return new Promise(async (resolve) => {
+        const entries = await this.getUserMoodEntries(userId, 100);
+        
+        if (entries.length === 0) {
+          resolve({
+            averageMood: 0, averageEnergy: 0, averageAnxiety: 0, averageSleep: 0,
+            totalEntries: 0, moodTrend: 'stable', bestDay: null, worstDay: null,
+            currentStreak: 0, commonTags: []
+          });
+          return;
+        }
+
+        const averageMood = entries.reduce((sum, entry) => sum + entry.mood, 0) / entries.length;
+        const averageEnergy = entries.reduce((sum, entry) => sum + (entry.energy || 3), 0) / entries.length;
+        const averageAnxiety = entries.reduce((sum, entry) => sum + (entry.anxiety || 3), 0) / entries.length;
+        const averageSleep = entries.reduce((sum, entry) => sum + (entry.sleep || 3), 0) / entries.length;
+
+        // Simplified trend and other stats for mock
+        const firstMood = entries[entries.length - 1]?.mood || 3;
+        const lastMood = entries[0]?.mood || 3;
+        let moodTrend = 'stable';
+        if (lastMood > firstMood) moodTrend = 'improving';
+        if (lastMood < firstMood) moodTrend = 'declining';
+
+        const allTags = entries.flatMap(entry => entry.tags || []);
+        const tagCounts = allTags.reduce((acc, tag) => {
+            acc[tag] = (acc[tag] || 0) + 1;
+            return acc;
+        }, {});
+        const commonTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => e[0]);
+
+        resolve({
+          averageMood, averageEnergy, averageAnxiety, averageSleep,
+          totalEntries: entries.length,
+          moodTrend,
+          bestDay: entries.reduce((best, entry) => (!best || entry.mood > best.mood) ? entry : best, null),
+          worstDay: entries.reduce((worst, entry) => (!worst || entry.mood < worst.mood) ? entry : worst, null),
+          currentStreak: 0, // Streak calculation is complex, omitted in mock
+          commonTags
+        });
+    });
+  }
+};
+
+
+// Original Firebase implementation
+const firebaseMoodService = {
   // Add a new mood entry
   async addMoodEntry(userId, moodData) {
     try {
@@ -98,7 +196,7 @@ const moodService = {
       const averageAnxiety = entries.reduce((sum, entry) => sum + (entry.anxiety || 3), 0) / entries.length;
       const averageSleep = entries.reduce((sum, entry) => sum + (entry.sleep || 3), 0) / entries.length;
 
-      // Calculate trend
+      // Determine mood trend
       const recentEntries = entries.slice(0, Math.min(7, entries.length));
       const olderEntries = entries.slice(Math.min(7, entries.length));
       
@@ -213,4 +311,6 @@ const moodService = {
   }
 };
 
-export default moodService;
+// In an offline demo scenario, we use the mock service.
+// To switch back to Firebase, change this to firebaseMoodService.
+export default mockMoodService;

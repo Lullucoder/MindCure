@@ -16,9 +16,9 @@ const Footer = () => {
               mood tracking, and professional resources. Your mental wellness journey starts here.
             </p>
             <div className="flex space-x-4">
-              <a href="tel:988" className="flex items-center space-x-2 text-danger-400 hover:text-danger-300">
+              <a href="tel:14416" className="flex items-center space-x-2 text-danger-400 hover:text-danger-300">
                 <Phone className="h-4 w-4" />
-                <span className="font-medium">988 Crisis Lifeline</span>
+                <span className="font-medium">Tele-MANAS 14416</span>
               </a>
             </div>
           </div>
@@ -99,18 +99,18 @@ const Footer = () => {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <a 
-                href="tel:988" 
+                href="tel:14416" 
                 className="flex items-center justify-center space-x-2 bg-danger-600 hover:bg-danger-700 px-4 py-2 rounded transition-colors"
               >
                 <Phone className="h-4 w-4" />
-                <span>988 (US Crisis Lifeline)</span>
+                <span>14416 (Tele-MANAS)</span>
               </a>
               <a 
-                href="tel:911" 
+                href="tel:112" 
                 className="flex items-center justify-center space-x-2 bg-danger-600 hover:bg-danger-700 px-4 py-2 rounded transition-colors"
               >
                 <Phone className="h-4 w-4" />
-                <span>911 (Emergency)</span>
+                <span>112 (Emergency)</span>
               </a>
               <a 
                 href="https://suicidepreventionlifeline.org/chat/" 

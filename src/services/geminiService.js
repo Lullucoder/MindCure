@@ -1,5 +1,73 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+// import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// --- MOCK IMPLEMENTATION FOR OFFLINE DEMO ---
+const MOCK_DELAY = 800; // Simulate AI "thinking" time
+
+const cannedResponses = {
+  default: "I'm here to listen. Tell me what's on your mind.",
+  greeting: "Hello! I'm a supportive chatbot here to help you. How are you feeling today?",
+  help: "It sounds like you're going through a lot. Remember, it's okay to ask for help. You can try talking to a friend, family member, or a professional.",
+  sad: "I'm sorry to hear you're feeling down. Sometimes just acknowledging our feelings is a good first step. What's been happening?",
+  anxious: "It sounds like you're feeling anxious. Let's try a simple grounding exercise. Name three things you can see and three things you can hear right now.",
+  stress: "Stress can be overwhelming. Have you considered taking a short break to do something you enjoy, even for just a few minutes?",
+  suicidal: "If you are having thoughts of harming yourself, please reach out for immediate help. In India, call Tele-MANAS at 14416 (24/7) or emergency services at 112. You are not alone.",
+  unknown: "Thank you for sharing that with me. Could you tell me a little more about it?",
+};
+
+const getCannedResponse = (userMessage) => {
+    const lowerCaseMessage = userMessage.toLowerCase();
+    if (lowerCaseMessage.includes("hello") || lowerCaseMessage.includes("hi")) return cannedResponses.greeting;
+    if (lowerCaseMessage.includes("help")) return cannedResponses.help;
+    if (lowerCaseMessage.includes("sad") || lowerCaseMessage.includes("depressed")) return cannedResponses.sad;
+    if (lowerCaseMessage.includes("anxious") || lowerCaseMessage.includes("worried")) return cannedResponses.anxious;
+    if (lowerCaseMessage.includes("stress")) return cannedResponses.stress;
+    if (lowerCaseMessage.includes("suicide") || lowerCaseMessage.includes("kill myself")) return cannedResponses.suicidal;
+    return cannedResponses.unknown;
+};
+
+
+class MockGeminiService {
+  constructor() {
+    console.log("GeminiService is running in OFFLINE MOCK mode.");
+  }
+
+  async generateResponse(userMessage, conversationHistory = []) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const response = getCannedResponse(userMessage);
+        resolve(response);
+      }, MOCK_DELAY);
+    });
+  }
+
+  async analyzeSentiment(message) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve({ sentiment: 'neutral', confidence: 0.8, needsAttention: false });
+        }, MOCK_DELAY / 2);
+    });
+  }
+
+  async generateCopingStrategies(mood, situation) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve([
+                "Practice deep breathing for 5 minutes.",
+                "Write down your thoughts in a journal.",
+                "Go for a short walk outside.",
+                "Listen to a calming song.",
+                "Reach out to a friend you trust."
+            ]);
+        }, MOCK_DELAY / 2);
+    });
+  }
+}
+
+const geminiService = new MockGeminiService();
+export default geminiService;
+
+/*
+// Original Firebase implementation
 class GeminiService {
   constructor() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -13,7 +81,7 @@ class GeminiService {
     this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
     
     // Mental health context for the AI
-    this.systemPrompt = "You are a compassionate and supportive mental health assistant designed to help students with their emotional well-being. Always be empathetic and supportive. Never provide medical diagnoses. If someone expresses suicidal thoughts, recommend calling 988 immediately.";
+    this.systemPrompt = "You are a compassionate and supportive mental health assistant designed to help students with their emotional well-being. Always be empathetic and supportive. Never provide medical diagnoses. If someone expresses suicidal thoughts, recommend calling Tele-MANAS at 14416 or emergency services at 112 immediately.";
   }
 
   async generateResponse(userMessage, conversationHistory = []) {
@@ -94,3 +162,4 @@ class GeminiService {
 const geminiService = new GeminiService();
 
 export default geminiService;
+*/
