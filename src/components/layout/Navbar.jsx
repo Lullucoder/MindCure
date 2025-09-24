@@ -49,18 +49,18 @@ const Navbar = () => {
   const isCurrentPath = (path) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
+    <nav className="glass sticky top-0 z-50 border-b border-purple-200/30 shadow-soft backdrop-blur-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-green-400 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                <Heart className="h-6 w-6 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-all duration-300 shadow-lg gentle-pulse">
+                <Heart className="h-7 w-7 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-gray-800">Mental Health</span>
-                <span className="text-xs text-gray-500 font-medium -mt-1">SUPPORT PLATFORM</span>
+                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">MindCure</span>
+                <span className="text-xs text-purple-500 font-medium -mt-1 tracking-wide">THERAPY & WELLNESS</span>
               </div>
             </Link>
           </div>
@@ -71,13 +71,14 @@ const Navbar = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-base font-medium transition-colors hover:text-blue-500 ${
+                className={`text-base font-medium transition-all duration-300 flex items-center space-x-2 px-4 py-2 rounded-xl hover:bg-purple-100/50 ${
                   isCurrentPath(item.href)
-                    ? 'text-blue-500'
-                    : 'text-gray-600'
+                    ? 'text-purple-600 bg-purple-100/70 shadow-sm'
+                    : 'text-purple-500 hover:text-purple-600'
                 }`}
               >
-                {item.name}
+                <item.icon className="h-4 w-4" />
+                <span>{item.name}</span>
               </Link>
             ))}
           </div>
@@ -86,9 +87,10 @@ const Navbar = () => {
           <div className="hidden lg:flex items-center space-x-6">
             <Link
               to="/dashboard"
-              className="bg-gradient-to-r from-blue-400 to-green-400 text-white px-6 py-2.5 rounded-xl font-semibold hover:from-blue-500 hover:to-green-500 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="btn-primary flex items-center space-x-2"
             >
-              Log In
+              <Sparkles className="h-4 w-4" />
+              <span>Get Started</span>
             </Link>
           </div>
 
@@ -96,7 +98,7 @@ const Navbar = () => {
           <div className="lg:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-xl text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors"
+              className="p-3 rounded-xl text-purple-400 hover:text-purple-600 hover:bg-purple-100/50 transition-all duration-300"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -106,29 +108,31 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="lg:hidden">
-          <div className="px-4 pt-4 pb-6 space-y-3 bg-white border-t border-gray-100 shadow-lg">
+        <div className="lg:hidden animate-fade-in">
+          <div className="px-4 pt-4 pb-6 space-y-3 glass-dark border-t border-purple-200/30 shadow-soft-lg">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
+                className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-300 ${
                   isCurrentPath(item.href)
-                    ? 'bg-teal-50 text-teal-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-purple-100/70 text-purple-700 shadow-sm'
+                    : 'text-purple-600 hover:text-purple-700 hover:bg-purple-100/50'
                 }`}
               >
-                {item.name}
+                <item.icon className="h-5 w-5" />
+                <span>{item.name}</span>
               </Link>
             ))}
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-4 border-t border-purple-200/30">
               <Link
                 to="/dashboard"
                 onClick={() => setIsOpen(false)}
-                className="block w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-3 rounded-xl font-semibold text-center"
+                className="btn-primary w-full text-center flex items-center justify-center space-x-2"
               >
-                Log In
+                <Sparkles className="h-4 w-4" />
+                <span>Get Started</span>
               </Link>
             </div>
           </div>

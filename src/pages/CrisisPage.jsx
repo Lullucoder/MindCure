@@ -259,25 +259,31 @@ const CrisisPage = () => {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'critical':
-        return 'bg-red-100 border-red-300 text-red-800';
+        return 'bg-gradient-to-br from-pink-100/80 to-rose-100/60 border-pink-300/50 text-pink-800';
       case 'high':
-        return 'bg-orange-100 border-orange-300 text-orange-800';
+        return 'bg-gradient-to-br from-purple-100/80 to-pink-100/60 border-purple-300/50 text-purple-800';
       case 'medium':
-        return 'bg-yellow-100 border-yellow-300 text-yellow-800';
+        return 'bg-gradient-to-br from-indigo-100/80 to-purple-100/60 border-indigo-300/50 text-indigo-800';
       default:
-        return 'bg-gray-100 border-gray-300 text-gray-800';
+        return 'bg-gradient-to-br from-gray-100/80 to-purple-100/40 border-gray-300/50 text-gray-800';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/30 to-indigo-50/40 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-purple-200/20 to-pink-200/10 rounded-full filter blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-indigo-200/20 to-purple-200/10 rounded-full filter blur-3xl"></div>
+      </div>
+      
       {/* Header */}
-      <div className="bg-red-600 text-white">
+      <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center space-x-2 text-red-100 hover:text-white transition-colors"
+              className="flex items-center space-x-2 text-pink-100 hover:text-white transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
               <span>Back</span>
@@ -287,18 +293,18 @@ const CrisisPage = () => {
               <AlertTriangle className="h-10 w-10 mr-4" />
               <div>
                 <h1 className="text-4xl font-bold">Crisis Support</h1>
-                <p className="text-red-100 text-lg">Immediate help and resources available 24/7</p>
+                <p className="text-pink-100 text-lg">Immediate help and resources available 24/7</p>
               </div>
             </div>
           </div>
 
           {/* Emergency Banner */}
-          <div className="mt-8 bg-red-700 rounded-lg p-6">
+          <div className="mt-8 glass-card rounded-lg p-6 border border-white/20">
             <div className="flex items-center">
               <Zap className="h-8 w-8 mr-4 text-yellow-300" />
               <div>
                 <h3 className="text-xl font-semibold mb-2">If you are in immediate danger:</h3>
-                <p className="text-red-100 text-lg">Call 112 (India Emergency Services) or go to the nearest hospital emergency department</p>
+                <p className="text-pink-100 text-lg">Call 112 (India Emergency Services) or go to the nearest hospital emergency department</p>
               </div>
             </div>
           </div>
@@ -306,7 +312,7 @@ const CrisisPage = () => {
       </div>
 
       {/* Navigation */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="glass-card border-b border-purple-200/30 sticky top-0 z-10 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
             {[

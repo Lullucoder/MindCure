@@ -52,36 +52,36 @@ const Dashboard = () => {
       description: 'Book a session with professional counselors',
       icon: MessageCircle,
       link: '/chat',
-      gradient: 'from-teal-400 to-teal-600',
-      bgColor: 'bg-teal-50',
-      iconColor: 'text-teal-600'
+      gradient: 'from-purple-400 via-pink-400 to-indigo-500',
+      bgColor: 'bg-gradient-to-br from-purple-50/80 to-pink-50/60',
+      iconColor: 'text-purple-600'
     },
     {
       title: 'Self-Help Library',
       description: 'Access mindfulness and stress resources',
       icon: BookOpen,
       link: '/resources',
-      gradient: 'from-blue-400 to-blue-600',
-      bgColor: 'bg-blue-50',
-      iconColor: 'text-blue-600'
+      gradient: 'from-pink-400 via-purple-400 to-indigo-500',
+      bgColor: 'bg-gradient-to-br from-pink-50/80 to-purple-50/60',
+      iconColor: 'text-pink-600'
     },
     {
       title: 'Peer Support Groups',
       description: 'Connect with others in safe forums',
       icon: Users,
       link: '/mood',
-      gradient: 'from-purple-400 to-purple-600',
-      bgColor: 'bg-purple-50',
-      iconColor: 'text-purple-600'
+      gradient: 'from-indigo-400 via-purple-400 to-pink-500',
+      bgColor: 'bg-gradient-to-br from-indigo-50/80 to-purple-50/60',
+      iconColor: 'text-indigo-600'
     },
     {
       title: 'Crisis Support',
       description: 'Get immediate help when you need it',
       icon: Phone,
       link: '/crisis',
-      gradient: 'from-red-400 to-red-600',
-      bgColor: 'bg-red-50',
-      iconColor: 'text-red-600'
+      gradient: 'from-pink-400 to-rose-500',
+      bgColor: 'bg-gradient-to-br from-pink-50/80 to-rose-50/60',
+      iconColor: 'text-pink-600'
     }
   ];
 
@@ -98,30 +98,36 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-teal-500 via-teal-600 to-blue-600 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black bg-opacity-10"></div>
+      <div className="bg-gradient-to-br from-purple-500 via-pink-500 to-indigo-600 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black bg-opacity-5"></div>
+        {/* Floating background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-10 right-10 w-32 h-32 bg-white/10 rounded-full filter blur-xl animate-float"></div>
+          <div className="absolute bottom-10 left-10 w-24 h-24 bg-white/10 rounded-full filter blur-xl animate-float" style={{animationDelay: '2s'}}></div>
+          <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-white/5 rounded-full filter blur-xl animate-float" style={{animationDelay: '4s'}}></div>
+        </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center text-white">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Welcome back, {userProfile?.firstName || 'Demo User'}! 
             </h1>
-            <p className="text-xl text-teal-100 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
               Your mental wellness journey continues. How are you feeling today?
             </p>
             
             {/* Quick mood check */}
             <div className="flex justify-center space-x-4 mb-8">
-              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-30 transition-all duration-200 flex items-center space-x-2">
+              <button className="glass-card rounded-2xl px-6 py-4 hover:bg-white/20 transition-all duration-200 flex items-center space-x-2 border border-white/20">
                 <Smile className="h-6 w-6" />
                 <span className="font-medium">Great</span>
               </button>
-              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-30 transition-all duration-200 flex items-center space-x-2">
+              <button className="glass-card rounded-2xl px-6 py-4 hover:bg-white/20 transition-all duration-200 flex items-center space-x-2 border border-white/20">
                 <Meh className="h-6 w-6" />
                 <span className="font-medium">Okay</span>
               </button>
-              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-30 transition-all duration-200 flex items-center space-x-2">
+              <button className="glass-card rounded-2xl px-6 py-4 hover:bg-white/20 transition-all duration-200 flex items-center space-x-2 border border-white/20">
                 <Frown className="h-6 w-6" />
                 <span className="font-medium">Struggling</span>
               </button>
@@ -129,17 +135,17 @@ const Dashboard = () => {
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <div className="bg-white bg-opacity-15 backdrop-blur-sm rounded-2xl p-6">
+              <div className="glass-card rounded-2xl p-6 border border-white/20">
                 <div className="text-3xl font-bold mb-2">{weeklyStats.averageMood.toFixed(1)}/5</div>
-                <div className="text-teal-100">Average Mood</div>
+                <div className="text-purple-100">Average Mood</div>
               </div>
-              <div className="bg-white bg-opacity-15 backdrop-blur-sm rounded-2xl p-6">
+              <div className="glass-card rounded-2xl p-6 border border-white/20">
                 <div className="text-3xl font-bold mb-2">{weeklyStats.streak}</div>
-                <div className="text-teal-100">Day Streak</div>
+                <div className="text-purple-100">Day Streak</div>
               </div>
-              <div className="bg-white bg-opacity-15 backdrop-blur-sm rounded-2xl p-6">
+              <div className="glass-card rounded-2xl p-6 border border-white/20">
                 <div className="text-3xl font-bold mb-2">{weeklyStats.totalEntries}</div>
-                <div className="text-teal-100">Total Entries</div>
+                <div className="text-purple-100">Total Entries</div>
               </div>
             </div>
           </div>

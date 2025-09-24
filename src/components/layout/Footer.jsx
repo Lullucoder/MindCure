@@ -2,21 +2,27 @@ import { Heart, Phone, Mail, MapPin } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <footer className="bg-gradient-to-br from-slate-900 via-purple-900/30 to-indigo-900/40 text-white relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/4 w-64 h-64 bg-gradient-to-br from-purple-500/10 to-pink-500/5 rounded-full filter blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-gradient-to-tl from-indigo-500/10 to-purple-500/5 rounded-full filter blur-3xl"></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and Description */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <Heart className="h-8 w-8 text-primary-400" />
-              <span className="text-2xl font-bold">MindCare</span>
+              <Heart className="h-8 w-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400" />
+              <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">MindCure</span>
             </div>
             <p className="text-gray-300 mb-4 max-w-md">
               Supporting student mental health through AI-powered conversations, 
               mood tracking, and professional resources. Your mental wellness journey starts here.
             </p>
             <div className="flex space-x-4">
-              <a href="tel:14416" className="flex items-center space-x-2 text-danger-400 hover:text-danger-300">
+              <a href="tel:14416" className="flex items-center space-x-2 text-pink-400 hover:text-pink-300 transition-colors">
                 <Phone className="h-4 w-4" />
                 <span className="font-medium">Tele-MANAS 14416</span>
               </a>

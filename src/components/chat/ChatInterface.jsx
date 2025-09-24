@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, AlertTriangle, Heart, Loader, Smile, MessageCircle, Shield } from 'lucide-react';
+import { Send, Bot, User, AlertTriangle, Heart, Loader, Smile, MessageCircle, Shield, Brain, Lightbulb } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import geminiService from '../../services/geminiService';
 
 // Enhanced AI responses for mental health support
 const generateAIResponse = (userMessage, conversationHistory = []) => {
@@ -89,13 +90,16 @@ const ChatInterface = () => {
     {
       id: 1,
       role: 'assistant',
-      content: "Hello! I'm your mental health support companion. 🌸 I'm here to listen with empathy, provide emotional support, and help you explore your feelings in a safe space. How are you feeling today?",
-      timestamp: new Date()
+      content: "Hello! I'm here to provide a safe, supportive space for you to share your thoughts and feelings. 🌸 I'm trained to listen with empathy and help you explore your emotions. Take your time - there's no pressure. How are you feeling today?",
+      timestamp: new Date(),
+      category: 'greeting'
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sentimentAnalysis, setSentimentAnalysis] = useState(null);
+  const [sessionInsights, setSessionInsights] = useState(null);
+  const [showInsights, setShowInsights] = useState(false);
   const messagesEndRef = useRef(null);
   const { userProfile } = useAuth();
 

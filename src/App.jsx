@@ -11,7 +11,7 @@ import Dashboard from './pages/Dashboard';
 import MoodTracker from './pages/MoodTracker';
 import SelfHelpResources from './pages/SelfHelpResources';
 import CrisisPage from './pages/CrisisPage';
-import ChatInterface from './components/chat/ChatInterface';
+import TherapyChatInterface from './components/chat/TherapyChatInterface';
 
 // Placeholder components for routes that will be implemented later
 const ProfilePage = () => <div className="p-8 text-center">Profile - Coming Soon!</div>;
@@ -50,9 +50,9 @@ function App() {
             </Layout>
           } />
 
-          <Route path="/chat" element={
+                    <Route path="/chat" element={
             <Layout>
-              <ChatInterface />
+              <TherapyChatInterface />
             </Layout>
           } />
 
