@@ -118,6 +118,9 @@ const TherapyChatInterface = () => {
 
   const [userScrolled, setUserScrolled] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
+  const scrollTimeoutRef = useRef(null);
+  const lastMessageCountRef = useRef(0);
 
   const serviceMode = geminiService.getMode ? geminiService.getMode() : {
     type: 'mock',
@@ -153,25 +156,66 @@ const TherapyChatInterface = () => {
     });
   };
 
-  const scrollToBottom = (force = false) => {
-    if (messagesEndRef.current && (!userScrolled || force)) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (behavior = 'smooth', force = false) => {
+    if (!chatContainerRef.current) return;
+    
+    if (force || isAutoScrollEnabled) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: behavior
+      });
+      setUserScrolled(false);
+      setShowScrollButton(false);
     }
   };
 
-  const handleScroll = (event) => {
-    const { scrollTop, scrollHeight, clientHeight } = event.target;
-    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 50;
-    setUserScrolled(!isAtBottom);
-    setShowScrollButton(!isAtBottom);
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    const isNearBottom = distanceFromBottom < 100;
+    
+    // Clear existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    // If user scrolls up, disable auto-scroll
+    if (!isNearBottom && !isLoading) {
+      setUserScrolled(true);
+      setIsAutoScrollEnabled(false);
+      setShowScrollButton(true);
+    } else {
+      // If near bottom, re-enable auto-scroll
+      setUserScrolled(false);
+      setIsAutoScrollEnabled(true);
+      setShowScrollButton(false);
+    }
+    
+    // Debounce: re-enable auto-scroll after user stops scrolling
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (isNearBottom) {
+        setIsAutoScrollEnabled(true);
+      }
+    }, 150);
   };
 
+  // Only auto-scroll when new messages arrive and auto-scroll is enabled
   useEffect(() => {
-    const timer = setTimeout(() => {
-      scrollToBottom();
-    }, 120);
-    return () => clearTimeout(timer);
-  }, [messages]);
+    const messageCountChanged = messages.length !== lastMessageCountRef.current;
+    
+    if (messageCountChanged) {
+      lastMessageCountRef.current = messages.length;
+      
+      // Small delay to ensure DOM is updated
+      requestAnimationFrame(() => {
+        if (isAutoScrollEnabled || isLoading) {
+          scrollToBottom('smooth');
+        }
+      });
+    }
+  }, [messages, isAutoScrollEnabled, isLoading]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -274,13 +318,35 @@ const TherapyChatInterface = () => {
     }
   };
 
-  const handleInputFocus = (event) => {
-    event.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const handleInputChange = (event) => {
+    setInputMessage(event.target.value);
+    
+    // Auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + 'px';
+    }
+  };
+
+  const handleInputFocus = () => {
+    // Ensure auto-scroll is enabled when user starts typing
+    setIsAutoScrollEnabled(true);
+    
+    // Scroll to bottom smoothly when input is focused
+    requestAnimationFrame(() => {
+      scrollToBottom('smooth', true);
+    });
   };
 
   const handlePromptInsert = (prompt) => {
     setInputMessage(prompt);
+    setIsAutoScrollEnabled(true);
     quickFocus();
+    
+    // Scroll to bottom when prompt is inserted
+    requestAnimationFrame(() => {
+      scrollToBottom('smooth', true);
+    });
   };
 
   return (
@@ -390,12 +456,17 @@ const TherapyChatInterface = () => {
               <button
                 type="button"
                 className="chat-scroll-button"
-                onClick={() => scrollToBottom(true)}
+                onClick={() => {
+                  setIsAutoScrollEnabled(true);
+                  scrollToBottom('smooth', true);
+                }}
                 aria-label="Scroll to latest message"
+                title="Jump to latest message"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 9l6 6 6-6" />
+                  <path d="M12 5v14M19 12l-7 7-7-7" />
                 </svg>
+                <span className="chat-scroll-button__badge">New</span>
               </button>
             )}
 
@@ -404,14 +475,15 @@ const TherapyChatInterface = () => {
                 <textarea
                   ref={textareaRef}
                   value={inputMessage}
-                  onChange={(event) => setInputMessage(event.target.value)}
+                  onChange={handleInputChange}
                   onKeyPress={handleKeyPress}
                   onFocus={handleInputFocus}
                   placeholder="Share what's on your mind. I'm listening without judgment."
                   className="chat-textarea"
-                  rows={3}
+                  rows={1}
                   disabled={isLoading}
                   maxLength={1000}
+                  style={{ minHeight: '44px', maxHeight: '150px', resize: 'none' }}
                 />
                 <span className="chat-char-counter">{inputMessage.length}/1000</span>
                 <button
