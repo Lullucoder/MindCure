@@ -1,16 +1,109 @@
-import { useState, useRef, useEffect } from 'react';
-import { Send, User, AlertTriangle, Heart, Loader, Brain, Lightbulb, Shield, Clock, TrendingUp } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { Send, User, AlertTriangle, Heart, Loader, Brain, Lightbulb, Shield, Clock, TrendingUp, Sparkles, Activity } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import geminiService from '../../services/geminiService';
 import TherapyStarters from './TherapyStarters';
 
+const QUICK_PROMPTS = [
+  "Can you guide me through a calming breathing exercise?",
+  "I'm feeling anxious about academics. What can I do right now?",
+  "Help me build a gentle self-care plan for this evening.",
+  "I'm overwhelmed and need a quick grounding technique.",
+  "What small step can I take to feel more supported today?"
+];
+
+const createMessageId = () => `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+
+const formatTime = (value) => {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const formatDateLabel = (value) => {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  const isSameDay = (a, b) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+
+  if (isSameDay(date, today)) {
+    return 'Today';
+  }
+
+  if (isSameDay(date, yesterday)) {
+    return 'Yesterday';
+  }
+
+  return date.toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+const sentimentTone = (sentiment) => {
+  switch (sentiment) {
+    case 'crisis':
+      return 'crisis';
+    case 'negative':
+      return 'negative';
+    case 'anxious':
+      return 'anxious';
+    case 'positive':
+      return 'positive';
+    default:
+      return 'neutral';
+  }
+};
+
+const getMessageWrapperClass = (role) => (role === 'user' ? 'chat-message chat-message--user' : 'chat-message');
+
+const getBubbleClass = (role, isAlert = false, isError = false, category = '') => {
+  if (isAlert) return 'chat-bubble chat-bubble--alert';
+  if (isError) return 'chat-bubble chat-bubble--error';
+  if (category === 'info') return 'chat-bubble chat-bubble--info';
+  if (role === 'user') return 'chat-bubble chat-bubble--user';
+  return 'chat-bubble chat-bubble--assistant';
+};
+
+const getMessageIcon = (role, isAlert = false, isError = false, category = '') => {
+  if (isAlert) return <AlertTriangle className="chat-message__icon-symbol" />;
+  if (isError) return <AlertTriangle className="chat-message__icon-symbol" />;
+  if (role === 'assistant' || role === 'system') {
+    switch (category) {
+      case 'crisis':
+        return <Shield className="chat-message__icon-symbol" />;
+      case 'anxiety':
+        return <Brain className="chat-message__icon-symbol" />;
+      case 'depression':
+        return <Heart className="chat-message__icon-symbol" />;
+      case 'coping':
+        return <Lightbulb className="chat-message__icon-symbol" />;
+      default:
+        return <Heart className="chat-message__icon-symbol" />;
+    }
+  }
+  return <User className="chat-message__icon-symbol" />;
+};
+
 const TherapyChatInterface = () => {
   const [messages, setMessages] = useState([
     {
-      id: 1,
+      id: createMessageId(),
       role: 'assistant',
-      content: "Hello! I'm here to provide a safe, supportive space for you to share your thoughts and feelings. 🌸 I'm trained to listen with empathy and help you explore your emotions. Take your time - there's no pressure. How are you feeling today?",
-      timestamp: new Date(),
+      content: "Hello! I'm here to provide a safe, supportive space for you to share your thoughts and feelings. I'm trained to listen with empathy and help you explore your emotions. Take your time—there's no pressure. How are you feeling today?",
+      timestamp: new Date().toISOString(),
       category: 'greeting'
     }
   ]);
@@ -18,78 +111,124 @@ const TherapyChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [sentimentAnalysis, setSentimentAnalysis] = useState(null);
   const [sessionInsights, setSessionInsights] = useState(null);
-  const [showInsights, setShowInsights] = useState(false);
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+  const textareaRef = useRef(null);
   const { userProfile } = useAuth();
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const [userScrolled, setUserScrolled] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  const serviceMode = geminiService.getMode ? geminiService.getMode() : {
+    type: 'mock',
+    label: 'Offline therapeutic simulator',
+    model: 'mindcure-offline-companion'
+  };
+  const isLiveService = serviceMode.type === 'real';
+
+  const hasUserSpoken = messages.some((message) => message.role === 'user');
+
+  const timeline = useMemo(() => {
+    const items = [];
+    let currentLabel = null;
+
+    messages.forEach((message) => {
+      const label = formatDateLabel(message.timestamp);
+      if (label && label !== currentLabel) {
+        items.push({ type: 'separator', id: `${label}-${message.id}`, label });
+        currentLabel = label;
+      }
+      items.push({ type: 'message', data: message });
+    });
+
+    return items;
+  }, [messages]);
+
+  const quickFocus = () => {
+    requestAnimationFrame(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(textareaRef.current.value.length, textareaRef.current.value.length);
+      }
+    });
+  };
+
+  const scrollToBottom = (force = false) => {
+    if (messagesEndRef.current && (!userScrolled || force)) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleScroll = (event) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.target;
+    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 50;
+    setUserScrolled(!isAtBottom);
+    setShowScrollButton(!isAtBottom);
   };
 
   useEffect(() => {
-    scrollToBottom();
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 120);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
     const userMessage = {
-      id: Date.now(),
+      id: createMessageId(),
       role: 'user',
       content: inputMessage.trim(),
-      timestamp: new Date()
+      timestamp: new Date().toISOString()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    const provisionalHistory = [...messages, userMessage];
+
+    setMessages((prev) => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
 
     try {
-      // Analyze sentiment first
       const sentiment = await geminiService.analyzeSentiment(userMessage.content);
       setSentimentAnalysis(sentiment);
-      
-      // Generate therapeutic response using enhanced Gemini service
-      const conversationHistory = messages.map(msg => ({
+
+      const conversationHistory = provisionalHistory.map((msg) => ({
         role: msg.role,
         content: msg.content
       }));
-      
+
       const aiResponse = await geminiService.generateResponse(userMessage.content, conversationHistory);
-      
-      // Update session insights if available
+
       if (aiResponse.sessionInsights) {
         setSessionInsights(aiResponse.sessionInsights);
       }
 
       const assistantMessage = {
-        id: Date.now() + 1,
+        id: createMessageId(),
         role: 'assistant',
         content: typeof aiResponse === 'string' ? aiResponse : aiResponse.response,
-        timestamp: new Date(),
-        category: aiResponse.category || 'general',
-        sentiment: sentiment
+        timestamp: new Date().toISOString(),
+        category: aiResponse.category || 'support'
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
 
-      // Handle crisis situations with immediate resources
-      if (sentiment.needsAttention || aiResponse.needsAttention) {
+      if ((sentiment && sentiment.needsAttention) || aiResponse.needsAttention) {
         setTimeout(() => {
           const crisisMessage = {
-            id: Date.now() + 2,
+            id: createMessageId(),
             role: 'system',
-            content: "🚨 **Crisis Support Available** 🚨\n\nI'm here with you, and I want you to know that immediate help is available:\n\n• **Tele-MANAS**: 14416 (24/7 mental health support)\n• **KIRAN Helpline**: 1800-599-0019 (24/7)\n• **Emergency Services**: 112\n\nYou don't have to face this alone. These trained professionals are ready to support you right now. Would you like me to help you prepare what to say when you call?",
-            timestamp: new Date(),
+            content: "Crisis support is available right now:\n\n• Tele-MANAS: 14416 (24/7 mental health helpline)\n• KIRAN Helpline: 1800-599-0019 (24/7 professional counseling)\n• Emergency services: 112\n\nYou deserve immediate support. I can help you prepare what to say when you reach out.",
+            timestamp: new Date().toISOString(),
             isAlert: true,
             category: 'crisis'
           };
-          setMessages(prev => [...prev, crisisMessage]);
-        }, 1500);
+          setMessages((prev) => [...prev, crisisMessage]);
+        }, 1200);
       }
 
-      // Generate session insights periodically
-      if (messages.length > 6 && messages.length % 8 === 0) {
+      if (provisionalHistory.length > 6 && provisionalHistory.length % 8 === 0) {
         try {
           const insights = await geminiService.generateTherapyInsights(conversationHistory);
           setSessionInsights(insights);
@@ -97,270 +236,299 @@ const TherapyChatInterface = () => {
           console.error('Error generating insights:', error);
         }
       }
-
     } catch (error) {
       console.error('Error sending message:', error);
+      
+      // Check if it's a quota exhaustion or model unavailability issue
+      const quotaStatus = geminiService.getQuotaStatus?.();
+      const isQuotaIssue = quotaStatus?.exhausted || error.message?.includes('QUOTA') || error.message?.includes('429');
+      const isModelIssue = error.message?.includes('MODELS_UNAVAILABLE') || error.message?.includes('404');
+      const isFallbackMode = isQuotaIssue || isModelIssue;
+      
       const errorMessage = {
-        id: Date.now() + 1,
+        id: createMessageId(),
         role: 'assistant',
-        content: "I apologize, but I'm experiencing some technical difficulties right now. Your wellbeing is important to me. Please try again in a moment. \n\nIf you're in crisis, please don't wait:\n• Call 14416 (Tele-MANAS) for immediate support\n• Reach out to a trusted friend or family member\n• Go to your nearest emergency room if needed 💙",
-        timestamp: new Date(),
-        isError: true
+        content: isFallbackMode
+          ? "I've switched to my built-in therapeutic response system. Our conversation will continue seamlessly with the same quality of support. If you are in crisis, please contact 14416 (Tele-MANAS) or emergency services at 112 immediately."
+          : "I'm experiencing technical difficulties right now. Please wait a moment and try again. If you are in crisis, please contact 14416 (Tele-MANAS) or emergency services at 112 immediately.",
+        timestamp: new Date().toISOString(),
+        isError: !isFallbackMode,
+        category: isFallbackMode ? 'info' : 'error'
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
+      
+      // Update service mode display
+      if (isFallbackMode) {
+        const newMode = geminiService.getMode();
+        setServiceMode(newMode);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
       handleSendMessage();
     }
   };
 
-  const getMessageIcon = (role, isAlert = false, isError = false, category = '') => {
-    if (isAlert) return <AlertTriangle className="h-5 w-5 text-red-500" />;
-    if (isError) return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
-    if (role === 'assistant' || role === 'system') {
-      switch (category) {
-        case 'crisis': return <Shield className="h-5 w-5 text-red-500" />;
-        case 'anxiety': return <Brain className="h-5 w-5 text-blue-500" />;
-        case 'depression': return <Heart className="h-5 w-5 text-purple-500" />;
-        case 'coping': return <Lightbulb className="h-5 w-5 text-green-500" />;
-        default: return <Heart className="h-5 w-5 text-blue-500" />;
-      }
-    }
-    return <User className="h-5 w-5 text-green-500" />;
+  const handleInputFocus = (event) => {
+    event.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
-  const getMessageStyle = (role, isAlert = false, isError = false) => {
-    if (isAlert) return 'bg-red-50 border-red-200 text-red-800';
-    if (isError) return 'bg-yellow-50 border-yellow-200 text-yellow-800';
-    if (role === 'user') return 'bg-gradient-to-r from-blue-400 to-green-400 text-white ml-12';
-    return 'bg-white border border-gray-200 text-gray-800 mr-12 shadow-sm';
-  };
-
-  const getSentimentColor = (sentiment) => {
-    switch (sentiment) {
-      case 'crisis': return 'text-red-600 bg-red-100';
-      case 'negative': return 'text-orange-600 bg-orange-100';
-      case 'anxious': return 'text-blue-600 bg-blue-100';
-      case 'positive': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
+  const handlePromptInsert = (prompt) => {
+    setInputMessage(prompt);
+    quickFocus();
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-green-400 rounded-full flex items-center justify-center shadow-md">
-                <Heart className="h-7 w-7 text-white" />
+    <div className="chat-shell">
+      <div className="layout-container">
+        <div className="chat-layout">
+          <section className="chat-panel chat-panel--conversation">
+            <header className="chat-header">
+              <div className="chat-header__identity">
+                <span className="chat-avatar">
+                  <Heart className="chat-avatar__icon" />
+                </span>
+                <div>
+                  <h1>MindCure Companion</h1>
+                  <p>Clinical-grade emotional support, always on your side</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Mental Health Counselor</h1>
-                <p className="text-gray-500">AI-powered therapy support with empathy and care</p>
+
+              <div className="chat-header__meta">
+                <span className={`chat-service-indicator ${isLiveService ? 'chat-service-indicator--live' : 'chat-service-indicator--mock'}`}>
+                  <span className="chat-status-dot" />
+                  {serviceMode.quotaExhausted ? 'Mock mode (quota limit)' : serviceMode.label}
+                </span>
+                {userProfile?.firstName && (
+                  <span className="chat-user-pill">Supporting {userProfile.firstName}</span>
+                )}
               </div>
+            </header>
+
+            {sentimentAnalysis && (
+              <div className="chat-sentiment-bar">
+                <div className="chat-sentiment-main">
+                  <span className="chat-label">Current mood check</span>
+                  <span className="chat-sentiment-pill" data-tone={sentimentTone(sentimentAnalysis.sentiment)}>
+                    <Activity className="chat-sentiment-icon" />
+                    {sentimentAnalysis.sentiment}
+                  </span>
+                </div>
+                <div className="chat-sentiment-meta">
+                  {sentimentAnalysis.riskLevel && (
+                    <span>Risk level: {sentimentAnalysis.riskLevel}</span>
+                  )}
+                  {typeof sentimentAnalysis.confidence === 'number' && (
+                    <span>Confidence {Math.round(sentimentAnalysis.confidence * 100)}%</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div
+              ref={chatContainerRef}
+              className="chat-scroll"
+              onScroll={handleScroll}
+              aria-live="polite"
+              aria-busy={isLoading}
+            >
+              {timeline.map((item) => {
+                if (item.type === 'separator') {
+                  return (
+                    <div key={item.id} className="chat-separator" role="presentation">
+                      <span>{item.label}</span>
+                    </div>
+                  );
+                }
+
+                const message = item.data;
+                return (
+                  <div key={message.id} className={getMessageWrapperClass(message.role)}>
+                    <span className="chat-message__icon">
+                      {getMessageIcon(message.role, message.isAlert, message.isError, message.category)}
+                    </span>
+                    <div className={getBubbleClass(message.role, message.isAlert, message.isError, message.category)}>
+                      <div className="chat-bubble__content">{message.content}</div>
+                      <div className="chat-bubble__meta">
+                        <span>{formatTime(message.timestamp)}</span>
+                        {message.role !== 'user' && message.category && (
+                          <span className="chat-bubble__tag">{message.category}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {!hasUserSpoken && (
+                <div className="chat-starter-panel">
+                  <TherapyStarters onStarterClick={handlePromptInsert} />
+                </div>
+              )}
+
+              {isLoading && (
+                <div className="chat-message">
+                  <span className="chat-message__icon">
+                    <Heart className="chat-message__icon-symbol" />
+                  </span>
+                  <div className="chat-bubble chat-bubble--typing">
+                    <Loader className="chat-loader" />
+                    <span>Thinking thoughtfully…</span>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
             </div>
-            
-            {/* Session Insights Button */}
-            {sessionInsights && (
+
+            {showScrollButton && (
               <button
-                onClick={() => setShowInsights(!showInsights)}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                type="button"
+                className="chat-scroll-button"
+                onClick={() => scrollToBottom(true)}
+                aria-label="Scroll to latest message"
               >
-                <TrendingUp className="h-4 w-4" />
-                <span>Session Insights</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
               </button>
             )}
-          </div>
 
-          {/* Sentiment Analysis Display */}
-          {sentimentAnalysis && (
-            <div className="mt-4 flex items-center space-x-4">
-              <div className={`px-3 py-1 rounded-full text-sm ${getSentimentColor(sentimentAnalysis.sentiment)}`}>
-                Current mood: {sentimentAnalysis.sentiment}
+            <div className="chat-composer">
+              <div className="chat-composer__input">
+                <textarea
+                  ref={textareaRef}
+                  value={inputMessage}
+                  onChange={(event) => setInputMessage(event.target.value)}
+                  onKeyPress={handleKeyPress}
+                  onFocus={handleInputFocus}
+                  placeholder="Share what's on your mind. I'm listening without judgment."
+                  className="chat-textarea"
+                  rows={3}
+                  disabled={isLoading}
+                  maxLength={1000}
+                />
+                <span className="chat-char-counter">{inputMessage.length}/1000</span>
+                <button
+                  type="button"
+                  className="chat-send"
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim() || isLoading || inputMessage.length > 1000}
+                >
+                  {isLoading ? <Loader className="chat-send__icon" /> : <Send className="chat-send__icon" />}
+                </button>
               </div>
-              {sentimentAnalysis.riskLevel && (
-                <div className="text-sm text-gray-600">
-                  Risk level: {sentimentAnalysis.riskLevel}
+              <div className="chat-composer__note">
+                <Shield className="chat-composer__note-icon" />
+                <span>Your conversation stays private. We only surface crisis resources when safety is at risk.</span>
+              </div>
+            </div>
+          </section>
+
+          <aside className="chat-panel chat-panel--context">
+            <div className="chat-context-card">
+              <h3><Sparkles className="chat-context-icon" /> Session status</h3>
+              <p>Active model: <strong>{serviceMode.model}</strong></p>
+              {!isLiveService && (
+                <div className="chat-context-callout">
+                  <AlertTriangle className="chat-context-callout__icon" />
+                  <span>
+                    Running in guided offline mode. Add a valid <code>VITE_GEMINI_API_KEY</code> to enable live Gemini responses.
+                  </span>
                 </div>
+              )}
+              {isLiveService && (
+                <p className="chat-context-subtext">Stable Gemini connection detected. Responses may briefly switch to fallback if the primary model is busy.</p>
               )}
             </div>
-          )}
-        </div>
 
-        {/* Session Insights Panel */}
-        {showInsights && sessionInsights && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Brain className="h-5 w-5 mr-2 text-blue-500" />
-              Session Insights
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {sessionInsights.patterns && sessionInsights.patterns.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-800 mb-2">Patterns Observed</h4>
-                  <ul className="space-y-1">
-                    {sessionInsights.patterns.map((pattern, index) => (
-                      <li key={index} className="text-sm text-gray-600">• {pattern}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              {sessionInsights.strengths && sessionInsights.strengths.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-800 mb-2">Your Strengths</h4>
-                  <ul className="space-y-1">
-                    {sessionInsights.strengths.map((strength, index) => (
-                      <li key={index} className="text-sm text-green-600">• {strength}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              {sessionInsights.recommendations && sessionInsights.recommendations.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-800 mb-2">Recommendations</h4>
-                  <ul className="space-y-1">
-                    {sessionInsights.recommendations.map((rec, index) => (
-                      <li key={index} className="text-sm text-blue-600">• {rec}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              {sessionInsights.progressMarkers && sessionInsights.progressMarkers.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-800 mb-2">Progress Markers</h4>
-                  <ul className="space-y-1">
-                    {sessionInsights.progressMarkers.map((marker, index) => (
-                      <li key={index} className="text-sm text-purple-600">• {marker}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Chat Messages */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="h-96 overflow-y-auto p-6 space-y-4">
-            {messages.length === 1 ? (
-              // Show therapy starters for new sessions
-              <div className="space-y-6">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 mt-1">
-                    <Heart className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div className="rounded-2xl px-4 py-3 bg-white border border-gray-200 text-gray-800 mr-12 shadow-sm">
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {messages[0].content}
-                    </div>
-                    <div className="text-xs opacity-70 mt-2">
-                      {messages[0].timestamp.toLocaleTimeString()}
-                    </div>
-                  </div>
-                </div>
-                
-                <TherapyStarters onStarterClick={(prompt) => {
-                  setInputMessage(prompt);
-                  // Focus on input after selection
-                  setTimeout(() => {
-                    const textarea = document.querySelector('textarea');
-                    if (textarea) textarea.focus();
-                  }, 100);
-                }} />
+            {sentimentAnalysis ? (
+              <div className="chat-context-card">
+                <h3><Activity className="chat-context-icon" /> Emotional snapshot</h3>
+                <p className="chat-context-highlight">{sentimentAnalysis.sentiment}</p>
+                <ul className="chat-list">
+                  <li>Risk level: {sentimentAnalysis.riskLevel || 'low'}</li>
+                  <li>Needs attention: {sentimentAnalysis.needsAttention ? 'yes' : 'no'}</li>
+                  {sentimentAnalysis.emotionalMarkers && sentimentAnalysis.emotionalMarkers.length > 0 && (
+                    <li>Markers: {sentimentAnalysis.emotionalMarkers.join(', ')}</li>
+                  )}
+                </ul>
               </div>
             ) : (
-              // Show regular conversation
-              messages.map((message) => (
-                <div key={message.id} className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 mt-1">
-                    {getMessageIcon(message.role, message.isAlert, message.isError, message.category)}
-                  </div>
-                  
-                  <div className={`rounded-2xl px-4 py-3 max-w-xs lg:max-w-md ${getMessageStyle(message.role, message.isAlert, message.isError)}`}>
-                    <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {message.content}
-                    </div>
-                    
-                    <div className="flex items-center justify-between mt-2 text-xs opacity-70">
-                      <span>{message.timestamp.toLocaleTimeString()}</span>
-                      {message.category && (
-                        <span className="capitalize">{message.category}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-            
-            {isLoading && (
-              <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
-                  <Heart className="h-5 w-5 text-blue-500" />
-                </div>
-                <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 mr-12 shadow-sm">
-                  <div className="flex items-center space-x-2">
-                    <Loader className="h-4 w-4 animate-spin text-blue-500" />
-                    <span className="text-sm text-gray-600">Thinking thoughtfully...</span>
-                  </div>
-                </div>
+              <div className="chat-context-card chat-context-card--muted">
+                <h3><Activity className="chat-context-icon" /> Emotional snapshot</h3>
+                <p className="chat-empty-state">Share how you feel to see live reflections on mood and risk.</p>
               </div>
             )}
-            
-            <div ref={messagesEndRef} />
-          </div>
 
-          {/* Input Area */}
-          <div className="border-t border-gray-200 p-4">
-            <div className="flex items-end space-x-3">
-              <div className="flex-1">
-                <textarea
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Share what's on your mind... I'm here to listen."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
-                  rows="2"
-                  disabled={isLoading}
-                />
+            {sessionInsights && (
+              <div className="chat-context-card">
+                <h3><TrendingUp className="chat-context-icon" /> Session insights</h3>
+                {(sessionInsights.patterns && sessionInsights.patterns.length > 0) && (
+                  <div>
+                    <p className="chat-context-label">Patterns noticed</p>
+                    <ul className="chat-list">
+                      {sessionInsights.patterns.map((item, index) => (
+                        <li key={`pattern-${index}`}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {(sessionInsights.strengths && sessionInsights.strengths.length > 0) && (
+                  <div>
+                    <p className="chat-context-label">Your strengths</p>
+                    <ul className="chat-list">
+                      {sessionInsights.strengths.map((item, index) => (
+                        <li key={`strength-${index}`}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isLoading}
-                className={`p-3 rounded-xl transition-all duration-200 ${
-                  inputMessage.trim() && !isLoading
-                    ? 'bg-gradient-to-r from-blue-400 to-green-400 text-white hover:from-blue-500 hover:to-green-500 shadow-md'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                <Send className="h-5 w-5" />
-              </button>
+            )}
+
+            <div className="chat-context-card">
+              <h3><Lightbulb className="chat-context-icon" /> Quick prompts</h3>
+              <p className="chat-context-subtext">Tap a prompt and we will start from there.</p>
+              <div className="chat-chip-list">
+                {QUICK_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    className="chat-chip"
+                    onClick={() => handlePromptInsert(prompt)}
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Footer with Crisis Resources */}
-        <div className="mt-6 bg-red-50 border border-red-200 rounded-2xl p-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <Shield className="h-5 w-5 text-red-600" />
-            <h3 className="font-medium text-red-800">Crisis Support Always Available</h3>
-          </div>
-          <p className="text-sm text-red-700">
-            If you're having thoughts of self-harm or suicide, please reach out immediately: 
-            Call <strong>14416 (Tele-MANAS)</strong> or <strong>112 (Emergency)</strong>. 
-            Your life has value and help is available 24/7.
-          </p>
+            <div className="chat-context-card chat-context-card--alert">
+              <h3><Shield className="chat-context-icon" /> Immediate help</h3>
+              <p>If you're in crisis, please reach out immediately. Human professionals are ready to listen:</p>
+              <ul className="chat-list">
+                <li>Tele-MANAS (24/7): <strong>14416</strong></li>
+                <li>KIRAN Helpline: <strong>1800-599-0019</strong></li>
+                <li>Emergency services: <strong>112</strong></li>
+              </ul>
+              <p className="chat-context-subtext">You deserve support. We can plan what to say together.</p>
+            </div>
+
+            <div className="chat-context-card chat-context-card--muted chat-context-card--compact">
+              <h3><Clock className="chat-context-icon" /> Session tips</h3>
+              <ul className="chat-list">
+                <li>Pause and breathe before you send—there is no rush.</li>
+                <li>You can request exercises, reflections, or next steps.</li>
+                <li>We will surface crisis contacts automatically when needed.</li>
+              </ul>
+            </div>
+          </aside>
         </div>
       </div>
     </div>

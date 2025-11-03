@@ -154,6 +154,8 @@ class MockTherapyGeminiService {
       riskLevel: 'low',
       sessionNumber: 1
     };
+    this.mode = 'mock';
+    this.modeLabel = 'Offline therapeutic simulator';
   }
 
   async generateResponse(userMessage, conversationHistory = []) {
@@ -261,6 +263,18 @@ class MockTherapyGeminiService {
     return markers;
   }
 
+  getMode() {
+    return {
+      type: this.mode,
+      label: this.modeLabel,
+      model: 'mindcure-offline-companion'
+    };
+  }
+
+  getActiveModelId() {
+    return 'mindcure-offline-companion';
+  }
+
   async generateCopingStrategies(mood, situation) {
     return new Promise(resolve => {
       setTimeout(() => {
@@ -338,8 +352,22 @@ class RealTherapyGeminiService {
       throw new Error('Gemini API key not found');
     }
     
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  this.genAI = new GoogleGenerativeAI(apiKey);
+  // Updated to use correct model names for v1beta API
+  this.primaryModelId = "gemini-1.5-flash";
+  this.fallbackModelId = "gemini-1.5-pro";
+  this.modelIdInUse = this.primaryModelId;
+  this.model = this.genAI.getGenerativeModel({ model: this.modelIdInUse });
+  this.mode = 'real';
+  this.modeLabel = 'Gemini live therapeutic model';
+  
+  // Rate limit handling
+  this.rateLimitHit = false;
+  this.quotaExhausted = false;
+  this.lastRequestTime = 0;
+  this.minRequestInterval = 2000; // 2 seconds between requests
+  this.requestQueue = [];
+  this.isProcessingQueue = false;
     
     // Professional mental health system prompt
     this.systemPrompt = `You are a compassionate, professional mental health counselor AI assistant designed to provide therapeutic support. Your responses should be:
@@ -375,6 +403,96 @@ FOCUS AREAS:
 Remember: You're providing support, not treatment. Always encourage professional help when needed.`;
   }
 
+  isModelNotFoundError(error) {
+    if (!error) return false;
+    const message = (error.message || "").toLowerCase();
+    const details = (error.statusText || "").toLowerCase();
+    return (
+      (message.includes('not found') || message.includes('404')) &&
+      (message.includes('models/') || message.includes('is not found for api'))
+    ) || details.includes('not found');
+  }
+
+  isRateLimitError(error) {
+    if (!error) return false;
+    const message = (error.message || "").toLowerCase();
+    return message.includes('429') || 
+           message.includes('rate limit') || 
+           message.includes('quota exceeded') ||
+           message.includes('too many requests');
+  }
+
+  async waitForRateLimit() {
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < this.minRequestInterval) {
+      const waitTime = this.minRequestInterval - timeSinceLastRequest;
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    
+    this.lastRequestTime = Date.now();
+  }
+
+  async withModelRetry(executor, context = 'gemini-call', attempt = 1, maxAttempts = 3) {
+    try {
+      // Check if quota is exhausted
+      if (this.quotaExhausted) {
+        throw new Error('QUOTA_EXHAUSTED');
+      }
+
+      // Wait for rate limit
+      await this.waitForRateLimit();
+
+      return await executor();
+    } catch (error) {
+      // Handle rate limit errors
+      if (this.isRateLimitError(error)) {
+        console.warn(`[Gemini] ${context}: Rate limit hit (attempt ${attempt}/${maxAttempts})`);
+        
+        if (attempt < maxAttempts) {
+          // Exponential backoff: 2s, 4s, 8s
+          const backoffTime = Math.pow(2, attempt) * 1000;
+          console.log(`[Gemini] Waiting ${backoffTime}ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, backoffTime));
+          return this.withModelRetry(executor, context, attempt + 1, maxAttempts);
+        } else {
+          // Quota exhausted - switch to mock mode
+          console.error(`[Gemini] ${context}: Quota exhausted after ${maxAttempts} attempts. Falling back to mock mode.`);
+          this.quotaExhausted = true;
+          this.mode = 'mock';
+          this.modeLabel = 'Mock mode (quota exhausted)';
+          throw new Error('QUOTA_EXHAUSTED');
+        }
+      }
+
+      // Handle model not found errors
+      if (this.isModelNotFoundError(error)) {
+        const canRetryModel = (
+          attempt === 1 &&
+          this.modelIdInUse !== this.fallbackModelId
+        );
+
+        if (canRetryModel) {
+          console.warn(`[Gemini] ${context}: primary model "${this.modelIdInUse}" unavailable. Switching to fallback "${this.fallbackModelId}".`);
+          this.modelIdInUse = this.fallbackModelId;
+          this.model = this.genAI.getGenerativeModel({ model: this.modelIdInUse });
+          this.modeLabel = 'Gemini fallback therapeutic model';
+          return this.withModelRetry(executor, context, attempt + 1, maxAttempts);
+        } else {
+          // Both models failed - switch to mock mode
+          console.error(`[Gemini] ${context}: All models unavailable. Falling back to mock mode.`);
+          this.quotaExhausted = true;
+          this.mode = 'mock';
+          this.modeLabel = 'Mock mode (models unavailable)';
+          throw new Error('MODELS_UNAVAILABLE');
+        }
+      }
+
+      throw error;
+    }
+  }
+
   async generateResponse(userMessage, conversationHistory = []) {
     try {
       // Build conversation context
@@ -385,12 +503,19 @@ Remember: You're providing support, not treatment. Always encourage professional
 
       const fullPrompt = `${this.systemPrompt}\n\nPrevious conversation:\n${contextMessages}\n\nUser: ${userMessage}\n\nCounselor:`;
 
-      const result = await this.model.generateContent(fullPrompt);
-      const response = await result.response;
-      const text = response.text();
+      const text = await this.withModelRetry(async () => {
+        const result = await this.model.generateContent(fullPrompt);
+        const response = await result.response;
+        return response.text();
+      }, 'generateResponse');
 
-      // Analyze the response for safety concerns
-      const sentiment = await this.analyzeSentiment(userMessage);
+      let sentiment;
+      try {
+        sentiment = await this.analyzeSentiment(userMessage);
+      } catch (sentimentError) {
+        console.warn('Sentiment analysis failed, continuing without it:', sentimentError);
+        sentiment = { needsAttention: false, riskLevel: 'low' };
+      }
 
       return {
         response: text,
@@ -403,6 +528,22 @@ Remember: You're providing support, not treatment. Always encourage professional
       };
     } catch (error) {
       console.error('Error generating AI response:', error);
+      
+      // If quota exhausted or models unavailable, fall back to mock responses
+      if (error.message === 'QUOTA_EXHAUSTED' || error.message === 'MODELS_UNAVAILABLE' || this.quotaExhausted) {
+        console.log('[Gemini] Using mock response due to:', error.message || 'quota exhaustion');
+        const mockResponse = getTherapeuticResponse(userMessage, conversationHistory);
+        return {
+          response: mockResponse.response,
+          category: mockResponse.category,
+          needsAttention: mockResponse.needsAttention,
+          sessionInsights: {
+            riskLevel: 'low',
+            emotionalMarkers: []
+          }
+        };
+      }
+      
       return {
         response: "I'm having trouble processing your message right now. Please try again in a moment. If you're in crisis, please contact Tele-MANAS at 14416 or emergency services at 112 immediately.",
         category: 'error',
@@ -412,6 +553,11 @@ Remember: You're providing support, not treatment. Always encourage professional
   }
 
   async analyzeSentiment(message) {
+    // If quota exhausted, use simple keyword-based sentiment
+    if (this.quotaExhausted) {
+      return this.fallbackSentimentAnalysis(message);
+    }
+
     try {
       const prompt = `Analyze this message for mental health indicators. Return ONLY a JSON object with:
 {
@@ -425,19 +571,92 @@ Remember: You're providing support, not treatment. Always encourage professional
 
 Message: "${message}"`;
       
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const text = await this.withModelRetry(async () => {
+        const result = await this.model.generateContent(prompt);
+        const response = await result.response;
+        return response.text();
+      }, 'analyzeSentiment');
       
       try {
         return JSON.parse(text);
       } catch {
-        return { sentiment: 'neutral', confidence: 0.5, needsAttention: false, riskLevel: 'low' };
+        return this.fallbackSentimentAnalysis(message);
       }
     } catch (error) {
       console.error('Error analyzing sentiment:', error);
+      
+      // Use fallback sentiment analysis
+      if (error.message === 'QUOTA_EXHAUSTED' || error.message === 'MODELS_UNAVAILABLE' || this.quotaExhausted) {
+        return this.fallbackSentimentAnalysis(message);
+      }
+      
       return { sentiment: 'neutral', confidence: 0, needsAttention: false, riskLevel: 'low' };
     }
+  }
+
+  fallbackSentimentAnalysis(message) {
+    const messageLower = message.toLowerCase();
+    
+    // Crisis detection
+    const crisisKeywords = ['suicide', 'kill myself', 'end it all', 'hurt myself', 'self harm'];
+    if (crisisKeywords.some(kw => messageLower.includes(kw))) {
+      return {
+        sentiment: 'crisis',
+        confidence: 0.95,
+        needsAttention: true,
+        riskLevel: 'high',
+        primaryEmotion: 'crisis',
+        emotionalMarkers: crisisKeywords.filter(kw => messageLower.includes(kw))
+      };
+    }
+    
+    // Depression
+    const depressionKeywords = ['depressed', 'hopeless', 'worthless', 'empty', 'sad'];
+    if (depressionKeywords.some(kw => messageLower.includes(kw))) {
+      return {
+        sentiment: 'negative',
+        confidence: 0.8,
+        needsAttention: true,
+        riskLevel: 'medium',
+        primaryEmotion: 'depression',
+        emotionalMarkers: depressionKeywords.filter(kw => messageLower.includes(kw))
+      };
+    }
+    
+    // Anxiety
+    const anxietyKeywords = ['anxious', 'panic', 'worried', 'scared', 'nervous'];
+    if (anxietyKeywords.some(kw => messageLower.includes(kw))) {
+      return {
+        sentiment: 'anxious',
+        confidence: 0.75,
+        needsAttention: false,
+        riskLevel: 'low-medium',
+        primaryEmotion: 'anxiety',
+        emotionalMarkers: anxietyKeywords.filter(kw => messageLower.includes(kw))
+      };
+    }
+    
+    // Positive
+    const positiveKeywords = ['happy', 'better', 'good', 'grateful', 'hopeful'];
+    if (positiveKeywords.some(kw => messageLower.includes(kw))) {
+      return {
+        sentiment: 'positive',
+        confidence: 0.7,
+        needsAttention: false,
+        riskLevel: 'low',
+        primaryEmotion: 'hope',
+        emotionalMarkers: positiveKeywords.filter(kw => messageLower.includes(kw))
+      };
+    }
+    
+    return {
+      sentiment: 'neutral',
+      confidence: 0.6,
+      needsAttention: false,
+      riskLevel: 'low',
+      primaryEmotion: 'neutral',
+      emotionalMarkers: []
+    };
   }
 
   async generateCopingStrategies(mood, situation) {
@@ -446,10 +665,12 @@ Message: "${message}"`;
 
 Focus on evidence-based techniques from CBT, DBT, and mindfulness practices. Return as a JSON array of strings. Each strategy should be practical and specific.`;
       
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
+      const text = await this.withModelRetry(async () => {
+        const result = await this.model.generateContent(prompt);
+        const response = await result.response;
+        return response.text();
+      }, 'generateCopingStrategies');
+
       try {
         return JSON.parse(text);
       } catch {
@@ -477,10 +698,12 @@ Focus on evidence-based techniques from CBT, DBT, and mindfulness practices. Ret
 
 Conversation: ${conversation}`;
       
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
+      const text = await this.withModelRetry(async () => {
+        const result = await this.model.generateContent(prompt);
+        const response = await result.response;
+        return response.text();
+      }, 'generateTherapyInsights');
+
       try {
         return JSON.parse(text);
       } catch {
@@ -500,6 +723,37 @@ Conversation: ${conversation}`;
         progressMarkers: []
       };
     }
+  }
+
+  getMode() {
+    return {
+      type: this.mode,
+      label: this.modeLabel,
+      model: this.modelIdInUse,
+      quotaExhausted: this.quotaExhausted
+    };
+  }
+
+  getActiveModelId() {
+    return this.modelIdInUse;
+  }
+
+  getQuotaStatus() {
+    return {
+      exhausted: this.quotaExhausted,
+      canRetry: !this.quotaExhausted,
+      mode: this.mode
+    };
+  }
+
+  // Allow manual reset of quota status (useful for testing or when quota resets)
+  resetQuotaStatus() {
+    console.log('[Gemini] Manually resetting quota status');
+    this.quotaExhausted = false;
+    this.rateLimitHit = false;
+    this.mode = 'real';
+    this.modeLabel = 'Gemini live therapeutic model';
+    this.lastRequestTime = 0;
   }
 }
 

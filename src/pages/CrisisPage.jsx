@@ -259,18 +259,23 @@ const CrisisPage = () => {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'critical':
-        return 'bg-gradient-to-br from-pink-100/80 to-rose-100/60 border-pink-300/50 text-pink-800';
+        return 'bg-gradient-to-br from-accent-100/90 to-accent-200/70 border-accent-400/60 text-accent-900';
       case 'high':
-        return 'bg-gradient-to-br from-purple-100/80 to-pink-100/60 border-purple-300/50 text-purple-800';
+        return 'bg-gradient-to-br from-accent-50/90 to-accent-100/70 border-accent-300/50 text-accent-800';
       case 'medium':
-        return 'bg-gradient-to-br from-indigo-100/80 to-purple-100/60 border-indigo-300/50 text-indigo-800';
+        return 'bg-gradient-to-br from-secondary-50/90 to-secondary-100/70 border-secondary-300/50 text-secondary-800';
       default:
-        return 'bg-gradient-to-br from-gray-100/80 to-purple-100/40 border-gray-300/50 text-gray-800';
+        return 'bg-gradient-to-br from-neutral-light/80 to-secondary-50/60 border-primary-200/40 text-neutral-dark';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/30 to-indigo-50/40 relative overflow-hidden">
+    <div 
+      className="min-h-screen relative overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, rgba(253,249,245,0.9) 0%, rgba(167,216,247,0.4) 50%, rgba(255,158,158,0.25) 100%)'
+      }}
+    >
       {/* Background decoration */}
       <div className="absolute inset-0">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-purple-200/20 to-pink-200/10 rounded-full filter blur-3xl"></div>
@@ -278,12 +283,12 @@ const CrisisPage = () => {
       </div>
       
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white relative z-10">
+      <div className="bg-gradient-to-r from-accent-500 to-accent-600 text-white relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center space-x-2 text-pink-100 hover:text-white transition-colors"
+              className="flex items-center space-x-2 text-white/80 hover:text-white transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
               <span>Back</span>
@@ -293,7 +298,7 @@ const CrisisPage = () => {
               <AlertTriangle className="h-10 w-10 mr-4" />
               <div>
                 <h1 className="text-4xl font-bold">Crisis Support</h1>
-                <p className="text-pink-100 text-lg">Immediate help and resources available 24/7</p>
+                <p className="text-white/90 text-lg">Immediate help and resources available 24/7</p>
               </div>
             </div>
           </div>

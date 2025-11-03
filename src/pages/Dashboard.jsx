@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AssessmentHistory from '../components/AssessmentHistory';
 import { 
@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { userProfile } = useAuth();
   const [recentMoods, setRecentMoods] = useState([]);
   const [showAssessmentHistory, setShowAssessmentHistory] = useState(false);
@@ -52,36 +53,36 @@ const Dashboard = () => {
       description: 'Book a session with professional counselors',
       icon: MessageCircle,
       link: '/chat',
-      gradient: 'from-purple-400 via-pink-400 to-indigo-500',
-      bgColor: 'bg-gradient-to-br from-purple-50/80 to-pink-50/60',
-      iconColor: 'text-purple-600'
+      gradient: 'from-primary-400 to-primary-500',
+      bgColor: 'bg-gradient-to-br from-primary-50/80 to-primary-100/60',
+      iconColor: 'text-primary-600'
     },
     {
       title: 'Self-Help Library',
       description: 'Access mindfulness and stress resources',
       icon: BookOpen,
       link: '/resources',
-      gradient: 'from-pink-400 via-purple-400 to-indigo-500',
-      bgColor: 'bg-gradient-to-br from-pink-50/80 to-purple-50/60',
-      iconColor: 'text-pink-600'
+      gradient: 'from-secondary-400 to-secondary-500',
+      bgColor: 'bg-gradient-to-br from-secondary-50/80 to-secondary-100/60',
+      iconColor: 'text-secondary-600'
     },
     {
       title: 'Peer Support Groups',
       description: 'Connect with others in safe forums',
       icon: Users,
       link: '/mood',
-      gradient: 'from-indigo-400 via-purple-400 to-pink-500',
-      bgColor: 'bg-gradient-to-br from-indigo-50/80 to-purple-50/60',
-      iconColor: 'text-indigo-600'
+      gradient: 'from-primary-400 via-secondary-400 to-accent-400',
+      bgColor: 'bg-gradient-to-br from-primary-50/80 to-secondary-50/60',
+      iconColor: 'text-primary-600'
     },
     {
       title: 'Crisis Support',
       description: 'Get immediate help when you need it',
       icon: Phone,
       link: '/crisis',
-      gradient: 'from-pink-400 to-rose-500',
-      bgColor: 'bg-gradient-to-br from-pink-50/80 to-rose-50/60',
-      iconColor: 'text-pink-600'
+      gradient: 'from-accent-400 to-accent-500',
+      bgColor: 'bg-gradient-to-br from-accent-50/80 to-accent-100/60',
+      iconColor: 'text-accent-600'
     }
   ];
 
@@ -100,7 +101,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-purple-500 via-pink-500 to-indigo-600 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-primary-400 via-primary-500 to-secondary-500 relative overflow-hidden">
         <div className="absolute inset-0 bg-black bg-opacity-5"></div>
         {/* Floating background elements */}
         <div className="absolute inset-0 overflow-hidden">
@@ -113,21 +114,33 @@ const Dashboard = () => {
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Welcome back, {userProfile?.firstName || 'Demo User'}! 
             </h1>
-            <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               Your mental wellness journey continues. How are you feeling today?
             </p>
             
             {/* Quick mood check */}
             <div className="flex justify-center space-x-4 mb-8">
-              <button className="glass-card rounded-2xl px-6 py-4 hover:bg-white/20 transition-all duration-200 flex items-center space-x-2 border border-white/20">
+              <button
+                aria-label="Quick mood: Great"
+                onClick={() => navigate('/mood?feeling=great')}
+                className="glass-card rounded-2xl px-6 py-4 hover:bg-white/20 transition-all duration-200 flex items-center space-x-2 border border-white/20"
+              >
                 <Smile className="h-6 w-6" />
                 <span className="font-medium">Great</span>
               </button>
-              <button className="glass-card rounded-2xl px-6 py-4 hover:bg-white/20 transition-all duration-200 flex items-center space-x-2 border border-white/20">
+              <button
+                aria-label="Quick mood: Okay"
+                onClick={() => navigate('/mood?feeling=okay')}
+                className="glass-card rounded-2xl px-6 py-4 hover:bg-white/20 transition-all duration-200 flex items-center space-x-2 border border-white/20"
+              >
                 <Meh className="h-6 w-6" />
                 <span className="font-medium">Okay</span>
               </button>
-              <button className="glass-card rounded-2xl px-6 py-4 hover:bg-white/20 transition-all duration-200 flex items-center space-x-2 border border-white/20">
+              <button
+                aria-label="Quick mood: Struggling"
+                onClick={() => navigate('/mood?feeling=struggling')}
+                className="glass-card rounded-2xl px-6 py-4 hover:bg-white/20 transition-all duration-200 flex items-center space-x-2 border border-white/20"
+              >
                 <Frown className="h-6 w-6" />
                 <span className="font-medium">Struggling</span>
               </button>
@@ -137,15 +150,15 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               <div className="glass-card rounded-2xl p-6 border border-white/20">
                 <div className="text-3xl font-bold mb-2">{weeklyStats.averageMood.toFixed(1)}/5</div>
-                <div className="text-purple-100">Average Mood</div>
+                <div className="text-white/80">Average Mood</div>
               </div>
               <div className="glass-card rounded-2xl p-6 border border-white/20">
                 <div className="text-3xl font-bold mb-2">{weeklyStats.streak}</div>
-                <div className="text-purple-100">Day Streak</div>
+                <div className="text-white/80">Day Streak</div>
               </div>
               <div className="glass-card rounded-2xl p-6 border border-white/20">
                 <div className="text-3xl font-bold mb-2">{weeklyStats.totalEntries}</div>
-                <div className="text-purple-100">Total Entries</div>
+                <div className="text-white/80">Total Entries</div>
               </div>
             </div>
           </div>
@@ -252,57 +265,95 @@ const Dashboard = () => {
             </Link>
           </div>
 
-          {/* Achievements & Progress */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900 flex items-center">
-                <Award className="h-6 w-6 mr-3 text-yellow-500" />
-                Your Progress
-              </h3>
+          {/* Right column stacked: Achievements, Next Steps, Assessment Overview */}
+          <div className="space-y-8">
+            {/* Achievements & Progress */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 flex items-center">
+                  <Award className="h-6 w-6 mr-3 text-yellow-500" />
+                  Your Progress
+                </h3>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-gray-900">Weekly Check-ins</span>
+                    <span className="text-sm text-gray-600">5/7 days</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="bg-gradient-to-r from-green-400 to-green-500 h-3 rounded-full" style={{width: '71%'}}></div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <Target className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">5-Day Streak!</div>
+                      <div className="text-sm text-gray-600">Keep up the consistency</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <BookOpen className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">Resource Explorer</div>
+                      <div className="text-sm text-gray-600">Accessed 12 resources</div>
+                    </div>
+                  </div>
+                </div>
+                <button className="w-full bg-gradient-to-r from-[color:var(--primary-400)] to-[color:var(--primary-500)] text-white px-6 py-3 rounded-xl font-semibold hover:from-[color:var(--primary-500)] hover:to-[color:var(--primary-600)] transition-all duration-200">
+                  View All Achievements
+                </button>
+              </div>
             </div>
-            
-            <div className="space-y-6">
-              {/* Weekly Goal */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-gray-900">Weekly Check-ins</span>
-                  <span className="text-sm text-gray-600">5/7 days</span>
+
+            {/* Next Steps */}
+            <div className="rounded-2xl p-6 border border-primary-200/50 bg-gradient-to-br from-primary-50/80 via-secondary-50/70 to-accent-50/70 shadow-sm">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Next Steps</h3>
+              <p className="text-gray-700 mb-4">Keep momentum with these quick actions:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Link to="/mood" className="btn-primary text-center">2‑min Check‑in</Link>
+                <Link to="/chat" className="btn-secondary text-center">Open AI Chat</Link>
+                <Link to="/resources" className="btn-outline text-center">Read a tip</Link>
+              </div>
+            </div>
+
+            {/* Assessment Overview */}
+            <div className="rounded-2xl p-6 bg-white shadow-lg border border-gray-100">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xl font-bold text-gray-900">Assessment Overview</h3>
+                <button
+                  onClick={() => setShowAssessmentHistory(true)}
+                  className="font-medium transition-colors"
+                  style={{color: 'var(--primary-600)'}}
+                  onMouseEnter={(e) => e.target.style.color = 'var(--primary-700)'}
+                  onMouseLeave={(e) => e.target.style.color = 'var(--primary-600)'}
+                >
+                  View details
+                </button>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{background: 'linear-gradient(135deg, var(--secondary-400), var(--secondary-500))'}}>
+                  <BarChart3 className="w-5 h-5" />
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div className="bg-gradient-to-r from-green-400 to-green-500 h-3 rounded-full" style={{width: '71%'}}></div>
+                <div>
+                  <div className="text-gray-900 font-medium">Latest: Anxiety (GAD‑7) • Moderate</div>
+                  <div className="text-sm text-gray-600">Taken on Jan 10, 2024 • Recommendation: Practice anxiety management techniques</div>
                 </div>
               </div>
-
-              {/* Achievements */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <Target className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">5-Day Streak!</div>
-                    <div className="text-sm text-gray-600">Keep up the consistency</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <BookOpen className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Resource Explorer</div>
-                    <div className="text-sm text-gray-600">Accessed 12 resources</div>
-                  </div>
-                </div>
-              </div>
-
-              <button className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all duration-200">
-                View All Achievements
-              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Assessment History Modal */}
+      {showAssessmentHistory && (
+        <AssessmentHistory onClose={() => setShowAssessmentHistory(false)} />
+      )}
     </div>
   );
 };
