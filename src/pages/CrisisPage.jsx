@@ -462,7 +462,7 @@ const CrisisPage = () => {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Local Emergency Resources</h2>
                 <p className="text-gray-600 mb-6 text-lg">
-                  Find immediate help in your area for crisis situations.
+                  Find immediate help in your area for Crisis situations.
                 </p>
               </div>
 
@@ -487,13 +487,13 @@ const CrisisPage = () => {
                         {resource.type === 'emergency' ? (
                           <a
                             href="tel:911"
-                            className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-lg transition-colors"
+                            className="px-8 py-4 bg-red-800 hover:bg-red-900 text-white rounded-lg font-bold transition-colors"
                           >
                             Call 911
                           </a>
                         ) : resource.type === 'location' ? (
-                          <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center">
-                            <Navigation className="h-5 w-5 mr-2" />
+                          <button className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-semibold transition-colors flex items-center">
+                            <Navigation className="h-4 w-4 mr-2" />
                             Find Nearby
                           </button>
                         ) : (
@@ -530,7 +530,7 @@ const CrisisPage = () => {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Immediate Coping Strategies</h2>
                 <p className="text-gray-600 mb-6 text-lg">
-                  These techniques can help you manage crisis moments and stay safe.
+                  These techniques can help you manage Crisis moments and stay safe.
                 </p>
               </div>
 
@@ -586,7 +586,7 @@ const CrisisPage = () => {
                   
                   <div className="mt-6 p-4 bg-red-100 rounded-lg">
                     <p className="text-red-800 font-medium">
-                      If you or someone you know shows these signs, seek immediate professional help or call a crisis hotline.
+                      If you or someone you know shows these signs, seek immediate professional help or call a Crisis hotline.
                     </p>
                   </div>
                 </div>

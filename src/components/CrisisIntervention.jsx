@@ -326,7 +326,7 @@ const CrisisIntervention = ({ onClose }) => {
                             </button>
                             <a
                               href={`tel:${resource.number}`}
-                              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                              className="px-4 py-2 bg-red-800 hover:bg-red-900 text-white rounded-lg font-semibold transition-colors"
                             >
                               Call Now
                             </a>
@@ -336,7 +336,7 @@ const CrisisIntervention = ({ onClose }) => {
                         {resource.type === 'text' && (
                           <a
                             href={`sms:741741?body=HOME`}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                            className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-semibold transition-colors"
                           >
                             Text Now
                           </a>
@@ -412,12 +412,12 @@ const CrisisIntervention = ({ onClose }) => {
                         {resource.type === 'emergency' ? (
                           <a
                             href="tel:911"
-                            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-colors"
+                            className="px-6 py-3 bg-red-800 hover:bg-red-900 text-white rounded-lg font-bold transition-colors"
                           >
                             Call 911
                           </a>
                         ) : resource.type === 'location' ? (
-                          <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center">
+                          <button className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-semibold transition-colors flex items-center">
                             <Navigation className="h-4 w-4 mr-2" />
                             Find Nearby
                           </button>
@@ -455,7 +455,7 @@ const CrisisIntervention = ({ onClose }) => {
               <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Immediate Coping Strategies</h2>
                 <p className="text-gray-600 mb-6">
-                  These techniques can help you manage crisis moments and stay safe.
+                  These techniques can help you manage Crisis moments and stay safe.
                 </p>
               </div>
 
@@ -551,7 +551,7 @@ const CrisisIntervention = ({ onClose }) => {
                   
                   <div className="mt-4 p-3 bg-red-100 rounded-lg">
                     <p className="text-red-800 font-medium text-sm">
-                      If you or someone you know shows these signs, seek immediate professional help or call a crisis hotline.
+                      If you or someone you know shows these signs, seek immediate professional help or call a Crisis hotline.
                     </p>
                   </div>
                 </div>
@@ -601,11 +601,11 @@ const CrisisIntervention = ({ onClose }) => {
                     </div>
                     <div className="flex items-start space-x-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                      <p>Help them connect with professional support or crisis resources</p>
+                      <p>Help them connect with professional support or Crisis resources</p>
                     </div>
                     <div className="flex items-start space-x-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                      <p>Follow up with them after the crisis has passed</p>
+                      <p>Follow up with them after the Crisis has passed</p>
                     </div>
                   </div>
                 </div>
@@ -624,7 +624,7 @@ const CrisisIntervention = ({ onClose }) => {
             <div className="flex space-x-3">
               <a
                 href="tel:988"
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                className="px-4 py-2 bg-red-800 hover:bg-red-900 text-white rounded-lg font-semibold transition-colors"
               >
                 Call 988
               </a>

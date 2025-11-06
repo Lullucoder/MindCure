@@ -258,10 +258,10 @@ const WellnessAssessment = ({ assessment, onClose, onComplete }) => {
                 </div>
                 
                 <div className="mt-4 space-y-2">
-                  <button className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                  <button className="w-full bg-red-800 hover:bg-red-900 text-white py-3 px-4 rounded-lg font-semibold transition-colors">
                     Call Crisis Helpline: 988
                   </button>
-                  <button className="w-full bg-white border-2 border-red-600 text-red-600 hover:bg-red-50 py-2 px-4 rounded-lg font-medium transition-colors">
+                  <button className="w-full bg-white border-2 border-red-800 text-red-800 hover:bg-red-50 py-2 px-4 rounded-lg font-semibold transition-colors">
                     Find Local Emergency Resources
                   </button>
                 </div>

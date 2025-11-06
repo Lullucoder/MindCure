@@ -49,7 +49,7 @@ const Navbar = () => {
   const isCurrentPath = (path) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
+    <nav className="bg-white shadow-sm   sticky top-0 z-50 backdrop-blur-sm bg-white/95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
@@ -71,10 +71,10 @@ const Navbar = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-base font-medium transition-colors hover:text-blue-500 ${
+                className={`nav-link text-base font-medium transition-colors hover:text-accessible-interactive-primary focus:outline-3 focus:outline-yellow-400 focus:outline-offset-2 focus:bg-accessible-bg-focus focus:rounded focus:px-2 focus:py-1 ${
                   isCurrentPath(item.href)
-                    ? 'text-blue-500'
-                    : 'text-gray-600'
+                    ? 'text-accessible-interactive-primary font-semibold'
+                    : 'text-accessible-text-secondary'
                 }`}
               >
                 {item.name}
@@ -86,7 +86,7 @@ const Navbar = () => {
           <div className="hidden lg:flex items-center space-x-6">
             <Link
               to="/dashboard"
-              className="bg-gradient-to-r from-blue-400 to-green-400 text-white px-6 py-2.5 rounded-xl font-semibold hover:from-blue-500 hover:to-green-500 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="bg-accessible-interactive-primary text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-accessible-interactive-primary-hover focus:outline-3 focus:outline-yellow-400 focus:outline-offset-2 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               Log In
             </Link>
@@ -96,7 +96,8 @@ const Navbar = () => {
           <div className="lg:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-xl text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-xl text-accessible-text-secondary hover:text-accessible-text-primary hover:bg-accessible-bg-interactive transition-colors focus:outline-3 focus:outline-yellow-400 focus:outline-offset-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label={isOpen ? 'Close menu' : 'Open menu'}
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -107,26 +108,26 @@ const Navbar = () => {
       {/* Mobile menu */}
       {isOpen && (
         <div className="lg:hidden">
-          <div className="px-4 pt-4 pb-6 space-y-3 bg-white border-t border-gray-100 shadow-lg">
+          <div className="px-4 pt-4 pb-6 space-y-3 bg-white  shadow-lg">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
+                className={`nav-link block px-4 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
                   isCurrentPath(item.href)
-                    ? 'bg-teal-50 text-teal-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-accessible-bg-interactive text-accessible-interactive-primary font-semibold'
+                    : 'text-accessible-text-secondary hover:text-accessible-text-primary hover:bg-accessible-bg-interactive-hover'
                 }`}
               >
                 {item.name}
               </Link>
             ))}
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-4 ">
               <Link
                 to="/dashboard"
                 onClick={() => setIsOpen(false)}
-                className="block w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-3 rounded-xl font-semibold text-center"
+                className="nav-link block w-full bg-accessible-interactive-primary text-white px-4 py-3 rounded-xl font-semibold text-center hover:bg-accessible-interactive-primary-hover transition-colors min-h-[44px] flex items-center justify-center"
               >
                 Log In
               </Link>

@@ -113,15 +113,15 @@ const Dashboard = () => {
             
             {/* Quick mood check */}
             <div className="flex justify-center space-x-4 mb-8">
-              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-30 transition-all duration-200 flex items-center space-x-2">
+              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-40 focus:outline-3 focus:outline-yellow-300 focus:outline-offset-2 transition-all duration-200 flex items-center space-x-2 min-h-[44px] min-w-[44px] font-semibold text-white hover:scale-105">
                 <Smile className="h-6 w-6" />
                 <span className="font-medium">Great</span>
               </button>
-              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-30 transition-all duration-200 flex items-center space-x-2">
+              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-40 focus:outline-3 focus:outline-yellow-300 focus:outline-offset-2 transition-all duration-200 flex items-center space-x-2 min-h-[44px] min-w-[44px] font-semibold text-white hover:scale-105">
                 <Meh className="h-6 w-6" />
                 <span className="font-medium">Okay</span>
               </button>
-              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-30 transition-all duration-200 flex items-center space-x-2">
+              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-40 focus:outline-3 focus:outline-yellow-300 focus:outline-offset-2 transition-all duration-200 flex items-center space-x-2 min-h-[44px] min-w-[44px] font-semibold text-white hover:scale-105">
                 <Frown className="h-6 w-6" />
                 <span className="font-medium">Struggling</span>
               </button>
@@ -240,7 +240,7 @@ const Dashboard = () => {
             
             <Link
               to="/mood"
-              className="block w-full mt-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold text-center hover:from-teal-600 hover:to-teal-700 transition-all duration-200"
+              className="block w-full mt-6 bg-accessible-interactive-primary text-white px-6 py-3 rounded-xl font-semibold text-center hover:bg-accessible-interactive-primary-hover focus:outline-3 focus:outline-yellow-400 focus:outline-offset-2 transition-all duration-200 min-h-[44px] flex items-center justify-center"
             >
               Track Mood Today
             </Link>
@@ -290,7 +290,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <button className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all duration-200">
+              <button className="w-full bg-accessible-interactive-secondary text-white px-6 py-3 rounded-xl font-semibold hover:bg-accessible-interactive-secondary-hover focus:outline-3 focus:outline-yellow-400 focus:outline-offset-2 transition-all duration-200 min-h-[44px]">
                 View All Achievements
               </button>
             </div>

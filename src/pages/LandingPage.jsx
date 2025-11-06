@@ -22,7 +22,7 @@ const LandingPage = () => {
       icon: MessageCircle,
       title: 'Virtual Counseling & Therapy',
       description: 'Book private or group sessions with professional counselors',
-      color: 'from-blue-300 to-blue-400'
+      color: 'from-blue-200 to-blue-400'
     },
     {
       icon: BookOpen,
@@ -80,7 +80,7 @@ const LandingPage = () => {
               <div className="mb-12">
                 <Link
                   to="/dashboard"
-                  className="inline-flex items-center bg-gradient-to-r from-blue-400 to-blue-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-500 hover:to-blue-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  className="inline-flex items-center bg-gradient-to-r from-blue-100 to-blue-200 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-200 hover:to-blue-300 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   Get Started
                 </Link>
@@ -142,7 +142,7 @@ const LandingPage = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Trusted by Students Worldwide
             </h2>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+            <p className="text-xl text-grey-100 max-w-2xl mx-auto">
               Join thousands of students who have found support and improved their mental wellness
             </p>
           </div>
@@ -154,7 +154,7 @@ const LandingPage = () => {
                   <div className="text-4xl md:text-5xl font-bold text-white mb-2">
                     {stat.number}
                   </div>
-                  <div className="text-blue-100 font-medium">{stat.label}</div>
+                  <div className="text-black font-medium">{stat.label}</div>
                 </div>
               </div>
             ))}
@@ -322,7 +322,7 @@ const LandingPage = () => {
               </Link>
               <a
                 href="tel:988"
-                className="group border-2 border-white text-white hover:bg-white hover:text-gray-900 px-10 py-5 rounded-2xl font-semibold text-lg transition-all duration-200 inline-flex items-center"
+                className="group border-2 border-white text-white hover:bg-white hover:text-gray-100 px-10 py-5 rounded-2xl font-semibold text-lg transition-all duration-200 inline-flex items-center"
               >
                 <Phone className="mr-3 h-6 w-6 group-hover:scale-110 transition-transform" />
                 Need Help Now? Call 988
