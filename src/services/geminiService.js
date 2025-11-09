@@ -353,13 +353,21 @@ class RealTherapyGeminiService {
     }
     
   this.genAI = new GoogleGenerativeAI(apiKey);
-  // Updated to use correct model names for v1beta API
-  this.primaryModelId = "gemini-1.5-flash";
-  this.fallbackModelId = "gemini-1.5-pro";
-  this.modelIdInUse = this.primaryModelId;
+  // Maintain a cascade of model identifiers so we can gracefully fall back when some are unavailable
+  this.modelCandidates = [
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro-latest",
+    "gemini-1.5-pro",
+    "gemini-pro",
+    "gemini-1.0-pro"
+  ];
+  this.modelCursor = 0;
+  this.maxRetryAttempts = this.modelCandidates.length;
+  this.modelIdInUse = this.modelCandidates[this.modelCursor];
   this.model = this.genAI.getGenerativeModel({ model: this.modelIdInUse });
   this.mode = 'real';
-  this.modeLabel = 'Gemini live therapeutic model';
+  this.modeLabel = `Gemini live therapeutic model (${this.modelIdInUse})`;
   
   // Rate limit handling
   this.rateLimitHit = false;
@@ -413,6 +421,14 @@ Remember: You're providing support, not treatment. Always encourage professional
     ) || details.includes('not found');
   }
 
+  getNextModelId() {
+    if (this.modelCursor < this.modelCandidates.length - 1) {
+      this.modelCursor += 1;
+      return this.modelCandidates[this.modelCursor];
+    }
+    return null;
+  }
+
   isRateLimitError(error) {
     if (!error) return false;
     const message = (error.message || "").toLowerCase();
@@ -434,7 +450,8 @@ Remember: You're providing support, not treatment. Always encourage professional
     this.lastRequestTime = Date.now();
   }
 
-  async withModelRetry(executor, context = 'gemini-call', attempt = 1, maxAttempts = 3) {
+  async withModelRetry(executor, context = 'gemini-call', attempt = 1, maxAttempts = null) {
+    const effectiveMaxAttempts = maxAttempts ?? this.maxRetryAttempts;
     try {
       // Check if quota is exhausted
       if (this.quotaExhausted) {
@@ -448,17 +465,17 @@ Remember: You're providing support, not treatment. Always encourage professional
     } catch (error) {
       // Handle rate limit errors
       if (this.isRateLimitError(error)) {
-        console.warn(`[Gemini] ${context}: Rate limit hit (attempt ${attempt}/${maxAttempts})`);
+        console.warn(`[Gemini] ${context}: Rate limit hit (attempt ${attempt}/${effectiveMaxAttempts})`);
         
-        if (attempt < maxAttempts) {
+        if (attempt < effectiveMaxAttempts) {
           // Exponential backoff: 2s, 4s, 8s
           const backoffTime = Math.pow(2, attempt) * 1000;
           console.log(`[Gemini] Waiting ${backoffTime}ms before retry...`);
           await new Promise(resolve => setTimeout(resolve, backoffTime));
-          return this.withModelRetry(executor, context, attempt + 1, maxAttempts);
+          return this.withModelRetry(executor, context, attempt + 1, effectiveMaxAttempts);
         } else {
           // Quota exhausted - switch to mock mode
-          console.error(`[Gemini] ${context}: Quota exhausted after ${maxAttempts} attempts. Falling back to mock mode.`);
+          console.error(`[Gemini] ${context}: Quota exhausted after ${effectiveMaxAttempts} attempts. Falling back to mock mode.`);
           this.quotaExhausted = true;
           this.mode = 'mock';
           this.modeLabel = 'Mock mode (quota exhausted)';
@@ -468,19 +485,16 @@ Remember: You're providing support, not treatment. Always encourage professional
 
       // Handle model not found errors
       if (this.isModelNotFoundError(error)) {
-        const canRetryModel = (
-          attempt === 1 &&
-          this.modelIdInUse !== this.fallbackModelId
-        );
+        const nextModelId = this.getNextModelId();
 
-        if (canRetryModel) {
-          console.warn(`[Gemini] ${context}: primary model "${this.modelIdInUse}" unavailable. Switching to fallback "${this.fallbackModelId}".`);
-          this.modelIdInUse = this.fallbackModelId;
+        if (nextModelId) {
+          console.warn(`[Gemini] ${context}: primary model "${this.modelIdInUse}" unavailable. Switching to fallback "${nextModelId}".`);
+          this.modelIdInUse = nextModelId;
           this.model = this.genAI.getGenerativeModel({ model: this.modelIdInUse });
-          this.modeLabel = 'Gemini fallback therapeutic model';
-          return this.withModelRetry(executor, context, attempt + 1, maxAttempts);
+          this.modeLabel = `Gemini fallback therapeutic model (${this.modelIdInUse})`;
+          return this.withModelRetry(executor, context, attempt + 1, effectiveMaxAttempts);
         } else {
-          // Both models failed - switch to mock mode
+          // All models failed - switch to mock mode
           console.error(`[Gemini] ${context}: All models unavailable. Falling back to mock mode.`);
           this.quotaExhausted = true;
           this.mode = 'mock';
@@ -752,7 +766,10 @@ Conversation: ${conversation}`;
     this.quotaExhausted = false;
     this.rateLimitHit = false;
     this.mode = 'real';
-    this.modeLabel = 'Gemini live therapeutic model';
+    this.modelCursor = 0;
+    this.modelIdInUse = this.modelCandidates[this.modelCursor];
+    this.model = this.genAI.getGenerativeModel({ model: this.modelIdInUse });
+    this.modeLabel = `Gemini live therapeutic model (${this.modelIdInUse})`;
     this.lastRequestTime = 0;
   }
 }

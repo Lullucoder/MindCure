@@ -39,42 +39,67 @@ const BreathingExercise = ({ exercise, onClose }) => {
     pause: 'from-gray-400 to-gray-600'
   };
 
+  const videoSrc = exercise?.videoUrl
+    ? `${exercise.videoUrl}${exercise.videoUrl.includes('?') ? '&' : '?'}rel=0`
+    : null;
+
+  useEffect(() => {
+    // Reset state when a new exercise configuration is loaded
+    setIsActive(false);
+    setPhase('inhale');
+    setTimeRemaining(0);
+    setCycleCount(0);
+    setIsCompleted(false);
+  }, [exercise]);
+
   useEffect(() => {
     let interval = null;
 
-    if (isActive && timeRemaining > 0) {
-      interval = setInterval(() => {
-        setTimeRemaining(time => time - 0.1);
-      }, 100);
-    } else if (isActive && timeRemaining <= 0) {
-      // Move to next phase
-      const phases = ['inhale', 'hold', 'exhale', 'pause'].filter(p => phaseTimings[p] > 0);
-      const currentIndex = phases.indexOf(phase);
-      const nextIndex = (currentIndex + 1) % phases.length;
-      
-      if (nextIndex === 0) {
-        // Completed a full cycle
-        const newCycleCount = cycleCount + 1;
-        setCycleCount(newCycleCount);
+    if (isActive) {
+      if (timeRemaining > 0) {
+        // Timer is running - count down
+        interval = setInterval(() => {
+          setTimeRemaining(time => {
+            const newTime = time - 0.1;
+            if (newTime <= 0) {
+              return 0;
+            }
+            return newTime;
+          });
+        }, 100);
+      } else if (timeRemaining <= 0.05) {
+        // Phase complete - move to next phase
+        const phases = ['inhale', 'hold', 'exhale', 'pause'].filter(p => phaseTimings[p] > 0);
+        const currentIndex = phases.indexOf(phase);
+        const nextIndex = (currentIndex + 1) % phases.length;
+        console.log(`Phase complete: ${phase} -> ${phases[nextIndex]}`);
         
-        if (newCycleCount >= breathingPattern.totalCycles) {
-          setIsActive(false);
-          setIsCompleted(true);
-          return;
+        if (nextIndex === 0) {
+          // Completed a full cycle
+          const newCycleCount = cycleCount + 1;
+          setCycleCount(newCycleCount);
+          
+          if (newCycleCount >= breathingPattern.totalCycles) {
+            setIsActive(false);
+            setIsCompleted(true);
+            return;
+          }
         }
-      }
-      
-      const nextPhase = phases[nextIndex];
-      setPhase(nextPhase);
-      setTimeRemaining(phaseTimings[nextPhase]);
+        
+        const nextPhase = phases[nextIndex];
+        setPhase(nextPhase);
+        setTimeRemaining(phaseTimings[nextPhase]);
 
-      // Play sound cue (if enabled)
-      if (isSoundOn && (nextPhase === 'inhale' || nextPhase === 'exhale')) {
-        playBreathingSound(nextPhase);
+        // Play sound cue (if enabled)
+        if (isSoundOn && (nextPhase === 'inhale' || nextPhase === 'exhale')) {
+          playBreathingSound(nextPhase);
+        }
       }
     }
 
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isActive, timeRemaining, phase, cycleCount, breathingPattern.totalCycles, phaseTimings, isSoundOn]);
 
   const playBreathingSound = (phase) => {
@@ -100,12 +125,32 @@ const BreathingExercise = ({ exercise, onClose }) => {
     }
   };
 
-  const startExercise = () => {
-    setIsActive(true);
-    setPhase('inhale');
-    setTimeRemaining(phaseTimings.inhale);
+  const startNewSession = () => {
+    console.log('Starting exercise with pattern:', breathingPattern);
+    console.log('Phase timings:', phaseTimings);
+    console.log('Setting timeRemaining to:', phaseTimings.inhale);
+
+    const initialPhase = 'inhale';
+    setPhase(initialPhase);
     setCycleCount(0);
     setIsCompleted(false);
+    setTimeRemaining(phaseTimings[initialPhase]);
+    setIsActive(true);
+  };
+
+  const handleStartOrResume = () => {
+    if (isCompleted) {
+      startNewSession();
+      return;
+    }
+
+    if (!isActive) {
+      if (cycleCount === 0 && timeRemaining <= 0) {
+        startNewSession();
+      } else {
+        setIsActive(true);
+      }
+    }
   };
 
   const pauseExercise = () => {
@@ -120,10 +165,20 @@ const BreathingExercise = ({ exercise, onClose }) => {
     setIsCompleted(false);
   };
 
+  const handleCircleClick = () => {
+    if (isActive) {
+      pauseExercise();
+      return;
+    }
+
+    handleStartOrResume();
+  };
+
   const getCircleSize = () => {
     const maxSize = 200;
     const minSize = 120;
-    const progress = 1 - (timeRemaining / phaseTimings[phase]);
+    const phaseDuration = phaseTimings[phase] || 1;
+    const progress = Math.max(0, Math.min(1, 1 - (timeRemaining / phaseDuration)));
     
     if (phase === 'inhale') {
       return minSize + (maxSize - minSize) * progress;
@@ -135,8 +190,12 @@ const BreathingExercise = ({ exercise, onClose }) => {
   };
 
   const getProgress = () => {
+    if (!phaseTimings[phase]) return 0;
+    
     const totalTime = Object.values(phaseTimings).reduce((sum, time) => sum + time, 0);
-    const currentPhaseProgress = 1 - (timeRemaining / phaseTimings[phase]);
+    if (totalTime === 0) return 0;
+    
+    const currentPhaseProgress = Math.max(0, Math.min(1, 1 - (timeRemaining / phaseTimings[phase])));
     
     const phaseOrder = ['inhale', 'hold', 'exhale', 'pause'].filter(p => phaseTimings[p] > 0);
     const currentPhaseIndex = phaseOrder.indexOf(phase);
@@ -184,59 +243,106 @@ const BreathingExercise = ({ exercise, onClose }) => {
 
         {/* Exercise Area */}
         <div className="p-8">
+          {videoSrc && (
+            <div className="mb-8">
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg">
+                <iframe
+                  src={videoSrc}
+                  title={exercise?.title || 'Breathing exercise video'}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+              <p className="mt-2 text-xs text-gray-500">
+                Optional: follow along with the referenced guided video while the timer keeps you on pace.
+              </p>
+            </div>
+          )}
+
           {!isCompleted ? (
             <>
               {/* Breathing Circle */}
               <div className="flex justify-center mb-8">
-                <div className="relative">
-                  <div
-                    className={`rounded-full bg-gradient-to-r ${phaseColors[phase]} transition-all duration-100 ease-in-out flex items-center justify-center`}
-                    style={{
-                      width: `${getCircleSize()}px`,
-                      height: `${getCircleSize()}px`
-                    }}
+                <div
+                  className="relative cursor-pointer focus:outline-none"
+                  style={{ width: '240px', height: '240px' }}
+                  onClick={handleCircleClick}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleCircleClick();
+                    }
+                  }}
+                  aria-label={isActive ? 'Pause breathing exercise' : 'Start breathing exercise'}
+                >
+                  {/* Progress Ring Background */}
+                  <svg
+                    className="absolute inset-0 -rotate-90"
+                    width="240"
+                    height="240"
                   >
-                    <div className="text-white text-center">
-                      <div className="text-2xl font-bold mb-1">
-                        {Math.ceil(timeRemaining)}
-                      </div>
-                      <div className="text-sm opacity-90">
-                        {phase.toUpperCase()}
+                    {/* Background ring */}
+                    <circle
+                      cx="120"
+                      cy="120"
+                      r="110"
+                      stroke="rgba(0,0,0,0.08)"
+                      strokeWidth="6"
+                      fill="none"
+                    />
+                    {/* Animated progress ring that matches phase color */}
+                    <circle
+                      cx="120"
+                      cy="120"
+                      r="110"
+                      stroke={
+                        phase === 'inhale' ? 'rgb(59, 130, 246)' : // blue-500
+                        phase === 'hold' ? 'rgb(168, 85, 247)' :   // purple-500
+                        phase === 'exhale' ? 'rgb(34, 197, 94)' :  // green-500
+                        'rgb(107, 114, 128)'                       // gray-500
+                      }
+                      strokeWidth="8"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={`${2 * Math.PI * 110}`}
+                      strokeDashoffset={`${2 * Math.PI * 110 * (1 - getProgress() / 100)}`}
+                      style={{
+                        transition: 'stroke 0.3s ease-in-out, stroke-dashoffset 0.1s linear'
+                      }}
+                    />
+                  </svg>
+                  
+                  {/* Breathing Circle - Centered */}
+                  <div
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                  >
+                    <div
+                      className={`rounded-full bg-gradient-to-r ${phaseColors[phase]} transition-all duration-500 ease-in-out flex items-center justify-center shadow-2xl`}
+                      style={{
+                        width: `${getCircleSize()}px`,
+                        height: `${getCircleSize()}px`,
+                        boxShadow: phase === 'inhale' 
+                          ? '0 0 40px rgba(59, 130, 246, 0.4)'
+                          : phase === 'hold'
+                          ? '0 0 40px rgba(168, 85, 247, 0.4)'
+                          : phase === 'exhale'
+                          ? '0 0 40px rgba(34, 197, 94, 0.4)'
+                          : '0 0 40px rgba(107, 114, 128, 0.4)'
+                      }}
+                    >
+                      <div className="text-white text-center">
+                        <div className="text-4xl font-bold mb-1">
+                          {Math.ceil(timeRemaining)}
+                        </div>
+                        <div className="text-base font-medium tracking-wider">
+                          {phase.toUpperCase()}
+                        </div>
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Progress Ring */}
-                  <svg
-                    className="absolute inset-0 -rotate-90"
-                    width={getCircleSize() + 20}
-                    height={getCircleSize() + 20}
-                    style={{
-                      left: '-10px',
-                      top: '-10px'
-                    }}
-                  >
-                    <circle
-                      cx={(getCircleSize() + 20) / 2}
-                      cy={(getCircleSize() + 20) / 2}
-                      r={(getCircleSize() + 10) / 2}
-                      stroke="rgba(0,0,0,0.1)"
-                      strokeWidth="2"
-                      fill="none"
-                    />
-                    <circle
-                      cx={(getCircleSize() + 20) / 2}
-                      cy={(getCircleSize() + 20) / 2}
-                      r={(getCircleSize() + 10) / 2}
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * ((getCircleSize() + 10) / 2)}`}
-                      strokeDashoffset={`${2 * Math.PI * ((getCircleSize() + 10) / 2) * (1 - getProgress() / 100)}`}
-                      className="text-primary-600"
-                    />
-                  </svg>
                 </div>
               </div>
 
@@ -245,20 +351,42 @@ const BreathingExercise = ({ exercise, onClose }) => {
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   {phaseInstructions[phase]}
                 </h3>
-                <p className="text-gray-600">
+                
+                {/* Cycle Progress Dots */}
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  {Array.from({ length: breathingPattern.totalCycles }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        idx < cycleCount
+                          ? 'bg-green-500'
+                          : idx === cycleCount
+                          ? 'bg-primary-500 w-3 h-3'
+                          : 'bg-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+                
+                <p className="text-gray-600 text-sm">
                   Cycle {cycleCount + 1} of {breathingPattern.totalCycles}
                 </p>
+                {exercise?.focus && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    Focus: {exercise.focus}
+                  </p>
+                )}
               </div>
 
               {/* Controls */}
               <div className="flex justify-center space-x-4">
                 {!isActive ? (
                   <button
-                    onClick={startExercise}
                     className="flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+                    onClick={handleStartOrResume}
                   >
                     <Play className="h-5 w-5 mr-2" />
-                    {cycleCount > 0 ? 'Resume' : 'Start'}
+                    {cycleCount > 0 && timeRemaining > 0 ? 'Resume' : 'Start'}
                   </button>
                 ) : (
                   <button
@@ -328,9 +456,15 @@ const BreathingExercise = ({ exercise, onClose }) => {
             
             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
               <p className="text-gray-700 text-sm">
-                <strong>Benefits:</strong> This 4-7-8 breathing technique helps activate your body's relaxation response, 
-                reduce anxiety, and improve sleep quality. Regular practice can help manage stress and promote overall well-being.
+                <strong>Why it helps:</strong> {exercise?.description || 'Guided breath ratios help regulate your nervous system and create a repeatable rhythm you can rely on in stressful moments.'}
               </p>
+              {exercise?.source && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Reference: <a href={exercise.source.url} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">
+                    {exercise.source.label}
+                  </a>
+                </p>
+              )}
             </div>
           </div>
         </div>

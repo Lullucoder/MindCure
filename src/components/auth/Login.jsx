@@ -1,53 +1,32 @@
-/* 
-// COMMENTED OUT LOGIN COMPONENT FOR NON-AUTH VERSION
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth } from '../../context/AuthContext';
 import { Eye, EyeOff, Heart, Mail, Lock } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters')
+  password: z.string().min(8, 'Password must be at least 8 characters')
 });
-*/
 
-// Temporary redirect component for non-auth version
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-const Login = () => {
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    // Redirect to dashboard since login is disabled
-    navigate('/dashboard');
-  }, [navigate]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Disabled</h2>
-        <p className="text-gray-600 mb-4">Redirecting to dashboard...</p>
-      </div>
-    </div>
-  );
-};
-
-/*
-// ORIGINAL LOGIN COMPONENT - COMMENTED OUT
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  const { signin } = useAuth();
+
+  const { signin, currentUser, authReady } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const from = location.state?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    if (authReady && currentUser) {
+      navigate(from, { replace: true });
+    }
+  }, [authReady, currentUser, from, navigate]);
 
   const {
     register,
@@ -63,9 +42,10 @@ const Login = () => {
       setIsLoading(true);
       await signin(data.email, data.password);
       navigate(from, { replace: true });
-    } catch (error) {
-      setError('Failed to sign in. Please check your credentials.');
-      console.error('Login error:', error);
+    } catch (err) {
+      const message = typeof err === 'string' ? err : err?.message || 'Failed to sign in.';
+      setError(message);
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -80,13 +60,13 @@ const Login = () => {
           </div>
           <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to your mental wellness account
+            Sign in to continue your wellness journey
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           {error && (
-            <div className="bg-danger-50 border border-danger-200 text-danger-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
@@ -109,7 +89,7 @@ const Login = () => {
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-sm text-danger-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
 
@@ -131,7 +111,7 @@ const Login = () => {
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword((prev) => !prev)}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5 text-gray-400" />
@@ -141,7 +121,7 @@ const Login = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-danger-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}
             </div>
           </div>
@@ -163,7 +143,7 @@ const Login = () => {
               disabled={isLoading}
               className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Signing in…' : 'Sign in'}
             </button>
           </div>
 
@@ -185,7 +165,7 @@ const Login = () => {
                 Need immediate help?{' '}
                 <a
                   href="tel:14416"
-                  className="font-medium text-danger-600 hover:text-danger-500"
+                  className="font-medium text-red-600 hover:text-red-500"
                 >
                   Call Tele-MANAS 14416
                 </a>
@@ -197,6 +177,5 @@ const Login = () => {
     </div>
   );
 };
-*/
 
 export default Login;

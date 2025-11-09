@@ -1,59 +1,43 @@
-/* 
-// COMMENTED OUT REGISTER COMPONENT FOR NON-AUTH VERSION
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth } from '../../context/AuthContext';
 import { Eye, EyeOff, Heart, Mail, Lock, User } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
-const registerSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-  role: z.enum(['student', 'counselor'], 'Please select a role'),
-  agreeToTerms: z.boolean().refine(val => val === true, 'You must agree to the terms and conditions')
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-*/
+const registerSchema = z
+  .object({
+    firstName: z.string().min(2, 'First name must be at least 2 characters'),
+    lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+    email: z.string().email('Please enter a valid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string(),
+    role: z.enum(['student', 'counselor'], {
+      message: 'Please select a role'
+    }),
+    agreeToTerms: z
+      .boolean()
+      .refine((val) => val === true, 'You must agree to the terms and conditions')
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword']
+  });
 
-// Temporary redirect component for non-auth version
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-const Register = () => {
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    // Redirect to dashboard since registration is disabled
-    navigate('/dashboard');
-  }, [navigate]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Registration Disabled</h2>
-        <p className="text-gray-600 mb-4">Redirecting to dashboard...</p>
-      </div>
-    </div>
-  );
-};
-
-/*
-// ORIGINAL REGISTER COMPONENT - COMMENTED OUT
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  const { signup } = useAuth();
+
+  const { signup, currentUser, authReady } = useAuth();
   const navigate = useNavigate();
+  useEffect(() => {
+    if (authReady && currentUser) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [authReady, currentUser, navigate]);
 
   const {
     register,
@@ -73,9 +57,10 @@ const Register = () => {
         role: data.role
       });
       navigate('/dashboard');
-    } catch (error) {
-      setError('Failed to create account. Please try again.');
-      console.error('Registration error:', error);
+    } catch (err) {
+      const message = typeof err === 'string' ? err : err?.message || 'Failed to create account.';
+      setError(message);
+      console.error('Registration error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -90,19 +75,19 @@ const Register = () => {
           </div>
           <h2 className="text-3xl font-bold text-gray-900">Create your account</h2>
           <p className="mt-2 text-sm text-gray-600">
-            Join our mental wellness community
+            Start tracking your mental wellness journey today
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           {error && (
-            <div className="bg-danger-50 border border-danger-200 text-danger-700 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
                   First name
@@ -119,7 +104,7 @@ const Register = () => {
                   />
                 </div>
                 {errors.firstName && (
-                  <p className="mt-1 text-sm text-danger-600">{errors.firstName.message}</p>
+                  <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
                 )}
               </div>
 
@@ -139,7 +124,7 @@ const Register = () => {
                   />
                 </div>
                 {errors.lastName && (
-                  <p className="mt-1 text-sm text-danger-600">{errors.lastName.message}</p>
+                  <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
                 )}
               </div>
             </div>
@@ -161,7 +146,7 @@ const Register = () => {
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-sm text-danger-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
 
@@ -178,7 +163,7 @@ const Register = () => {
                 <option value="counselor">Mental Health Counselor</option>
               </select>
               {errors.role && (
-                <p className="mt-1 text-sm text-danger-600">{errors.role.message}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
               )}
             </div>
 
@@ -200,7 +185,7 @@ const Register = () => {
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword((prev) => !prev)}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5 text-gray-400" />
@@ -210,7 +195,7 @@ const Register = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-danger-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}
             </div>
 
@@ -232,7 +217,7 @@ const Register = () => {
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-5 w-5 text-gray-400" />
@@ -242,7 +227,7 @@ const Register = () => {
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-danger-600">{errors.confirmPassword.message}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
               )}
             </div>
 
@@ -264,7 +249,7 @@ const Register = () => {
               </label>
             </div>
             {errors.agreeToTerms && (
-              <p className="mt-1 text-sm text-danger-600">{errors.agreeToTerms.message}</p>
+              <p className="mt-1 text-sm text-red-600">{errors.agreeToTerms.message}</p>
             )}
           </div>
 
@@ -274,7 +259,7 @@ const Register = () => {
               disabled={isLoading}
               className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Creating account...' : 'Create account'}
+              {isLoading ? 'Creating account…' : 'Create account'}
             </button>
           </div>
 
@@ -296,7 +281,7 @@ const Register = () => {
                 Need immediate help?{' '}
                 <a
                   href="tel:14416"
-                  className="font-medium text-danger-600 hover:text-danger-500"
+                  className="font-medium text-red-600 hover:text-red-500"
                 >
                   Call Tele-MANAS 14416
                 </a>
@@ -308,6 +293,5 @@ const Register = () => {
     </div>
   );
 };
-*/
 
 export default Register;

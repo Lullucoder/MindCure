@@ -3,8 +3,8 @@ import { Send, Bot, User, AlertTriangle, Heart, Loader, Smile, MessageCircle, Sh
 import { useAuth } from '../../context/AuthContext';
 import geminiService from '../../services/geminiService';
 
-// Enhanced AI responses for mental health support
-const generateAIResponse = (userMessage, conversationHistory = []) => {
+// Fallback AI responses for mental health support when the live model is unavailable
+const generateFallbackResponse = (userMessage, conversationHistory = []) => {
   const message = userMessage.toLowerCase();
   
   // Crisis detection keywords
@@ -127,34 +127,61 @@ const ChatInterface = () => {
 
     try {
       // Simulate typing delay for more natural feel
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-      
-      // Generate AI response using our enhanced function
-      const { response, sentiment } = generateAIResponse(userMessage.content, messages);
-      setSentimentAnalysis(sentiment);
+      await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 800));
+
+      const conversationHistory = [...messages, userMessage].map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      }));
+
+      let aiResult = null;
+      let sentimentResult = null;
+
+      try {
+        aiResult = await geminiService.generateResponse(userMessage.content, conversationHistory);
+      } catch (serviceError) {
+        console.warn('Falling back to offline responses:', serviceError?.message || serviceError);
+      }
+
+      if (geminiService.analyzeSentiment) {
+        try {
+          sentimentResult = await geminiService.analyzeSentiment(userMessage.content);
+        } catch (sentimentError) {
+          console.warn('Sentiment analysis unavailable:', sentimentError?.message || sentimentError);
+        }
+      }
+
+  const fallback = generateFallbackResponse(userMessage.content, conversationHistory);
 
       const assistantMessage = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: response,
+        content: aiResult?.response || fallback.response,
         timestamp: new Date(),
-        sentiment: sentiment
+        sentiment: sentimentResult || { needsAttention: aiResult?.needsAttention || fallback.sentiment?.needsAttention || false },
+        category: aiResult?.category || fallback.category || 'support'
       };
 
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Show crisis intervention if needed
-      if (sentiment.needsAttention) {
+      if (aiResult?.sessionInsights) {
+        setSessionInsights(aiResult.sessionInsights);
+      }
+
+      const needsAttention = assistantMessage.sentiment?.needsAttention || aiResult?.needsAttention || fallback.sentiment?.needsAttention;
+      setSentimentAnalysis(assistantMessage.sentiment || fallback.sentiment);
+
+      if (needsAttention) {
         setTimeout(() => {
           const crisisMessage = {
             id: Date.now() + 2,
             role: 'system',
-            content: "🚨 I want to make sure you get the immediate support you need. Here are crisis resources:\n\n📞 14416 - Tele-MANAS (24/7)\n� 1800-599-0019 - KIRAN Helpline (24/7)\n🏥 Go to your nearest emergency room\n🚑 Call 112 for immediate emergency help\n\nYou are not alone. Professional counselors are standing by to help.",
+            content: "🚨 I want to make sure you get the immediate support you need. Here are crisis resources:\n\n📞 14416 - Tele-MANAS (24/7)\n📞 1800-599-0019 - KIRAN Helpline (24/7)\n🏥 Go to your nearest emergency room\n🚑 Call 112 for immediate emergency help\n\nYou are not alone. Professional counselors are standing by to help.",
             timestamp: new Date(),
             isAlert: true
           };
           setMessages(prev => [...prev, crisisMessage]);
-        }, 2000);
+        }, 1200);
       }
 
     } catch (error) {

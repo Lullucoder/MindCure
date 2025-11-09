@@ -9,7 +9,7 @@ import {
   ArrowLeft,
   Clock,
   User,
-  Star
+  Target
 } from 'lucide-react';
 
 const GuidedMeditation = ({ meditation, onClose }) => {
@@ -24,16 +24,17 @@ const GuidedMeditation = ({ meditation, onClose }) => {
   const audioRef = useRef(null);
   const progressBarRef = useRef(null);
 
-  // Sample meditation data
-  const meditationData = meditation || {
+  // Sample meditation data used as fallback and merged with provided configuration
+  const defaultMeditation = {
     id: 1,
     title: 'Mindfulness for Beginners',
     instructor: 'Sarah Chen',
     duration: '10:00',
+    durationSeconds: 600,
     description: 'A gentle introduction to mindfulness meditation',
     difficulty: 'Beginner',
-    rating: 4.8,
     category: 'Mindfulness',
+    focus: 'Breath and body awareness',
     segments: [
       { time: 0, title: 'Welcome & Settling In', description: 'Find a comfortable position and begin to relax' },
       { time: 60, title: 'Breath Awareness', description: 'Focus on your natural breathing rhythm' },
@@ -41,17 +42,30 @@ const GuidedMeditation = ({ meditation, onClose }) => {
       { time: 360, title: 'Mindful Observation', description: 'Notice thoughts without judgment' },
       { time: 480, title: 'Loving Kindness', description: 'Cultivate compassion for yourself and others' },
       { time: 540, title: 'Integration & Closing', description: 'Bring awareness back to the present moment' }
-    ],
-    audioUrl: '/audio/mindfulness-beginner.mp3' // In a real app, this would be actual audio
+    ]
   };
 
-  const totalDurationSeconds = 600; // 10 minutes for demo
+  const meditationData = {
+    ...defaultMeditation,
+    ...meditation,
+    segments: meditation?.segments || defaultMeditation.segments,
+    durationSeconds: meditation?.durationSeconds || defaultMeditation.durationSeconds,
+    duration: meditation?.duration || defaultMeditation.duration
+  };
+
+  const totalDurationSeconds = meditationData.durationSeconds || 600;
+  const videoSrc = meditationData.videoUrl
+    ? `${meditationData.videoUrl}${meditationData.videoUrl.includes('?') ? '&' : '?'}rel=0`
+    : null;
 
   useEffect(() => {
-    // Simulate audio loading
+    // Simulate audio loading and reset state when data changes
     setIsLoaded(true);
     setDuration(totalDurationSeconds);
-  }, []);
+    setCurrentTime(0);
+    setCurrentSegment(0);
+    setIsPlaying(false);
+  }, [totalDurationSeconds, meditationData.id]);
 
   useEffect(() => {
     let interval = null;
@@ -134,13 +148,21 @@ const GuidedMeditation = ({ meditation, onClose }) => {
               <h2 className="text-xl font-bold text-gray-900">
                 {meditationData.title}
               </h2>
-              <div className="flex items-center text-sm text-gray-600 mt-1">
-                <User className="h-4 w-4 mr-1" />
-                <span className="mr-3">{meditationData.instructor}</span>
-                <Clock className="h-4 w-4 mr-1" />
-                <span className="mr-3">{meditationData.duration}</span>
-                <Star className="h-4 w-4 mr-1 text-yellow-400 fill-current" />
-                <span>{meditationData.rating}</span>
+              <div className="flex flex-wrap items-center text-sm text-gray-600 mt-1 gap-x-4 gap-y-1">
+                <span className="flex items-center">
+                  <User className="h-4 w-4 mr-1" />
+                  {meditationData.instructor}
+                </span>
+                <span className="flex items-center">
+                  <Clock className="h-4 w-4 mr-1" />
+                  {meditationData.duration}
+                </span>
+                {meditationData.focus && (
+                  <span className="flex items-center">
+                    <Target className="h-4 w-4 mr-1 text-primary-500" />
+                    Focus: {meditationData.focus}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -156,6 +178,23 @@ const GuidedMeditation = ({ meditation, onClose }) => {
 
         {/* Main Content */}
         <div className="p-6">
+          {videoSrc && (
+            <div className="mb-8">
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg">
+                <iframe
+                  src={videoSrc}
+                  title={meditationData.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+              <p className="mt-2 text-xs text-gray-500">
+                Optional video companion: keep the timer running here while following the guided session on YouTube.
+              </p>
+            </div>
+          )}
+
           {/* Current Segment Display */}
           <div className="text-center mb-8">
             <div className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl p-6 mb-6">
@@ -301,6 +340,13 @@ const GuidedMeditation = ({ meditation, onClose }) => {
               <li>• If your mind wanders, gently bring attention back to the guidance</li>
               <li>• There's no "perfect" way to meditate - be kind to yourself</li>
             </ul>
+            {meditationData.source && (
+              <p className="mt-3 text-xs text-blue-700">
+                Reference: <a href={meditationData.source.url} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">
+                  {meditationData.source.label}
+                </a>
+              </p>
+            )}
           </div>
         </div>
       </div>

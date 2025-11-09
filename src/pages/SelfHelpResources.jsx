@@ -11,9 +11,9 @@ import {
   Clock,
   CheckCircle,
   ArrowRight,
-  Star,
   Search,
-  Filter
+  Filter,
+  ExternalLink
 } from 'lucide-react';
 
 // Import exercise components
@@ -35,77 +35,219 @@ const SelfHelpResources = () => {
   const [selectedAssessment, setSelectedAssessment] = useState(null);
   const [showAssessmentLibrary, setShowAssessmentLibrary] = useState(false);
 
+  const [breathingConfig, setBreathingConfig] = useState(null);
+  const [meditationConfig, setMeditationConfig] = useState(null);
+  const [progressiveConfig, setProgressiveConfig] = useState(null);
+  const [bodyScanConfig, setBodyScanConfig] = useState(null);
 
+  const openBreathingExercise = (config) => {
+    setBreathingConfig(config);
+    setShowBreathingExercise(true);
+  };
+
+  const openMeditation = (config) => {
+    setMeditationConfig(config);
+    setShowMeditation(true);
+  };
+
+  const openProgressiveRelaxation = (config) => {
+    setProgressiveConfig(config);
+    setShowProgressiveMuscleRelaxation(true);
+  };
+
+  const openBodyScan = (config) => {
+    setBodyScanConfig(config);
+    setShowBodyScan(true);
+  };
+
+
+  const breathingExercises = {
+    fourSevenEight: {
+      title: '4-7-8 Breathing Technique',
+      description: 'Guided breath pattern popularized by Dr. Andrew Weil for easing anxious moments and supporting sleep.',
+      pattern: {
+        inhale: 4,
+        holdAfterInhale: 7,
+        exhale: 8,
+        holdAfterExhale: 0,
+        totalCycles: 6
+      },
+      focus: 'Rapid calm and sleep preparation',
+      videoUrl: 'https://www.youtube.com/embed/Uxbdx-SeOOo',
+      source: {
+        label: 'Cleveland Clinic — 4-7-8 Breathing',
+        url: 'https://health.clevelandclinic.org/4-7-8-breathing'
+      }
+    },
+    stressReset: {
+      title: 'Stress Reset Breathing',
+      description: 'Even-paced breathing with brief holds to activate your parasympathetic nervous system in two minutes.',
+      pattern: {
+        inhale: 5,
+        holdAfterInhale: 2,
+        exhale: 6,
+        holdAfterExhale: 1,
+        totalCycles: 8
+      },
+      focus: 'Immediate stress relief',
+      videoUrl: 'https://www.youtube.com/embed/zCzT9bYGh8E',
+      source: {
+        label: 'UCLA Health — Breathwork for Stress Relief',
+        url: 'https://www.uclahealth.org/news/breathwork'
+      }
+    },
+    boxBreathing: {
+      title: 'Box Breathing (4x4)',
+      description: 'Equal 4-second phases used by clinicians and athletes to regain focus under pressure.',
+      pattern: {
+        inhale: 4,
+        holdAfterInhale: 4,
+        exhale: 4,
+        holdAfterExhale: 4,
+        totalCycles: 7
+      },
+      focus: 'Grounding and focus',
+      videoUrl: 'https://www.youtube.com/embed/KrCvxA7BzF4',
+      source: {
+        label: 'University of Michigan Health — Box Breathing',
+        url: 'https://www.uofmhealth.org/health-library/uz2255'
+      }
+    }
+  };
+
+  const meditationSessions = {
+    mindfulBasics: {
+      id: 'mindful-basics',
+      title: 'Mindfulness Meditation for Beginners',
+      instructor: 'Sarah Chen',
+      duration: '10:00',
+      durationSeconds: 600,
+      description: 'A gentle introduction to observing thoughts, breath, and body sensations without judgment.',
+      difficulty: 'Beginner',
+      category: 'Mindfulness',
+      focus: 'Breath and body awareness',
+      videoUrl: 'https://www.youtube.com/embed/U9YKY7fdwyg?si=zeksuOe6ZQaDArot',
+      source: {
+        label: 'Mindful.org — Guided Practice',
+        url: 'https://www.mindful.org/meditation/mindfulness-getting-started/'
+      }
+    },
+    lovingKindness: {
+      id: 'loving-kindness',
+      title: 'Loving-Kindness Meditation',
+      instructor: 'Maya Collins',
+      duration: '15:00',
+      durationSeconds: 900,
+      description: 'Cultivate compassion for yourself and others with an uplifting metta practice.',
+      difficulty: 'Intermediate',
+      category: 'Compassion',
+      focus: 'Compassion practice',
+      videoUrl: 'https://www.youtube.com/embed/smXwNaoXRa8',
+      source: {
+        label: 'Greater Good in Action — Loving-Kindness',
+        url: 'https://ggia.berkeley.edu/practice/loving_kindness_meditation'
+      }
+    }
+  };
+
+  const progressiveRelaxationSession = {
+    title: 'Progressive Muscle Relaxation',
+    description: 'Systematically tense and release muscle groups to ease physical tension and calm your nervous system.',
+    focus: 'Whole-body release',
+    videoUrl: 'https://www.youtube.com/embed/KkPsYobwS98',
+    source: {
+      label: 'Therapist Aid — Progressive Muscle Relaxation',
+      url: 'https://www.therapistaid.com/worksheets/progressive-muscle-relaxation-script.pdf'
+    }
+  };
+
+  const bodyScanSession = {
+    title: 'Body Scan Meditation',
+    description: 'Move attention from the crown of your head to your toes to notice and gently release tension.',
+    focus: 'Mindful body awareness',
+    videoUrl: 'https://www.youtube.com/embed/3nwwKbM_vJc',
+    source: {
+      label: 'UC San Diego Center for Mindfulness',
+      url: 'https://cih.ucsd.edu/index.cfm/public-resources/guided-audio-meditations/'
+    }
+  };
 
   const featuredResources = [
     {
-      id: 1,
+      id: 'breath-478',
       title: '4-7-8 Breathing Technique',
-      description: 'A powerful breathing exercise to reduce anxiety and promote relaxation. Perfect for moments of stress or before sleep.',
+      description: breathingExercises.fourSevenEight.description,
       category: 'breathing',
-      duration: '5 min',
+      duration: '≈2 min',
       difficulty: 'Beginner',
-      rating: 4.8,
-      completions: 1234,
+      focus: breathingExercises.fourSevenEight.focus,
       type: 'exercise',
       image: '🫁',
-      tags: ['anxiety', 'relaxation', 'quick'],
-      onClick: () => setShowBreathingExercise(true)
+      tags: ['anxiety', 'relaxation', 'sleep'],
+      source: breathingExercises.fourSevenEight.source,
+      videoUrl: breathingExercises.fourSevenEight.videoUrl,
+      onClick: () => openBreathingExercise(breathingExercises.fourSevenEight)
     },
     {
-      id: 2,
+      id: 'pmr',
       title: 'Progressive Muscle Relaxation',
-      description: 'Learn to release physical tension and achieve deep relaxation by systematically tensing and relaxing muscle groups.',
+      description: progressiveRelaxationSession.description,
       category: 'stress',
-      duration: '15 min',
+      duration: '12-15 min',
       difficulty: 'Beginner',
-      rating: 4.7,
-      completions: 892,
+      focus: progressiveRelaxationSession.focus,
       type: 'guided',
       image: '💆‍♀️',
-      tags: ['tension', 'relaxation', 'body'],
-      onClick: () => setShowProgressiveMuscleRelaxation(true)
+      tags: ['tension release', 'relaxation', 'body'],
+      source: progressiveRelaxationSession.source,
+      videoUrl: progressiveRelaxationSession.videoUrl,
+      onClick: () => openProgressiveRelaxation(progressiveRelaxationSession)
     },
     {
-      id: 3,
+      id: 'mindfulness-beginner',
       title: 'Mindfulness Meditation for Beginners',
-      description: 'Start your mindfulness journey with this gentle guided meditation that teaches you to observe thoughts without judgment.',
+      description: meditationSessions.mindfulBasics.description,
       category: 'meditation',
       duration: '10 min',
       difficulty: 'Beginner',
-      rating: 4.9,
-      completions: 2156,
+      focus: 'Breath and body awareness',
       type: 'guided',
       image: '🧘‍♀️',
-      tags: ['mindfulness', 'meditation', 'beginner'],
-      onClick: () => setShowMeditation(true)
+      tags: ['mindfulness', 'meditation', 'starter'],
+      source: meditationSessions.mindfulBasics.source,
+      videoUrl: meditationSessions.mindfulBasics.videoUrl,
+      onClick: () => openMeditation(meditationSessions.mindfulBasics)
     },
     {
-      id: 4,
+      id: 'body-scan',
       title: 'Body Scan Meditation',
-      description: 'Develop body awareness and release tension through mindful scanning from head to toe.',
+      description: bodyScanSession.description,
       category: 'meditation',
       duration: '20 min',
       difficulty: 'Intermediate',
-      rating: 4.8,
-      completions: 743,
+      focus: bodyScanSession.focus,
       type: 'guided',
       image: '🎯',
       tags: ['body awareness', 'mindfulness', 'relaxation'],
-      onClick: () => setShowBodyScan(true)
+      source: bodyScanSession.source,
+      videoUrl: bodyScanSession.videoUrl,
+      onClick: () => openBodyScan(bodyScanSession)
     },
     {
-      id: 5,
+      id: 'phq9',
       title: 'Mental Health Assessment (PHQ-9)',
-      description: 'Quick depression screening to better understand your mental health and track your progress over time.',
+      description: 'Brief, validated questionnaire to help track depressive symptoms over time.',
       category: 'stress',
       duration: '5 min',
       difficulty: 'Beginner',
-      rating: 4.6,
-      completions: 3421,
+      focus: 'Self check-in',
       type: 'assessment',
       image: '📊',
       tags: ['assessment', 'mental health', 'screening'],
+      source: {
+        label: 'PHQ-9 — Kroenke et al., 2001',
+        url: 'https://www.phqscreeners.com/'
+      },
       onClick: () => {
         setSelectedAssessment({
           id: 'phq9',
@@ -116,98 +258,133 @@ const SelfHelpResources = () => {
       }
     },
     {
-      id: 6,
+      id: 'sleep-prep',
       title: 'Sleep Preparation Routine',
-      description: 'Establish healthy sleep habits with this comprehensive guide including relaxation techniques and sleep hygiene tips.',
+      description: 'Wind-down checklist combining evidence-based sleep hygiene and calming breath work.',
       category: 'sleep',
-      duration: '20 min',
+      duration: '15-20 min',
       difficulty: 'Intermediate',
-      rating: 4.6,
-      completions: 567,
+      focus: 'Restorative sleep',
       type: 'guide',
       image: '🌙',
-      tags: ['sleep', 'routine', 'habits']
+      tags: ['sleep', 'routine', 'habits'],
+      source: {
+        label: 'Sleep Foundation — Wind Down Routine',
+        url: 'https://www.sleepfoundation.org/sleep-hygiene'
+      },
+      onClick: () => {
+        if (typeof window !== 'undefined') {
+          window.open('https://www.sleepfoundation.org/sleep-hygiene', '_blank', 'noopener,noreferrer');
+        }
+      }
     },
     {
-      id: 7,
+      id: 'anxiety-coping',
       title: 'Anxiety Coping Strategies',
-      description: 'Learn evidence-based techniques to manage anxiety including grounding exercises and cognitive reframing.',
+      description: 'Grounding, reframing, and self-compassion tools drawn from CBT and mindfulness-based approaches.',
       category: 'stress',
       duration: '12 min',
       difficulty: 'Beginner',
-      rating: 4.7,
-      completions: 1456,
+      focus: 'Everyday anxiety skills',
       type: 'guide',
       image: '🛡️',
-      tags: ['anxiety', 'coping', 'strategies']
+      tags: ['anxiety', 'coping', 'strategies'],
+      source: {
+        label: 'Anxiety Canada — Self-Help Strategies',
+        url: 'https://www.anxietycanada.com/articles/'
+      },
+      onClick: () => {
+        if (typeof window !== 'undefined') {
+          window.open('https://www.anxietycanada.com/articles/', '_blank', 'noopener,noreferrer');
+        }
+      }
     },
     {
-      id: 8,
+      id: 'loving-kindness',
       title: 'Loving-Kindness Meditation',
-      description: 'Cultivate compassion for yourself and others with this heart-opening meditation practice.',
+      description: meditationSessions.lovingKindness.description,
       category: 'meditation',
       duration: '15 min',
       difficulty: 'Intermediate',
-      rating: 4.8,
-      completions: 823,
+      focus: 'Compassion practice',
       type: 'guided',
       image: '💝',
       tags: ['compassion', 'self-love', 'kindness'],
-      onClick: () => setShowMeditation(true)
+      source: meditationSessions.lovingKindness.source,
+      videoUrl: meditationSessions.lovingKindness.videoUrl,
+      onClick: () => openMeditation(meditationSessions.lovingKindness)
     },
     {
-      id: 9,
+      id: 'stress-breath',
       title: 'Stress Relief Breathing',
-      description: 'Quick and effective breathing patterns specifically designed for immediate stress relief.',
+      description: breathingExercises.stressReset.description,
       category: 'breathing',
-      duration: '3 min',
+      duration: '≈2 min',
       difficulty: 'Beginner',
-      rating: 4.9,
-      completions: 2134,
+      focus: breathingExercises.stressReset.focus,
       type: 'exercise',
       image: '🌊',
       tags: ['stress', 'quick relief', 'breathing'],
-      onClick: () => setShowBreathingExercise(true)
+      source: breathingExercises.stressReset.source,
+      videoUrl: breathingExercises.stressReset.videoUrl,
+      onClick: () => openBreathingExercise(breathingExercises.stressReset)
     },
     {
-      id: 10,
+      id: 'sleep-stories',
       title: 'Sleep Stories for Adults',
-      description: 'Calming bedtime stories designed to help your mind drift peacefully into sleep.',
+      description: 'Guided imagery paired with slow narration to help your nervous system settle before bed.',
       category: 'sleep',
       duration: '25 min',
       difficulty: 'Beginner',
-      rating: 4.7,
-      completions: 1893,
+      focus: 'Nighttime wind-down',
       type: 'guided',
       image: '📚',
-      tags: ['sleep', 'stories', 'bedtime']
+      tags: ['sleep', 'stories', 'bedtime'],
+      source: {
+        label: 'Calm — Sleep Stories Tips',
+        url: 'https://www.calm.com/blog/sleep-stories'
+      },
+      onClick: () => {
+        if (typeof window !== 'undefined') {
+          window.open('https://www.calm.com/blog/sleep-stories', '_blank', 'noopener,noreferrer');
+        }
+      }
     },
     {
-      id: 11,
+      id: 'mindful-walking',
       title: 'Mindful Walking Guide',
-      description: 'Transform your daily walks into mindfulness practice with guided awareness techniques.',
+      description: 'Bring awareness to steps, breathing, and surroundings to turn any walk into meditation.',
       category: 'meditation',
       duration: '8 min',
       difficulty: 'Beginner',
-      rating: 4.6,
-      completions: 657,
+      focus: 'Movement mindfulness',
       type: 'guide',
       image: '🚶‍♀️',
-      tags: ['walking', 'mindfulness', 'outdoor']
+      tags: ['walking', 'mindfulness', 'outdoor'],
+      source: {
+        label: 'Mindful.org — Walking Meditation',
+        url: 'https://www.mindful.org/walking-meditation/'
+      },
+      onClick: () => {
+        if (typeof window !== 'undefined') {
+          window.open('https://www.mindful.org/walking-meditation/', '_blank', 'noopener,noreferrer');
+        }
+      }
     },
     {
-      id: 12,
+      id: 'box-breathing',
       title: 'Box Breathing Technique',
-      description: 'Master this military-grade breathing technique for instant calm and improved focus.',
+      description: breathingExercises.boxBreathing.description,
       category: 'breathing',
-      duration: '4 min',
+      duration: '≈3 min',
       difficulty: 'Intermediate',
-      rating: 4.8,
-      completions: 1567,
+      focus: breathingExercises.boxBreathing.focus,
       type: 'exercise',
       image: '📦',
-      tags: ['focus', 'calm', 'technique'],
-      onClick: () => setShowBreathingExercise(true)
+      tags: ['focus', 'calm', 'performance'],
+      source: breathingExercises.boxBreathing.source,
+      videoUrl: breathingExercises.boxBreathing.videoUrl,
+      onClick: () => openBreathingExercise(breathingExercises.boxBreathing)
     }
   ];
 
@@ -226,7 +403,7 @@ const SelfHelpResources = () => {
       icon: Zap,
       duration: '2 min',
       color: 'bg-blue-400',
-      onClick: () => setShowBreathingExercise(true)
+      onClick: () => openBreathingExercise(breathingExercises.fourSevenEight)
     },
     {
       title: 'Guided Meditation',
@@ -234,7 +411,7 @@ const SelfHelpResources = () => {
       icon: Brain,
       duration: '10 min',
       color: 'bg-green-400',
-      onClick: () => setShowMeditation(true)
+      onClick: () => openMeditation(meditationSessions.mindfulBasics)
     },
     {
       title: 'Body Scan',
@@ -242,7 +419,7 @@ const SelfHelpResources = () => {
       icon: Target,
       duration: '15 min',
       color: 'bg-purple-400',
-      onClick: () => setShowBodyScan(true)
+      onClick: () => openBodyScan(bodyScanSession)
     },
     {
       title: 'Wellness Assessment',
@@ -277,6 +454,21 @@ const SelfHelpResources = () => {
       case 'guided': return Heart;
       case 'guide': return BookOpen;
       default: return BookOpen;
+    }
+  };
+
+  const getResourceCta = (type) => {
+    switch (type) {
+      case 'exercise':
+        return 'Start Exercise';
+      case 'guided':
+        return 'Launch Session';
+      case 'guide':
+        return 'View Guide';
+      case 'assessment':
+        return 'Take Assessment';
+      default:
+        return 'Open';
     }
   };
 
@@ -426,8 +618,8 @@ const SelfHelpResources = () => {
                       </div>
                       
                       <div className="flex items-center text-sm text-gray-500">
-                        <Star className="h-4 w-4 mr-1 text-yellow-400 fill-current" />
-                        {resource.rating}
+                        <Target className="h-4 w-4 mr-1 text-blue-400" />
+                        {resource.focus}
                       </div>
                     </div>
 
@@ -450,14 +642,23 @@ const SelfHelpResources = () => {
                       onClick={resource.onClick}
                       className="w-full bg-gradient-to-r from-blue-400 to-green-400 hover:from-blue-500 hover:to-green-500 text-white py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center group"
                     >
-                      <span>{resource.type === 'assessment' ? 'Take Assessment' : 'Start Exercise'}</span>
+                      <span>{getResourceCta(resource.type)}</span>
                       <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </button>
                     
-                    <div className="flex items-center justify-center mt-3 text-xs text-gray-500">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      {resource.completions.toLocaleString()} completions
-                    </div>
+                    {resource.source && (
+                      <div className="flex items-center justify-center mt-3 text-xs text-gray-500 space-x-1">
+                        <ExternalLink className="h-3 w-3" />
+                        <a
+                          href={resource.source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline decoration-dotted hover:text-gray-700"
+                        >
+                          {resource.source.label}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -484,7 +685,7 @@ const SelfHelpResources = () => {
               <h4 className="font-semibold text-blue-900 mb-2">Morning Focus</h4>
               <p className="text-sm text-blue-700 mb-3">Start your day with intention</p>
               <button 
-                onClick={() => setShowMeditation(true)}
+                onClick={() => openMeditation(meditationSessions.mindfulBasics)}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center"
               >
                 Try 5-minute meditation
@@ -496,7 +697,7 @@ const SelfHelpResources = () => {
               <h4 className="font-semibold text-green-900 mb-2">Midday Reset</h4>
               <p className="text-sm text-green-700 mb-3">Take a mindful break</p>
               <button 
-                onClick={() => setShowBreathingExercise(true)}
+                onClick={() => openBreathingExercise(breathingExercises.stressReset)}
                 className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center"
               >
                 Practice breathing exercise
@@ -508,7 +709,7 @@ const SelfHelpResources = () => {
               <h4 className="font-semibold text-purple-900 mb-2">Evening Wind-down</h4>
               <p className="text-sm text-purple-700 mb-3">Prepare for restful sleep</p>
               <button 
-                onClick={() => setShowBodyScan(true)}
+                onClick={() => openBodyScan(bodyScanSession)}
                 className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center"
               >
                 Listen to body scan meditation
@@ -521,19 +722,43 @@ const SelfHelpResources = () => {
       
       {/* Exercise Modals */}
       {showBreathingExercise && (
-        <BreathingExercise onClose={() => setShowBreathingExercise(false)} />
+        <BreathingExercise
+          exercise={breathingConfig}
+          onClose={() => {
+            setShowBreathingExercise(false);
+            setBreathingConfig(null);
+          }}
+        />
       )}
       
       {showMeditation && (
-        <GuidedMeditation onClose={() => setShowMeditation(false)} />
+        <GuidedMeditation
+          meditation={meditationConfig}
+          onClose={() => {
+            setShowMeditation(false);
+            setMeditationConfig(null);
+          }}
+        />
       )}
       
       {showProgressiveMuscleRelaxation && (
-        <ProgressiveMuscleRelaxation onClose={() => setShowProgressiveMuscleRelaxation(false)} />
+        <ProgressiveMuscleRelaxation
+          session={progressiveConfig}
+          onClose={() => {
+            setShowProgressiveMuscleRelaxation(false);
+            setProgressiveConfig(null);
+          }}
+        />
       )}
       
       {showBodyScan && (
-        <BodyScanMeditation onClose={() => setShowBodyScan(false)} />
+        <BodyScanMeditation
+          session={bodyScanConfig}
+          onClose={() => {
+            setShowBodyScan(false);
+            setBodyScanConfig(null);
+          }}
+        />
       )}
       
       {showAssessment && selectedAssessment && (

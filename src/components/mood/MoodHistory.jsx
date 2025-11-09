@@ -26,7 +26,8 @@ const MoodHistory = ({ entries, onRefresh }) => {
 
   const handleDeleteEntry = async (entryId) => {
     try {
-      await moodService.deleteMoodEntry(currentUser.uid, entryId);
+      const userId = currentUser?.id || currentUser?._id || 'local-user';
+      await moodService.deleteMoodEntry(userId, entryId);
       setShowDeleteConfirm(null);
       onRefresh();
     } catch (error) {

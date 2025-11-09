@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-// import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   Heart,
   Menu,
@@ -9,12 +9,14 @@ import {
   BookOpen,
   Phone,
   User,
-  Sparkles
+  Sparkles,
+  LogOut
 } from 'lucide-react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  // const { currentUser, userProfile, logout } = useAuth();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const { currentUser, userProfile, logout } = useAuth();
   const location = useLocation();
 
   const navigation = [
@@ -24,6 +26,25 @@ const Navbar = () => {
   ];
 
   const isActive = (path) => location.pathname === path;
+
+  const handleLogout = async () => {
+    if (isSigningOut) {
+      return;
+    }
+
+    try {
+      setIsSigningOut(true);
+      await logout();
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
+  const accountLabel = userProfile?.firstName
+    ? `Hi, ${userProfile.firstName}`
+    : currentUser?.email || 'Account';
 
   return (
     <nav className="navbar">
@@ -55,14 +76,32 @@ const Navbar = () => {
           </div>
 
           <div className="navbar__actions hidden lg:flex">
+            {currentUser && (
+              <Link to="/profile" className="btn btn--ghost" aria-label="View profile">
+                <User className="h-4 w-4" />
+                <span>{accountLabel}</span>
+              </Link>
+            )}
             <Link to="/crisis" className="btn btn--secondary" aria-label="Crisis resources">
               <Phone className="h-4 w-4" />
               <span>Crisis</span>
             </Link>
-            <Link to="/dashboard" className="btn btn--primary">
-              <Sparkles className="h-4 w-4" />
-              <span>Get Started</span>
-            </Link>
+            {currentUser ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="btn btn--ghost"
+                disabled={isSigningOut}
+              >
+                <LogOut className="h-4 w-4" />
+                <span>{isSigningOut ? 'Signing out…' : 'Sign out'}</span>
+              </button>
+            ) : (
+              <Link to="/register" className="btn btn--primary">
+                <Sparkles className="h-4 w-4" />
+                <span>Get Started</span>
+              </Link>
+            )}
           </div>
 
           <button
@@ -98,10 +137,31 @@ const Navbar = () => {
               <Phone className="h-4 w-4" />
               <span>Crisis resources</span>
             </Link>
-            <Link to="/dashboard" className="btn btn--primary" onClick={() => setIsOpen(false)}>
-              <Sparkles className="h-4 w-4" />
-              <span>Enter app</span>
-            </Link>
+            {currentUser ? (
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => {
+                  setIsOpen(false);
+                  handleLogout();
+                }}
+                disabled={isSigningOut}
+              >
+                <LogOut className="h-4 w-4" />
+                <span>{isSigningOut ? 'Signing out…' : 'Sign out'}</span>
+              </button>
+            ) : (
+              <div className="flex w-full flex-col gap-2">
+                <Link to="/login" className="btn btn--ghost" onClick={() => setIsOpen(false)}>
+                  <User className="h-4 w-4" />
+                  <span>Sign in</span>
+                </Link>
+                <Link to="/register" className="btn btn--primary" onClick={() => setIsOpen(false)}>
+                  <Sparkles className="h-4 w-4" />
+                  <span>Get Started</span>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
