@@ -10,7 +10,10 @@ import {
   Phone,
   User,
   Sparkles,
-  LogOut
+  LogOut,
+  LayoutDashboard,
+  Settings,
+  Shield
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -19,11 +22,32 @@ const Navbar = () => {
   const { currentUser, userProfile, logout } = useAuth();
   const location = useLocation();
 
-  const navigation = [
+  // Common navigation for all users
+  const commonNav = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'AI Chat', href: '/chat', icon: MessageCircle },
-    { name: 'Check-in', href: '/mood', icon: User },
-    { name: 'Resources', href: '/resources', icon: BookOpen }
+    { name: 'Check-in', href: '/mood', icon: User }
   ];
+
+  // Role-based navigation
+  const getRoleBasedNav = () => {
+    const role = userProfile?.role || 'student';
+    
+    switch (role) {
+      case 'admin':
+        return [
+          { name: 'Admin Panel', href: '/admin', icon: Shield }
+        ];
+      case 'counselor':
+        return [
+          { name: 'Counselor Panel', href: '/counselor', icon: Settings }
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const roleBasedNav = getRoleBasedNav();
 
   const isActive = (path) => location.pathname === path;
 
@@ -40,6 +64,13 @@ const Navbar = () => {
     } finally {
       setIsSigningOut(false);
     }
+  };
+
+  const getRoleBadge = () => {
+    const role = userProfile?.role;
+    if (role === 'admin') return '🛡️ Admin';
+    if (role === 'counselor') return '🩺 Counselor';
+    return null;
   };
 
   const accountLabel = userProfile?.firstName
@@ -61,7 +92,19 @@ const Navbar = () => {
           </Link>
 
           <div className="navbar__links hidden lg:flex">
-            {navigation.map((item) => (
+            {commonNav.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className="nav-link"
+                data-active={isActive(item.href)}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.name}</span>
+              </Link>
+            ))}
+            {roleBasedNav.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
@@ -77,10 +120,17 @@ const Navbar = () => {
 
           <div className="navbar__actions hidden lg:flex">
             {currentUser && (
-              <Link to="/profile" className="btn btn--ghost" aria-label="View profile">
-                <User className="h-4 w-4" />
-                <span>{accountLabel}</span>
-              </Link>
+              <div className="flex items-center gap-2">
+                {getRoleBadge() && (
+                  <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
+                    {getRoleBadge()}
+                  </span>
+                )}
+                <Link to="/profile" className="btn btn--ghost" aria-label="View profile">
+                  <User className="h-4 w-4" />
+                  <span>{accountLabel}</span>
+                </Link>
+              </div>
             )}
             <Link to="/crisis" className="btn btn--secondary" aria-label="Crisis resources">
               <Phone className="h-4 w-4" />
@@ -118,7 +168,20 @@ const Navbar = () => {
       {isOpen && (
         <div id="mobile-nav" className="navbar__mobile-panel lg:hidden">
           <nav className="navbar__mobile-list" aria-label="Mobile navigation">
-            {navigation.map((item) => (
+            {commonNav.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className="navbar__mobile-link"
+                data-active={isActive(item.href)}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                onClick={() => setIsOpen(false)}
+              >
+                <item.icon className="h-5 w-5" />
+                <span>{item.name}</span>
+              </Link>
+            ))}
+            {roleBasedNav.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
@@ -133,6 +196,11 @@ const Navbar = () => {
             ))}
           </nav>
           <div className="navbar__mobile-actions">
+            {getRoleBadge() && (
+              <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full mb-2 inline-block">
+                {getRoleBadge()}
+              </span>
+            )}
             <Link to="/crisis" className="btn btn--secondary" onClick={() => setIsOpen(false)}>
               <Phone className="h-4 w-4" />
               <span>Crisis resources</span>

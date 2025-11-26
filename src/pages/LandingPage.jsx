@@ -28,12 +28,6 @@ const heroShortcuts = [
     gradient: 'linear-gradient(135deg, var(--color-emerald-400), var(--color-emerald-500))'
   },
   {
-    to: '/resources',
-    icon: BookOpen,
-    label: 'Resources',
-    gradient: 'linear-gradient(135deg, var(--color-primary-400), var(--color-emerald-400))'
-  },
-  {
     to: '/crisis',
     icon: Phone,
     label: 'Crisis help',
@@ -73,13 +67,6 @@ const featureHighlights = [
     description: 'AI-supported sessions with optional warm handoffs to licensed professionals when you need human care.',
     tone: 'primary',
     to: '/chat'
-  },
-  {
-    icon: BookOpen,
-    title: 'Evidence-based self-care library',
-    description: 'Guided meditations, CBT worksheets, and affirmations tailored to how you check in each day.',
-    tone: 'secondary',
-    to: '/resources'
   },
   {
     icon: Users,
@@ -383,10 +370,6 @@ const LandingPage = () => {
               <Link to="/dashboard" className="btn btn--primary">
                 <Sparkles className="h-5 w-5" />
                 <span>Enter the app</span>
-              </Link>
-              <Link to="/resources" className="btn btn--secondary">
-                <BookOpen className="h-5 w-5" />
-                <span>Browse resources</span>
               </Link>
               <Link to="/crisis" className="btn btn--outline-accent">
                 <Phone className="h-5 w-5" />

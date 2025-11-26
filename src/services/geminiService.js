@@ -354,13 +354,12 @@ class RealTherapyGeminiService {
     
   this.genAI = new GoogleGenerativeAI(apiKey);
   // Maintain a cascade of model identifiers so we can gracefully fall back when some are unavailable
+  // Updated model names for current Gemini API (as of late 2025)
   this.modelCandidates = [
-    "gemini-1.5-flash-latest",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro-latest",
-    "gemini-1.5-pro",
-    "gemini-pro",
-    "gemini-1.0-pro"
+    "gemini-2.0-flash",          // Latest fast model (free tier)
+    "gemini-1.5-flash-8b",       // Lighter version
+    "gemini-1.5-flash",          // Standard flash
+    "gemini-1.5-pro",            // Pro version
   ];
   this.modelCursor = 0;
   this.maxRetryAttempts = this.modelCandidates.length;

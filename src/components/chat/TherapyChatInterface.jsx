@@ -1,100 +1,22 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { Send, User, AlertTriangle, Heart, Loader, Brain, Lightbulb, Shield, Clock, TrendingUp, Sparkles, Activity } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Send, Heart, Loader, Phone, ChevronDown, Sparkles, History, Plus, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import geminiService from '../../services/geminiService';
-import TherapyStarters from './TherapyStarters';
+import apiClient from '../../lib/apiClient';
 
 const QUICK_PROMPTS = [
-  "Can you guide me through a calming breathing exercise?",
-  "I'm feeling anxious about academics. What can I do right now?",
-  "Help me build a gentle self-care plan for this evening.",
-  "I'm overwhelmed and need a quick grounding technique.",
-  "What small step can I take to feel more supported today?"
+  "I'm feeling anxious",
+  "Help me calm down",
+  "I need someone to talk to",
+  "Guide me through breathing",
 ];
 
-const createMessageId = () => `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+const createMessageId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 const formatTime = (value) => {
   const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
+  if (Number.isNaN(date.getTime())) return '';
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
-
-const formatDateLabel = (value) => {
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-
-  const isSameDay = (a, b) =>
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
-
-  if (isSameDay(date, today)) {
-    return 'Today';
-  }
-
-  if (isSameDay(date, yesterday)) {
-    return 'Yesterday';
-  }
-
-  return date.toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric'
-  });
-};
-
-const sentimentTone = (sentiment) => {
-  switch (sentiment) {
-    case 'crisis':
-      return 'crisis';
-    case 'negative':
-      return 'negative';
-    case 'anxious':
-      return 'anxious';
-    case 'positive':
-      return 'positive';
-    default:
-      return 'neutral';
-  }
-};
-
-const getMessageWrapperClass = (role) => (role === 'user' ? 'chat-message chat-message--user' : 'chat-message');
-
-const getBubbleClass = (role, isAlert = false, isError = false, category = '') => {
-  if (isAlert) return 'chat-bubble chat-bubble--alert';
-  if (isError) return 'chat-bubble chat-bubble--error';
-  if (category === 'info') return 'chat-bubble chat-bubble--info';
-  if (role === 'user') return 'chat-bubble chat-bubble--user';
-  return 'chat-bubble chat-bubble--assistant';
-};
-
-const getMessageIcon = (role, isAlert = false, isError = false, category = '') => {
-  if (isAlert) return <AlertTriangle className="chat-message__icon-symbol" />;
-  if (isError) return <AlertTriangle className="chat-message__icon-symbol" />;
-  if (role === 'assistant' || role === 'system') {
-    switch (category) {
-      case 'crisis':
-        return <Shield className="chat-message__icon-symbol" />;
-      case 'anxiety':
-        return <Brain className="chat-message__icon-symbol" />;
-      case 'depression':
-        return <Heart className="chat-message__icon-symbol" />;
-      case 'coping':
-        return <Lightbulb className="chat-message__icon-symbol" />;
-      default:
-        return <Heart className="chat-message__icon-symbol" />;
-    }
-  }
-  return <User className="chat-message__icon-symbol" />;
 };
 
 const TherapyChatInterface = () => {
@@ -102,120 +24,131 @@ const TherapyChatInterface = () => {
     {
       id: createMessageId(),
       role: 'assistant',
-      content: "Hello! I'm here to provide a safe, supportive space for you to share your thoughts and feelings. I'm trained to listen with empathy and help you explore your emotions. Take your time—there's no pressure. How are you feeling today?",
+      content: "Hi there 💙 I'm here to listen and support you. There's no pressure — take your time. How are you feeling today?",
       timestamp: new Date().toISOString(),
-      category: 'greeting'
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [sentimentAnalysis, setSentimentAnalysis] = useState(null);
-  const [sessionInsights, setSessionInsights] = useState(null);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
+  const [conversations, setConversations] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   const textareaRef = useRef(null);
-  const { userProfile } = useAuth();
+  const { userProfile, currentUser } = useAuth();
 
-  const [userScrolled, setUserScrolled] = useState(false);
-  const [showScrollButton, setShowScrollButton] = useState(false);
-  const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
-  const scrollTimeoutRef = useRef(null);
-  const lastMessageCountRef = useRef(0);
+  // Load conversation on mount
+  useEffect(() => {
+    if (currentUser) {
+      loadActiveConversation();
+      loadConversationHistory();
+    }
+  }, [currentUser]);
 
-  const serviceMode = geminiService.getMode ? geminiService.getMode() : {
-    type: 'mock',
-    label: 'Offline therapeutic simulator',
-    model: 'mindcure-offline-companion'
-  };
-  const isLiveService = serviceMode.type === 'real';
-
-  const hasUserSpoken = messages.some((message) => message.role === 'user');
-
-  const timeline = useMemo(() => {
-    const items = [];
-    let currentLabel = null;
-
-    messages.forEach((message) => {
-      const label = formatDateLabel(message.timestamp);
-      if (label && label !== currentLabel) {
-        items.push({ type: 'separator', id: `${label}-${message.id}`, label });
-        currentLabel = label;
+  const loadActiveConversation = async () => {
+    try {
+      const response = await apiClient.get('/chat/active');
+      const conversation = response.data.conversation;
+      setConversationId(conversation._id);
+      
+      if (conversation.messages && conversation.messages.length > 0) {
+        setMessages(conversation.messages.map(msg => ({
+          id: msg._id || createMessageId(),
+          role: msg.role,
+          content: msg.content,
+          timestamp: msg.timestamp
+        })));
       }
-      items.push({ type: 'message', data: message });
-    });
-
-    return items;
-  }, [messages]);
-
-  const quickFocus = () => {
-    requestAnimationFrame(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        textareaRef.current.setSelectionRange(textareaRef.current.value.length, textareaRef.current.value.length);
-      }
-    });
-  };
-
-  const scrollToBottom = (behavior = 'smooth', force = false) => {
-    if (!chatContainerRef.current) return;
-    
-    if (force || isAutoScrollEnabled) {
-      chatContainerRef.current.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior: behavior
-      });
-      setUserScrolled(false);
-      setShowScrollButton(false);
+    } catch (error) {
+      console.error('Failed to load conversation:', error);
     }
   };
+
+  const loadConversationHistory = async () => {
+    try {
+      const response = await apiClient.get('/chat?limit=10');
+      setConversations(response.data.conversations || []);
+    } catch (error) {
+      console.error('Failed to load history:', error);
+    }
+  };
+
+  const loadConversation = async (convId) => {
+    setLoadingHistory(true);
+    try {
+      const response = await apiClient.get(`/chat/${convId}`);
+      const conversation = response.data.conversation;
+      setConversationId(conversation._id);
+      
+      if (conversation.messages && conversation.messages.length > 0) {
+        setMessages(conversation.messages.map(msg => ({
+          id: msg._id || createMessageId(),
+          role: msg.role,
+          content: msg.content,
+          timestamp: msg.timestamp
+        })));
+      }
+      setShowHistory(false);
+    } catch (error) {
+      console.error('Failed to load conversation:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const startNewConversation = async () => {
+    try {
+      const response = await apiClient.post('/chat', { title: 'New Conversation' });
+      const conversation = response.data.conversation;
+      setConversationId(conversation._id);
+      setMessages([{
+        id: createMessageId(),
+        role: 'assistant',
+        content: "Hi there 💙 I'm here to listen and support you. There's no pressure — take your time. How are you feeling today?",
+        timestamp: new Date().toISOString(),
+      }]);
+      setShowHistory(false);
+      loadConversationHistory();
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+    }
+  };
+
+  const saveMessageToBackend = async (role, content) => {
+    if (!conversationId || !currentUser) return;
+    
+    try {
+      await apiClient.post(`/chat/${conversationId}/messages`, {
+        role,
+        content
+      });
+      
+      // Update stats for user messages
+      if (role === 'user') {
+        apiClient.post('/profile/stats', { statName: 'totalChatMessages' }).catch(() => {});
+      }
+    } catch (error) {
+      console.error('Failed to save message:', error);
+    }
+  };
+
+  const scrollToBottom = (smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleScroll = () => {
     if (!chatContainerRef.current) return;
-    
     const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    const isNearBottom = distanceFromBottom < 100;
-    
-    // Clear existing timeout
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-    
-    // If user scrolls up, disable auto-scroll
-    if (!isNearBottom && !isLoading) {
-      setUserScrolled(true);
-      setIsAutoScrollEnabled(false);
-      setShowScrollButton(true);
-    } else {
-      // If near bottom, re-enable auto-scroll
-      setUserScrolled(false);
-      setIsAutoScrollEnabled(true);
-      setShowScrollButton(false);
-    }
-    
-    // Debounce: re-enable auto-scroll after user stops scrolling
-    scrollTimeoutRef.current = setTimeout(() => {
-      if (isNearBottom) {
-        setIsAutoScrollEnabled(true);
-      }
-    }, 150);
+    setShowScrollBtn(scrollHeight - scrollTop - clientHeight > 100);
   };
-
-  // Only auto-scroll when new messages arrive and auto-scroll is enabled
-  useEffect(() => {
-    const messageCountChanged = messages.length !== lastMessageCountRef.current;
-    
-    if (messageCountChanged) {
-      lastMessageCountRef.current = messages.length;
-      
-      // Small delay to ensure DOM is updated
-      requestAnimationFrame(() => {
-        if (isAutoScrollEnabled || isLoading) {
-          scrollToBottom('smooth');
-        }
-      });
-    }
-  }, [messages, isAutoScrollEnabled, isLoading]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -227,381 +160,273 @@ const TherapyChatInterface = () => {
       timestamp: new Date().toISOString()
     };
 
-    const provisionalHistory = [...messages, userMessage];
-
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
 
-    try {
-      const sentiment = await geminiService.analyzeSentiment(userMessage.content);
-      setSentimentAnalysis(sentiment);
+    // Save user message to backend
+    saveMessageToBackend('user', userMessage.content);
 
-      const conversationHistory = provisionalHistory.map((msg) => ({
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+
+    try {
+      const conversationHistory = [...messages, userMessage].map(msg => ({
         role: msg.role,
         content: msg.content
       }));
 
       const aiResponse = await geminiService.generateResponse(userMessage.content, conversationHistory);
 
-      if (aiResponse.sessionInsights) {
-        setSessionInsights(aiResponse.sessionInsights);
-      }
-
+      const responseContent = typeof aiResponse === 'string' ? aiResponse : aiResponse.response;
+      
       const assistantMessage = {
         id: createMessageId(),
         role: 'assistant',
-        content: typeof aiResponse === 'string' ? aiResponse : aiResponse.response,
+        content: responseContent,
         timestamp: new Date().toISOString(),
-        category: aiResponse.category || 'support'
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      // Save assistant message to backend
+      saveMessageToBackend('assistant', responseContent);
 
-      if ((sentiment && sentiment.needsAttention) || aiResponse.needsAttention) {
+      // Show crisis alert if needed
+      if (aiResponse.needsAttention) {
         setTimeout(() => {
-          const crisisMessage = {
+          setMessages(prev => [...prev, {
             id: createMessageId(),
             role: 'system',
-            content: "Crisis support is available right now:\n\n• Tele-MANAS: 14416 (24/7 mental health helpline)\n• KIRAN Helpline: 1800-599-0019 (24/7 professional counseling)\n• Emergency services: 112\n\nYou deserve immediate support. I can help you prepare what to say when you reach out.",
+            content: "💙 You're not alone. If you need immediate support:\n\n📞 Tele-MANAS: 14416\n📞 KIRAN: 1800-599-0019\n📞 Emergency: 112",
             timestamp: new Date().toISOString(),
             isAlert: true,
-            category: 'crisis'
-          };
-          setMessages((prev) => [...prev, crisisMessage]);
-        }, 1200);
-      }
-
-      if (provisionalHistory.length > 6 && provisionalHistory.length % 8 === 0) {
-        try {
-          const insights = await geminiService.generateTherapyInsights(conversationHistory);
-          setSessionInsights(insights);
-        } catch (error) {
-          console.error('Error generating insights:', error);
-        }
+          }]);
+        }, 800);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
-      
-      // Check if it's a quota exhaustion or model unavailability issue
-      const quotaStatus = geminiService.getQuotaStatus?.();
-      const isQuotaIssue = quotaStatus?.exhausted || error.message?.includes('QUOTA') || error.message?.includes('429');
-      const isModelIssue = error.message?.includes('MODELS_UNAVAILABLE') || error.message?.includes('404');
-      const isFallbackMode = isQuotaIssue || isModelIssue;
-      
-      const errorMessage = {
+      console.error('Chat error:', error);
+      setMessages(prev => [...prev, {
         id: createMessageId(),
         role: 'assistant',
-        content: isFallbackMode
-          ? "I've switched to my built-in therapeutic response system. Our conversation will continue seamlessly with the same quality of support. If you are in crisis, please contact 14416 (Tele-MANAS) or emergency services at 112 immediately."
-          : "I'm experiencing technical difficulties right now. Please wait a moment and try again. If you are in crisis, please contact 14416 (Tele-MANAS) or emergency services at 112 immediately.",
+        content: "I'm having a moment. Let me try again — please resend your message. If you're in crisis, call 14416 right away.",
         timestamp: new Date().toISOString(),
-        isError: !isFallbackMode,
-        category: isFallbackMode ? 'info' : 'error'
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-      
-      // Update service mode display
-      if (isFallbackMode) {
-        const newMode = geminiService.getMode();
-        setServiceMode(newMode);
-      }
+      }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       handleSendMessage();
     }
   };
 
-  const handleInputChange = (event) => {
-    setInputMessage(event.target.value);
-    
-    // Auto-resize textarea
+  const handleInputChange = (e) => {
+    setInputMessage(e.target.value);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + 'px';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
     }
   };
 
-  const handleInputFocus = () => {
-    // Ensure auto-scroll is enabled when user starts typing
-    setIsAutoScrollEnabled(true);
-    
-    // Scroll to bottom smoothly when input is focused
-    requestAnimationFrame(() => {
-      scrollToBottom('smooth', true);
-    });
+  const handleQuickPrompt = (prompt) => {
+    setInputMessage(prompt);
+    textareaRef.current?.focus();
   };
 
-  const handlePromptInsert = (prompt) => {
-    setInputMessage(prompt);
-    setIsAutoScrollEnabled(true);
-    quickFocus();
-    
-    // Scroll to bottom when prompt is inserted
-    requestAnimationFrame(() => {
-      scrollToBottom('smooth', true);
-    });
-  };
+  const hasUserSpoken = messages.some(m => m.role === 'user');
 
   return (
-    <div className="chat-shell">
-      <div className="layout-container">
-        <div className="chat-layout">
-          <section className="chat-panel chat-panel--conversation">
-            <header className="chat-header">
-              <div className="chat-header__identity">
-                <span className="chat-avatar">
-                  <Heart className="chat-avatar__icon" />
-                </span>
-                <div>
-                  <h1>MindCure Companion</h1>
-                  <p>Clinical-grade emotional support, always on your side</p>
-                </div>
-              </div>
-
-              <div className="chat-header__meta">
-                <span className={`chat-service-indicator ${isLiveService ? 'chat-service-indicator--live' : 'chat-service-indicator--mock'}`}>
-                  <span className="chat-status-dot" />
-                  {serviceMode.quotaExhausted ? 'Mock mode (quota limit)' : serviceMode.label}
-                </span>
-                {userProfile?.firstName && (
-                  <span className="chat-user-pill">Supporting {userProfile.firstName}</span>
-                )}
-              </div>
-            </header>
-
-            {sentimentAnalysis && (
-              <div className="chat-sentiment-bar">
-                <div className="chat-sentiment-main">
-                  <span className="chat-label">Current mood check</span>
-                  <span className="chat-sentiment-pill" data-tone={sentimentTone(sentimentAnalysis.sentiment)}>
-                    <Activity className="chat-sentiment-icon" />
-                    {sentimentAnalysis.sentiment}
-                  </span>
-                </div>
-                <div className="chat-sentiment-meta">
-                  {sentimentAnalysis.riskLevel && (
-                    <span>Risk level: {sentimentAnalysis.riskLevel}</span>
-                  )}
-                  {typeof sentimentAnalysis.confidence === 'number' && (
-                    <span>Confidence {Math.round(sentimentAnalysis.confidence * 100)}%</span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div
-              ref={chatContainerRef}
-              className="chat-scroll"
-              onScroll={handleScroll}
-              aria-live="polite"
-              aria-busy={isLoading}
+    <div className="flex flex-col h-[calc(100vh-80px)] max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden my-4 relative">
+      {/* History Panel */}
+      {showHistory && (
+        <div className="absolute inset-0 z-50 bg-white flex flex-col">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <h2 className="font-semibold text-gray-800">Chat History</h2>
+            <button
+              onClick={() => setShowHistory(false)}
+              className="p-2 text-gray-500 hover:text-gray-700"
             >
-              {timeline.map((item) => {
-                if (item.type === 'separator') {
-                  return (
-                    <div key={item.id} className="chat-separator" role="presentation">
-                      <span>{item.label}</span>
-                    </div>
-                  );
-                }
-
-                const message = item.data;
-                return (
-                  <div key={message.id} className={getMessageWrapperClass(message.role)}>
-                    <span className="chat-message__icon">
-                      {getMessageIcon(message.role, message.isAlert, message.isError, message.category)}
-                    </span>
-                    <div className={getBubbleClass(message.role, message.isAlert, message.isError, message.category)}>
-                      <div className="chat-bubble__content">{message.content}</div>
-                      <div className="chat-bubble__meta">
-                        <span>{formatTime(message.timestamp)}</span>
-                        {message.role !== 'user' && message.category && (
-                          <span className="chat-bubble__tag">{message.category}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {!hasUserSpoken && (
-                <div className="chat-starter-panel">
-                  <TherapyStarters onStarterClick={handlePromptInsert} />
-                </div>
-              )}
-
-              {isLoading && (
-                <div className="chat-message">
-                  <span className="chat-message__icon">
-                    <Heart className="chat-message__icon-symbol" />
-                  </span>
-                  <div className="chat-bubble chat-bubble--typing">
-                    <Loader className="chat-loader" />
-                    <span>Thinking thoughtfully…</span>
-                  </div>
-                </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
-
-            {showScrollButton && (
-              <button
-                type="button"
-                className="chat-scroll-button"
-                onClick={() => {
-                  setIsAutoScrollEnabled(true);
-                  scrollToBottom('smooth', true);
-                }}
-                aria-label="Scroll to latest message"
-                title="Jump to latest message"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 5v14M19 12l-7 7-7-7" />
-                </svg>
-                <span className="chat-scroll-button__badge">New</span>
-              </button>
-            )}
-
-            <div className="chat-composer">
-              <div className="chat-composer__input">
-                <textarea
-                  ref={textareaRef}
-                  value={inputMessage}
-                  onChange={handleInputChange}
-                  onKeyPress={handleKeyPress}
-                  onFocus={handleInputFocus}
-                  placeholder="Share what's on your mind. I'm listening without judgment."
-                  className="chat-textarea"
-                  rows={1}
-                  disabled={isLoading}
-                  maxLength={1000}
-                  style={{ minHeight: '44px', maxHeight: '150px', resize: 'none' }}
-                />
-                <span className="chat-char-counter">{inputMessage.length}/1000</span>
-                <button
-                  type="button"
-                  className="chat-send"
-                  onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || isLoading || inputMessage.length > 1000}
-                >
-                  {isLoading ? <Loader className="chat-send__icon" /> : <Send className="chat-send__icon" />}
-                </button>
+              ✕
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            <button
+              onClick={startNewConversation}
+              className="w-full flex items-center gap-3 p-4 mb-4 bg-gradient-to-r from-blue-50 to-emerald-50 rounded-xl hover:from-blue-100 hover:to-emerald-100 transition-colors"
+            >
+              <Plus className="w-5 h-5 text-blue-500" />
+              <span className="font-medium text-gray-700">Start New Conversation</span>
+            </button>
+            
+            {loadingHistory ? (
+              <div className="flex justify-center py-8">
+                <Loader className="w-6 h-6 animate-spin text-gray-400" />
               </div>
-              <div className="chat-composer__note">
-                <Shield className="chat-composer__note-icon" />
-                <span>Your conversation stays private. We only surface crisis resources when safety is at risk.</span>
-              </div>
-            </div>
-          </section>
-
-          <aside className="chat-panel chat-panel--context">
-            <div className="chat-context-card">
-              <h3><Sparkles className="chat-context-icon" /> Session status</h3>
-              <p>Active model: <strong>{serviceMode.model}</strong></p>
-              {!isLiveService && (
-                <div className="chat-context-callout">
-                  <AlertTriangle className="chat-context-callout__icon" />
-                  <span>
-                    Running in guided offline mode. Add a valid <code>VITE_GEMINI_API_KEY</code> to enable live Gemini responses.
-                  </span>
-                </div>
-              )}
-              {isLiveService && (
-                <p className="chat-context-subtext">Stable Gemini connection detected. Responses may briefly switch to fallback if the primary model is busy.</p>
-              )}
-            </div>
-
-            {sentimentAnalysis ? (
-              <div className="chat-context-card">
-                <h3><Activity className="chat-context-icon" /> Emotional snapshot</h3>
-                <p className="chat-context-highlight">{sentimentAnalysis.sentiment}</p>
-                <ul className="chat-list">
-                  <li>Risk level: {sentimentAnalysis.riskLevel || 'low'}</li>
-                  <li>Needs attention: {sentimentAnalysis.needsAttention ? 'yes' : 'no'}</li>
-                  {sentimentAnalysis.emotionalMarkers && sentimentAnalysis.emotionalMarkers.length > 0 && (
-                    <li>Markers: {sentimentAnalysis.emotionalMarkers.join(', ')}</li>
-                  )}
-                </ul>
-              </div>
+            ) : conversations.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">No previous conversations</p>
             ) : (
-              <div className="chat-context-card chat-context-card--muted">
-                <h3><Activity className="chat-context-icon" /> Emotional snapshot</h3>
-                <p className="chat-empty-state">Share how you feel to see live reflections on mood and risk.</p>
-              </div>
-            )}
-
-            {sessionInsights && (
-              <div className="chat-context-card">
-                <h3><TrendingUp className="chat-context-icon" /> Session insights</h3>
-                {(sessionInsights.patterns && sessionInsights.patterns.length > 0) && (
-                  <div>
-                    <p className="chat-context-label">Patterns noticed</p>
-                    <ul className="chat-list">
-                      {sessionInsights.patterns.map((item, index) => (
-                        <li key={`pattern-${index}`}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {(sessionInsights.strengths && sessionInsights.strengths.length > 0) && (
-                  <div>
-                    <p className="chat-context-label">Your strengths</p>
-                    <ul className="chat-list">
-                      {sessionInsights.strengths.map((item, index) => (
-                        <li key={`strength-${index}`}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="chat-context-card">
-              <h3><Lightbulb className="chat-context-icon" /> Quick prompts</h3>
-              <p className="chat-context-subtext">Tap a prompt and we will start from there.</p>
-              <div className="chat-chip-list">
-                {QUICK_PROMPTS.map((prompt) => (
+              <div className="space-y-2">
+                {conversations.map(conv => (
                   <button
-                    key={prompt}
-                    type="button"
-                    className="chat-chip"
-                    onClick={() => handlePromptInsert(prompt)}
+                    key={conv._id}
+                    onClick={() => loadConversation(conv._id)}
+                    className={`w-full text-left p-4 rounded-xl border transition-colors ${
+                      conv._id === conversationId
+                        ? 'border-blue-300 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
                   >
-                    {prompt}
+                    <div className="font-medium text-gray-800 truncate">{conv.title}</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {conv.messageCount || 0} messages • {new Date(conv.lastMessageAt || conv.updatedAt).toLocaleDateString()}
+                    </div>
                   </button>
                 ))}
               </div>
-            </div>
-
-            <div className="chat-context-card chat-context-card--alert">
-              <h3><Shield className="chat-context-icon" /> Immediate help</h3>
-              <p>If you're in crisis, please reach out immediately. Human professionals are ready to listen:</p>
-              <ul className="chat-list">
-                <li>Tele-MANAS (24/7): <strong>14416</strong></li>
-                <li>KIRAN Helpline: <strong>1800-599-0019</strong></li>
-                <li>Emergency services: <strong>112</strong></li>
-              </ul>
-              <p className="chat-context-subtext">You deserve support. We can plan what to say together.</p>
-            </div>
-
-            <div className="chat-context-card chat-context-card--muted chat-context-card--compact">
-              <h3><Clock className="chat-context-icon" /> Session tips</h3>
-              <ul className="chat-list">
-                <li>Pause and breathe before you send—there is no rush.</li>
-                <li>You can request exercises, reflections, or next steps.</li>
-                <li>We will surface crisis contacts automatically when needed.</li>
-              </ul>
-            </div>
-          </aside>
+            )}
+          </div>
         </div>
+      )}
+
+      {/* Simple Header */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-emerald-400 flex items-center justify-center">
+            <Heart className="w-5 h-5 text-white" fill="white" />
+          </div>
+          <div>
+            <h1 className="font-semibold text-gray-800">MindCure</h1>
+            <p className="text-xs text-gray-500">Your safe space to talk</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowHistory(true)}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white rounded-full hover:bg-gray-100 transition-colors border border-gray-200"
+            title="Chat History"
+          >
+            <History className="w-4 h-4" />
+            <span className="hidden sm:inline">History</span>
+          </button>
+          <a 
+            href="tel:14416" 
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors"
+          >
+            <Phone className="w-4 h-4" />
+            <span className="hidden sm:inline">Crisis Line</span>
+          </a>
+        </div>
+      </header>
+
+      {/* Messages Area */}
+      <div 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto px-4 py-6 space-y-4 bg-gray-50/50"
+        onScroll={handleScroll}
+      >
+        {messages.map((message) => (
+          <div 
+            key={message.id} 
+            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div 
+              className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 ${
+                message.isAlert 
+                  ? 'bg-red-50 border border-red-200 text-red-800'
+                  : message.role === 'user'
+                    ? 'bg-blue-500 text-white rounded-br-md'
+                    : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-bl-md'
+              }`}
+            >
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+              <p className={`text-xs mt-2 ${
+                message.role === 'user' ? 'text-blue-100' : 'text-gray-400'
+              }`}>
+                {formatTime(message.timestamp)}
+              </p>
+            </div>
+          </div>
+        ))}
+
+        {/* Quick Prompts - Show only at start */}
+        {!hasUserSpoken && (
+          <div className="flex flex-wrap gap-2 justify-center pt-4">
+            {QUICK_PROMPTS.map((prompt) => (
+              <button
+                key={prompt}
+                onClick={() => handleQuickPrompt(prompt)}
+                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-full text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-bl-md px-4 py-3">
+              <div className="flex items-center gap-2 text-gray-500">
+                <Loader className="w-4 h-4 animate-spin" />
+                <span className="text-sm">Thinking...</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Scroll to bottom button */}
+      {showScrollBtn && (
+        <button
+          onClick={() => scrollToBottom()}
+          className="absolute bottom-32 left-1/2 -translate-x-1/2 p-2 bg-white shadow-lg rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
+        >
+          <ChevronDown className="w-5 h-5 text-gray-600" />
+        </button>
+      )}
+
+      {/* Input Area */}
+      <div className="p-4 border-t border-gray-100 bg-white">
+        <div className="flex items-end gap-3">
+          <div className="flex-1 relative">
+            <textarea
+              ref={textareaRef}
+              value={inputMessage}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Type how you're feeling..."
+              className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm"
+              rows={1}
+              disabled={isLoading}
+              style={{ minHeight: '48px', maxHeight: '120px' }}
+            />
+          </div>
+          <button
+            onClick={handleSendMessage}
+            disabled={!inputMessage.trim() || isLoading}
+            className="p-3 bg-gradient-to-r from-blue-500 to-emerald-500 text-white rounded-full hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            {isLoading ? (
+              <Loader className="w-5 h-5 animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
+          </button>
+        </div>
+        
+        {/* Simple footer note */}
+        <p className="text-xs text-center text-gray-400 mt-3">
+          Your conversations are private • In crisis? Call <a href="tel:14416" className="text-blue-500 hover:underline">14416</a>
+        </p>
       </div>
     </div>
   );

@@ -78,8 +78,69 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['student', 'counselor'],
+    enum: ['student', 'counselor', 'admin'],
     default: 'student'
+  },
+  // Profile fields
+  bio: {
+    type: String,
+    maxlength: 500,
+    default: ''
+  },
+  avatar: {
+    type: String,  // URL or base64
+    default: ''
+  },
+  phone: {
+    type: String,
+    trim: true,
+    maxlength: 20
+  },
+  dateOfBirth: {
+    type: Date
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other', 'prefer-not-to-say', ''],
+    default: ''
+  },
+  location: {
+    city: String,
+    country: String
+  },
+  emergencyContact: {
+    name: String,
+    phone: String,
+    relationship: String
+  },
+  // Mental health profile
+  mentalHealthGoals: [{
+    type: String,
+    trim: true
+  }],
+  currentChallenges: [{
+    type: String,
+    trim: true
+  }],
+  preferredCopingStrategies: [{
+    type: String,
+    trim: true
+  }],
+  // Notification preferences
+  notificationPreferences: {
+    email: { type: Boolean, default: true },
+    push: { type: Boolean, default: true },
+    reminders: { type: Boolean, default: true },
+    weeklyDigest: { type: Boolean, default: false }
+  },
+  // Counselor-specific fields
+  specializations: [{
+    type: String,
+    trim: true
+  }],
+  isAvailable: {
+    type: Boolean,
+    default: true
   },
   onboardingComplete: {
     type: Boolean,

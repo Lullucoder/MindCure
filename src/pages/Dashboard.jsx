@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AssessmentHistory from '../components/AssessmentHistory';
-import { 
-  MessageCircle, 
-  BarChart3, 
-  BookOpen, 
-  Phone, 
+import {
+  MessageCircle,
+  BarChart3,
+  BookOpen,
+  Phone,
   Heart,
   TrendingUp,
   Calendar,
@@ -106,18 +106,18 @@ const Dashboard = () => {
         {/* Floating background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-10 right-10 w-32 h-32 bg-white/10 rounded-full filter blur-xl animate-float"></div>
-          <div className="absolute bottom-10 left-10 w-24 h-24 bg-white/10 rounded-full filter blur-xl animate-float" style={{animationDelay: '2s'}}></div>
-          <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-white/5 rounded-full filter blur-xl animate-float" style={{animationDelay: '4s'}}></div>
+          <div className="absolute bottom-10 left-10 w-24 h-24 bg-white/10 rounded-full filter blur-xl animate-float" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-white/5 rounded-full filter blur-xl animate-float" style={{ animationDelay: '4s' }}></div>
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center text-white">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Welcome back, {userProfile?.firstName || 'Demo User'}! 
+              Welcome back, {userProfile?.firstName || 'Demo User'}!
             </h1>
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               Your mental wellness journey continues. How are you feeling today?
             </p>
-            
+
             {/* Quick mood check */}
             <div className="flex justify-center space-x-4 mb-8">
               <button
@@ -192,7 +192,7 @@ const Dashboard = () => {
                     <div className={`w-16 h-16 bg-gradient-to-r ${action.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                       <Icon className="h-8 w-8 text-white" />
                     </div>
-                    
+
                     {/* Content */}
                     <h3 className="text-xl font-bold text-gray-900 mb-3">
                       {action.title}
@@ -200,14 +200,14 @@ const Dashboard = () => {
                     <p className="text-gray-600 leading-relaxed mb-4">
                       {action.description}
                     </p>
-                    
+
                     {/* CTA */}
                     <div className="flex items-center text-teal-600 font-semibold group-hover:text-teal-700 transition-colors">
                       <span>Get Started</span>
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
-                  
+
                   {/* Gradient border effect */}
                   <div className={`absolute inset-0 bg-gradient-to-r ${action.gradient} rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 -z-10`}></div>
                 </Link>
@@ -230,7 +230,7 @@ const Dashboard = () => {
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </div>
-            
+
             <div className="space-y-4">
               {recentMoods.slice(0, 3).map((entry, index) => (
                 <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
@@ -240,9 +240,9 @@ const Dashboard = () => {
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">
-                        {new Date(entry.date).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric' 
+                        {new Date(entry.date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric'
                         })}
                       </div>
                       <div className="text-sm text-gray-600 max-w-xs truncate">
@@ -256,7 +256,7 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
-            
+
             <Link
               to="/mood"
               className="block w-full mt-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold text-center hover:from-teal-600 hover:to-teal-700 transition-all duration-200"
@@ -282,7 +282,7 @@ const Dashboard = () => {
                     <span className="text-sm text-gray-600">5/7 days</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div className="bg-gradient-to-r from-green-400 to-green-500 h-3 rounded-full" style={{width: '71%'}}></div>
+                    <div className="bg-gradient-to-r from-green-400 to-green-500 h-3 rounded-full" style={{ width: '71%' }}></div>
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -329,7 +329,7 @@ const Dashboard = () => {
                 <button
                   onClick={() => setShowAssessmentHistory(true)}
                   className="font-medium transition-colors"
-                  style={{color: 'var(--primary-600)'}}
+                  style={{ color: 'var(--primary-600)' }}
                   onMouseEnter={(e) => e.target.style.color = 'var(--primary-700)'}
                   onMouseLeave={(e) => e.target.style.color = 'var(--primary-600)'}
                 >
@@ -337,7 +337,7 @@ const Dashboard = () => {
                 </button>
               </div>
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{background: 'linear-gradient(135deg, var(--secondary-400), var(--secondary-500))'}}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, var(--secondary-400), var(--secondary-500))' }}>
                   <BarChart3 className="w-5 h-5" />
                 </div>
                 <div>
