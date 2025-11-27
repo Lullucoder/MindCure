@@ -20,8 +20,11 @@ app.use(cookieParser());
 
 // CORS configuration
 const allowedOrigins = new Set(env.clientOrigins);
-app.use(cors({
+console.log('🌐 Allowed CORS origins:', [...allowedOrigins]);
+
+const corsOptions = {
   origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) {
       return callback(null, true);
     }
@@ -30,11 +33,18 @@ app.use(cors({
       return callback(null, true);
     }
 
+    console.log(`❌ CORS blocked origin: ${origin}`);
     return callback(new Error(`Origin ${origin} not allowed by CORS`));
   },
   credentials: true,
-  optionsSuccessStatus: 204
-}));
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+};
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
 
 // Logging
 if (env.nodeEnv !== 'test') {
