@@ -31,7 +31,7 @@ if (resolvedOrigins.length === 0) {
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number.parseInt(process.env.PORT, 10) || 5000,
-  mongoUri: getEnv('MONGO_URI'),
+  mongoUri: process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/mental_health',
   clientOrigins: resolvedOrigins,
   clientOrigin: resolvedOrigins[0],
   accessTokenSecret: getEnv('JWT_ACCESS_SECRET'),
