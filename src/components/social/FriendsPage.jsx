@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 import friendService from '../../services/friendService';
 import messageService from '../../services/messageService';
-import { Avatar } from '../ui/Avatar';
-import { Spinner } from '../ui/Spinner';
+import Avatar from '../ui/Avatar';
+import Spinner from '../ui/Spinner';
 
 export default function FriendsPage({ onStartChat }) {
   const [activeTab, setActiveTab] = useState('friends');

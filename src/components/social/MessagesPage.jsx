@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 import messageService from '../../services/messageService';
 import friendService from '../../services/friendService';
-import { Avatar } from '../ui/Avatar';
-import { Spinner } from '../ui/Spinner';
+import Avatar from '../ui/Avatar';
+import Spinner from '../ui/Spinner';
 
 export default function MessagesPage() {
   const [conversations, setConversations] = useState([]);

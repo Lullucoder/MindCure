@@ -16,7 +16,7 @@ import {
   Lock
 } from 'lucide-react';
 import achievementService from '../../services/achievementService';
-import { Spinner } from '../ui/Spinner';
+import Spinner from '../ui/Spinner';
 
 const ACHIEVEMENT_ICONS = {
   'first-checkin': Target,
