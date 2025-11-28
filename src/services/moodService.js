@@ -42,7 +42,7 @@ const moodService = {
   // Check if user has checked in today
   async hasCheckedInToday() {
     try {
-      const data = await apiCall('/mood/check-today');
+      const data = await apiCall('/mood/today');
       return data; // { hasCheckedIn: boolean, todaysEntry: MoodEntry | null }
     } catch (error) {
       console.error('Error checking today\'s mood:', error);
@@ -56,7 +56,11 @@ const moodService = {
       // moodData: { score: 1-5, mood: 'great'|'good'|'okay'|'low'|'struggling', tags: [], activities: [], notes: '' }
       const data = await apiCall('/mood/checkin', {
         method: 'POST',
-        body: JSON.stringify(moodData),
+        body: JSON.stringify({
+          moodScore: moodData.score,
+          notes: moodData.notes,
+          factors: [...(moodData.tags || []), ...(moodData.activities || [])]
+        }),
       });
       return data; // { moodEntry, newAchievements: [] }
     } catch (error) {
@@ -68,9 +72,14 @@ const moodService = {
   // Update today's mood (if already checked in)
   async updateTodaysMood(moodData) {
     try {
-      const data = await apiCall('/mood/update-today', {
-        method: 'PUT',
-        body: JSON.stringify(moodData),
+      const data = await apiCall('/mood/today', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          moodScore: moodData.score,
+          notes: moodData.notes,
+          factors: [...(moodData.tags || []), ...(moodData.activities || [])],
+          reason: 'Feeling better'
+        }),
       });
       return data; // { moodEntry, previousMood, friendsNotified }
     } catch (error) {
