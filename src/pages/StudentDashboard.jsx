@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import studentService from '../services/studentService';
+import moodService from '../services/moodService';
 import ResourcesSection from '../components/resources/ResourcesSection';
 import CommunityForum from '../components/community/CommunityForum';
+import MoodCheckInModal from '../components/mood/MoodCheckInModal';
+import { MessagesPage, FriendsPage, AchievementsSection, NotificationsDropdown } from '../components/social';
 
 import {
   LayoutDashboard,
@@ -11,7 +14,12 @@ import {
   Users,
   Clock,
   CheckCircle,
-  MessageSquare
+  MessageSquare,
+  MessageCircle,
+  Heart,
+  Trophy,
+  Smile,
+  RefreshCw
 } from 'lucide-react';
 
 const StudentDashboard = () => {
@@ -21,6 +29,11 @@ const StudentDashboard = () => {
   const [counselors, setCounselors] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Mood check-in states
+  const [showMoodCheckIn, setShowMoodCheckIn] = useState(false);
+  const [todaysMood, setTodaysMood] = useState(null);
+  const [showUpdateMood, setShowUpdateMood] = useState(false);
 
   // Booking states
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -32,7 +45,39 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     loadDashboard();
+    checkMoodStatus();
   }, []);
+
+  // Check if user has checked in today
+  const checkMoodStatus = async () => {
+    try {
+      const data = await moodService.hasCheckedInToday();
+      if (!data.hasCheckedIn) {
+        // Show mood check-in popup
+        setShowMoodCheckIn(true);
+      } else {
+        setTodaysMood(data.todaysEntry);
+      }
+    } catch (error) {
+      console.error('Error checking mood status:', error);
+    }
+  };
+
+  const handleMoodCheckInSuccess = (result) => {
+    setTodaysMood(result.moodEntry);
+    setShowMoodCheckIn(false);
+    setShowUpdateMood(false);
+  };
+
+  const handleNavigateFromNotification = (section, subSection) => {
+    if (section === 'friends') {
+      setActiveTab('friends');
+    } else if (section === 'messages') {
+      setActiveTab('messages');
+    } else if (section === 'achievements') {
+      setActiveTab('achievements');
+    }
+  };
 
   useEffect(() => {
     if (activeTab === 'appointments') {
@@ -130,20 +175,53 @@ const StudentDashboard = () => {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'resources', label: 'Resources', icon: BookOpen },
     { id: 'appointments', label: 'Appointments', icon: Calendar },
+    { id: 'messages', label: 'Messages', icon: MessageCircle },
+    { id: 'friends', label: 'Support Circle', icon: Heart },
+    { id: 'achievements', label: 'Achievements', icon: Trophy },
     { id: 'community', label: 'Community', icon: Users }
   ];
+
+  // Mood display helper
+  const getMoodEmoji = (mood) => {
+    const moods = {
+      'great': '😄',
+      'good': '🙂',
+      'okay': '😐',
+      'low': '😔',
+      'struggling': '😢'
+    };
+    return moods[mood] || '😐';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            Welcome back, {userProfile?.firstName}! 👋
-          </h1>
-          <p className="mt-1 text-gray-600">
-            Your mental health matters. Explore resources, book appointments, and connect with others.
-          </p>
+        {/* Header with Notifications */}
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              Welcome back, {userProfile?.firstName}! 👋
+            </h1>
+            <p className="mt-1 text-gray-600">
+              Your mental health matters. Explore resources, book appointments, and connect with others.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Today's Mood */}
+            {todaysMood && (
+              <button
+                onClick={() => setShowUpdateMood(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm hover:shadow-md transition-all"
+                title="Update your mood"
+              >
+                <span className="text-2xl">{getMoodEmoji(todaysMood.mood)}</span>
+                <span className="text-sm text-gray-600 hidden sm:inline">Today's mood</span>
+                <RefreshCw className="w-4 h-4 text-gray-400" />
+              </button>
+            )}
+            {/* Notifications */}
+            <NotificationsDropdown onNavigate={handleNavigateFromNotification} />
+          </div>
         </div>
 
         {/* Tabs */}
@@ -346,6 +424,21 @@ const StudentDashboard = () => {
         {/* Community Tab */}
         {activeTab === 'community' && <CommunityForum />}
 
+        {/* Messages Tab */}
+        {activeTab === 'messages' && <MessagesPage />}
+
+        {/* Friends/Support Circle Tab */}
+        {activeTab === 'friends' && (
+          <FriendsPage 
+            onStartChat={(conversation, friend) => {
+              setActiveTab('messages');
+            }} 
+          />
+        )}
+
+        {/* Achievements Tab */}
+        {activeTab === 'achievements' && <AchievementsSection />}
+
         {/* Booking Modal */}
         {showBookingModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -442,6 +535,23 @@ const StudentDashboard = () => {
             </div>
           </div>
         )}
+
+        {/* Daily Mood Check-in Modal */}
+        <MoodCheckInModal
+          isOpen={showMoodCheckIn}
+          onClose={() => setShowMoodCheckIn(false)}
+          onSuccess={handleMoodCheckInSuccess}
+          isUpdate={false}
+        />
+
+        {/* Update Mood Modal */}
+        <MoodCheckInModal
+          isOpen={showUpdateMood}
+          onClose={() => setShowUpdateMood(false)}
+          onSuccess={handleMoodCheckInSuccess}
+          isUpdate={true}
+          existingEntry={todaysMood}
+        />
       </div>
     </div>
   );

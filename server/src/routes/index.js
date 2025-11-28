@@ -10,6 +10,11 @@ import counselorRouter from './counselorRoutes.js';
 import studentRouter from './studentRoutes.js';
 import chatRouter from './chatRoutes.js';
 import profileRouter from './profileRoutes.js';
+import messageRouter from './messageRoutes.js';
+import friendRouter from './friendRoutes.js';
+import moodRouter from './moodRoutes.js';
+import achievementRouter from './achievementRoutes.js';
+import notificationRouter from './notificationRoutes.js';
 
 const router = Router();
 
@@ -24,5 +29,10 @@ router.use('/counselor', counselorRouter);
 router.use('/student', studentRouter);
 router.use('/chat', chatRouter);
 router.use('/profile', profileRouter);
+router.use('/messages', messageRouter);
+router.use('/friends', friendRouter);
+router.use('/mood', moodRouter);
+router.use('/achievements', achievementRouter);
+router.use('/notifications', notificationRouter);
 
 export default router;
