@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import ResourcesSection from '../components/resources/ResourcesSection';
+import CommunityForum from '../components/community/CommunityForum';
 
 import {
   LayoutDashboard,
@@ -153,6 +154,7 @@ const CounselorDashboard = () => {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'resources', label: 'Manage Resources', icon: BookOpen },
     { id: 'appointments', label: 'Appointments', icon: Calendar },
+    { id: 'community', label: 'Community', icon: Users },
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
@@ -377,6 +379,9 @@ const CounselorDashboard = () => {
             </div>
           </div>
         )}
+
+        {/* Community Tab */}
+        {activeTab === 'community' && <CommunityForum />}
 
         {/* Settings Tab */}
         {activeTab === 'settings' && (

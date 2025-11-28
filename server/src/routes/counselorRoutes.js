@@ -16,6 +16,15 @@ import {
   updateAvailability,
   getStudents
 } from '../controllers/counselorController.js';
+import {
+  getCategories,
+  getPosts,
+  getPost,
+  createPost,
+  addComment,
+  togglePostLike,
+  deletePost
+} from '../controllers/studentController.js';
 
 const counselorRouter = Router();
 
@@ -38,9 +47,18 @@ counselorRouter.patch('/appointments/:id/confirm', confirmAppointment);
 counselorRouter.patch('/appointments/:id/complete', completeAppointment);
 counselorRouter.patch('/appointments/:id/cancel', cancelAppointment);
 
-// Forum Moderation
-counselorRouter.get('/forum/posts', getPostsForModeration);
-counselorRouter.patch('/forum/posts/:id', moderatePost);
+// Forum Access (same as students - can view, post, comment, like)
+counselorRouter.get('/forum/categories', getCategories);
+counselorRouter.get('/forum/posts', getPosts);
+counselorRouter.get('/forum/posts/:id', getPost);
+counselorRouter.post('/forum/posts', createPost);
+counselorRouter.post('/forum/posts/:id/comments', addComment);
+counselorRouter.post('/forum/posts/:id/like', togglePostLike);
+counselorRouter.delete('/forum/posts/:id', deletePost);
+
+// Forum Moderation (counselor/admin only)
+counselorRouter.get('/forum/moderation', getPostsForModeration);
+counselorRouter.patch('/forum/moderation/:id', moderatePost);
 counselorRouter.post('/forum/categories', createCategory);
 
 // Profile

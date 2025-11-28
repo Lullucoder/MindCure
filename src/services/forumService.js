@@ -1,10 +1,16 @@
 // Forum Service - API calls for support groups/forum
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const AUTH_STORAGE_KEY = 'mental-health-app.auth';
 
 const getAuthHeader = () => {
-  const token = localStorage.getItem('accessToken');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    const auth = raw ? JSON.parse(raw) : null;
+    return auth?.token ? { Authorization: `Bearer ${auth.token}` } : {};
+  } catch {
+    return {};
+  }
 };
 
 export const forumService = {

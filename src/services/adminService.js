@@ -180,6 +180,82 @@ export const adminService = {
     });
     if (!response.ok) throw new Error('Failed to delete category');
     return response.json();
+  },
+
+  // ==================== FORUM ACCESS ====================
+
+  async getCategories() {
+    const response = await fetch(`${API_BASE}/admin/forum/categories`, {
+      headers: getAuthHeader()
+    });
+    if (!response.ok) throw new Error('Failed to fetch categories');
+    return response.json();
+  },
+
+  async getPosts(options = {}) {
+    const params = new URLSearchParams();
+    if (options.category) params.append('category', options.category);
+    if (options.search) params.append('search', options.search);
+    if (options.page) params.append('page', options.page);
+    if (options.limit) params.append('limit', options.limit);
+
+    const response = await fetch(`${API_BASE}/admin/forum/posts?${params}`, {
+      headers: getAuthHeader()
+    });
+    if (!response.ok) throw new Error('Failed to fetch posts');
+    return response.json();
+  },
+
+  async getPost(postId) {
+    const response = await fetch(`${API_BASE}/admin/forum/posts/${postId}`, {
+      headers: getAuthHeader()
+    });
+    if (!response.ok) throw new Error('Failed to fetch post');
+    return response.json();
+  },
+
+  async createPost(data) {
+    const response = await fetch(`${API_BASE}/admin/forum/posts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader()
+      },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('Failed to create post');
+    return response.json();
+  },
+
+  async addComment(postId, content, isAnonymous = false) {
+    const response = await fetch(`${API_BASE}/admin/forum/posts/${postId}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader()
+      },
+      body: JSON.stringify({ content, isAnonymous })
+    });
+    if (!response.ok) throw new Error('Failed to add comment');
+    return response.json();
+  },
+
+  async togglePostLike(postId) {
+    const response = await fetch(`${API_BASE}/admin/forum/posts/${postId}/like`, {
+      method: 'POST',
+      headers: getAuthHeader()
+    });
+    if (!response.ok) throw new Error('Failed to toggle like');
+    return response.json();
+  },
+
+  async deletePost(postId) {
+    const response = await fetch(`${API_BASE}/admin/forum/posts/${postId}`, {
+      method: 'DELETE',
+      headers: getAuthHeader()
+    });
+    if (!response.ok) throw new Error('Failed to delete post');
+    return response.json();
   }
 };
 

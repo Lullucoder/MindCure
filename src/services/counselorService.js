@@ -103,14 +103,14 @@ export const cancelAppointmentAsCounselor = async (id, data = {}) => {
 // Forum Moderation
 export const getPostsForModeration = async (params = {}) => {
   const queryString = new URLSearchParams(params).toString();
-  const response = await fetch(`${API_BASE}/counselor/forum/posts?${queryString}`, {
+  const response = await fetch(`${API_BASE}/counselor/forum/moderation?${queryString}`, {
     headers: getAuthHeader()
   });
   return { data: await handleResponse(response) };
 };
 
 export const moderatePost = async (id, action) => {
-  const response = await fetch(`${API_BASE}/counselor/forum/posts/${id}`, {
+  const response = await fetch(`${API_BASE}/counselor/forum/moderation/${id}`, {
     method: 'PATCH',
     headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ action })
@@ -123,6 +123,63 @@ export const createCategory = async (data) => {
     method: 'POST',
     headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
+  });
+  return { data: await handleResponse(response) };
+};
+
+// Forum Access (same as students)
+export const getCategories = async () => {
+  const response = await fetch(`${API_BASE}/counselor/forum/categories`, {
+    headers: getAuthHeader()
+  });
+  return { data: await handleResponse(response) };
+};
+
+export const getPosts = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  const response = await fetch(`${API_BASE}/counselor/forum/posts?${queryString}`, {
+    headers: getAuthHeader()
+  });
+  return { data: await handleResponse(response) };
+};
+
+export const getPost = async (id) => {
+  const response = await fetch(`${API_BASE}/counselor/forum/posts/${id}`, {
+    headers: getAuthHeader()
+  });
+  return { data: await handleResponse(response) };
+};
+
+export const createPost = async (data) => {
+  const response = await fetch(`${API_BASE}/counselor/forum/posts`, {
+    method: 'POST',
+    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return { data: await handleResponse(response) };
+};
+
+export const addComment = async (postId, content, isAnonymous = false) => {
+  const response = await fetch(`${API_BASE}/counselor/forum/posts/${postId}/comments`, {
+    method: 'POST',
+    headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content, isAnonymous })
+  });
+  return { data: await handleResponse(response) };
+};
+
+export const togglePostLike = async (id) => {
+  const response = await fetch(`${API_BASE}/counselor/forum/posts/${id}/like`, {
+    method: 'POST',
+    headers: getAuthHeader()
+  });
+  return { data: await handleResponse(response) };
+};
+
+export const deletePost = async (id) => {
+  const response = await fetch(`${API_BASE}/counselor/forum/posts/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeader()
   });
   return { data: await handleResponse(response) };
 };
@@ -160,5 +217,13 @@ export default {
   moderatePost,
   createCategory,
   updateAvailability,
-  getStudents
+  getStudents,
+  // Forum
+  getCategories,
+  getPosts,
+  getPost,
+  createPost,
+  addComment,
+  togglePostLike,
+  deletePost
 };

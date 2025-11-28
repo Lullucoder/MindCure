@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import adminService from '../services/adminService';
+import CommunityForum from '../components/community/CommunityForum';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -164,6 +165,7 @@ const AdminDashboard = () => {
     { id: 'users', label: '👥 Users', icon: '👥' },
     { id: 'appointments', label: '📅 Appointments', icon: '📅' },
     { id: 'resources', label: '📚 Resources', icon: '📚' },
+    { id: 'community', label: '💬 Community', icon: '💬' },
   ];
 
   const formatDate = (dateStr) => {
@@ -596,6 +598,9 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Community Tab */}
+      {activeTab === 'community' && <CommunityForum />}
     </div>
   );
 };
