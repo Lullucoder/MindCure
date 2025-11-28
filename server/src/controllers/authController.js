@@ -48,7 +48,8 @@ export const signup = async (req, res, next) => {
 
     return res.status(201).json({
       user: safeUser,
-      accessToken
+      accessToken,
+      refreshToken
     });
   } catch (error) {
     return next(error);
@@ -80,7 +81,8 @@ export const login = async (req, res, next) => {
 
     return res.json({
       user: safeUser,
-      accessToken
+      accessToken,
+      refreshToken
     });
   } catch (error) {
     return next(error);
@@ -109,7 +111,8 @@ export const refresh = async (req, res, next) => {
 
     return res.json({
       user: safeUser,
-      accessToken
+      accessToken,
+      refreshToken: nextRefreshToken
     });
   } catch (error) {
     return next({ status: 401, message: 'Invalid refresh token' });

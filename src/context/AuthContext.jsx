@@ -22,15 +22,20 @@ const getStoredAuth = () => {
   }
 };
 
-const persistAuthState = (user, token) => {
+const persistAuthState = (user, token, refreshToken = null) => {
   if (typeof window === 'undefined') {
     return;
   }
 
   if (user && token) {
+    const stored = getStoredAuth();
     window.localStorage.setItem(
       AUTH_STORAGE_KEY,
-      JSON.stringify({ user, token })
+      JSON.stringify({ 
+        user, 
+        token,
+        refreshToken: refreshToken || stored?.refreshToken || null
+      })
     );
   } else {
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -62,21 +67,25 @@ export const AuthProvider = ({ children }) => {
     persistAuthState(null, null);
   }, []);
 
-  const handleAuthSuccess = useCallback((user, token) => {
+  const handleAuthSuccess = useCallback((user, token, refreshToken = null) => {
     accessTokenRef.current = token;
-    storedAuthRef.current = { user, token };
+    storedAuthRef.current = { user, token, refreshToken: refreshToken || storedAuthRef.current?.refreshToken };
     setAccessToken(token);
     setCurrentUser(user);
     setUserProfile(user);
-    persistAuthState(user, token);
+    persistAuthState(user, token, refreshToken);
     return user;
   }, []);
 
   const refreshSession = useCallback(async () => {
     try {
-      const { data } = await apiClient.post('/auth/refresh');
-      const { user, accessToken } = data;
-      handleAuthSuccess(user, accessToken);
+      // Send refresh token in body for cross-origin requests where cookies may not work
+      const storedRefreshToken = storedAuthRef.current?.refreshToken;
+      const { data } = await apiClient.post('/auth/refresh', {
+        refreshToken: storedRefreshToken
+      });
+      const { user, accessToken, refreshToken } = data;
+      handleAuthSuccess(user, accessToken, refreshToken);
       return accessToken;
     } catch (error) {
       clearAuthState();
@@ -95,8 +104,8 @@ export const AuthProvider = ({ children }) => {
           lastName,
           role
         });
-        const { user, accessToken } = data;
-        return handleAuthSuccess(user, accessToken);
+        const { user, accessToken, refreshToken } = data;
+        return handleAuthSuccess(user, accessToken, refreshToken);
       } catch (error) {
         throw error.response?.data?.message || 'Unable to create account';
       } finally {
@@ -114,8 +123,8 @@ export const AuthProvider = ({ children }) => {
           email,
           password
         });
-        const { user, accessToken } = data;
-        return handleAuthSuccess(user, accessToken);
+        const { user, accessToken, refreshToken } = data;
+        return handleAuthSuccess(user, accessToken, refreshToken);
       } catch (error) {
         throw error.response?.data?.message || 'Invalid email or password';
       } finally {
