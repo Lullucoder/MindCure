@@ -47,7 +47,8 @@ const forumPostSchema = new mongoose.Schema({
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ForumCategory',
-    required: true
+    required: false,
+    default: null
   },
   isAnonymous: {
     type: Boolean,

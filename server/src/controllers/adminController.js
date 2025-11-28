@@ -278,3 +278,38 @@ export const deleteCategory = async (req, res) => {
     res.status(500).json({ message: 'Failed to delete category' });
   }
 };
+
+// Seed default forum categories
+export const seedForumCategories = async (req, res) => {
+  try {
+    const defaultCategories = [
+      { name: 'Anxiety', description: 'Discuss anxiety-related experiences and coping strategies', icon: '😰', color: '#f59e0b', order: 1 },
+      { name: 'Depression', description: 'Support for those dealing with depression', icon: '🌧️', color: '#6366f1', order: 2 },
+      { name: 'Stress Management', description: 'Tips and discussions about managing stress', icon: '💆', color: '#10b981', order: 3 },
+      { name: 'Relationships', description: 'Talk about relationship challenges and advice', icon: '💕', color: '#ec4899', order: 4 },
+      { name: 'Academic Pressure', description: 'Support for academic stress and burnout', icon: '📚', color: '#8b5cf6', order: 5 },
+      { name: 'Self-Care', description: 'Share self-care routines and wellness tips', icon: '🧘', color: '#14b8a6', order: 6 },
+      { name: 'General Support', description: 'General mental health discussions', icon: '🤗', color: '#06b6d4', order: 7 }
+    ];
+
+    const results = [];
+    
+    for (const cat of defaultCategories) {
+      const existing = await ForumCategory.findOne({ name: cat.name });
+      if (!existing) {
+        const created = await ForumCategory.create(cat);
+        results.push({ name: cat.name, status: 'created', id: created._id });
+      } else {
+        results.push({ name: cat.name, status: 'exists', id: existing._id });
+      }
+    }
+
+    res.json({ 
+      message: 'Forum categories seeded successfully',
+      categories: results
+    });
+  } catch (error) {
+    console.error('Seed categories error:', error);
+    res.status(500).json({ message: 'Failed to seed categories' });
+  }
+};

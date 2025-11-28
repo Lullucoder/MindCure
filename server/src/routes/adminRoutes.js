@@ -10,7 +10,8 @@ import {
   updateResource,
   deleteResource,
   updateCategory,
-  deleteCategory
+  deleteCategory,
+  seedForumCategories
 } from '../controllers/adminController.js';
 import {
   getCategories,
@@ -66,5 +67,6 @@ adminRouter.delete('/forum/posts/:id', deletePost);
 adminRouter.get('/forum/moderation', getPostsForModeration);
 adminRouter.patch('/forum/moderation/:id', moderatePost);
 adminRouter.post('/forum/categories', createCategory);
+adminRouter.post('/forum/categories/seed', seedForumCategories);
 
 export default adminRouter;

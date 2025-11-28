@@ -455,7 +455,7 @@ export const createPost = async (req, res) => {
       title,
       content,
       author: studentId,
-      category: category || undefined,
+      category: category || null,
       isAnonymous: isAnonymous || false,
       tags: tags || [],
       status: 'approved' // Auto-approve for now
