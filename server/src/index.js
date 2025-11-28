@@ -9,6 +9,7 @@ import { env } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import router from './routes/index.js';
+import { ForumCategory } from './models/ForumCategory.js';
 
 const app = express();
 
@@ -60,9 +61,34 @@ app.use('/api', router);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+// Auto-seed forum categories if none exist
+const seedForumCategories = async () => {
+  try {
+    const count = await ForumCategory.countDocuments();
+    if (count === 0) {
+      const defaultCategories = [
+        { name: 'Anxiety', description: 'Discuss anxiety-related experiences and coping strategies', icon: '😰', color: '#f59e0b', order: 1 },
+        { name: 'Depression', description: 'Support for those dealing with depression', icon: '🌧️', color: '#6366f1', order: 2 },
+        { name: 'Stress Management', description: 'Tips and discussions about managing stress', icon: '💆', color: '#10b981', order: 3 },
+        { name: 'Relationships', description: 'Talk about relationship challenges and advice', icon: '💕', color: '#ec4899', order: 4 },
+        { name: 'Academic Pressure', description: 'Support for academic stress and burnout', icon: '📚', color: '#8b5cf6', order: 5 },
+        { name: 'Self-Care', description: 'Share self-care routines and wellness tips', icon: '🧘', color: '#14b8a6', order: 6 },
+        { name: 'General Support', description: 'General mental health discussions', icon: '🤗', color: '#06b6d4', order: 7 }
+      ];
+      await ForumCategory.insertMany(defaultCategories);
+      console.log('✅ Seeded default forum categories');
+    }
+  } catch (error) {
+    console.error('⚠️ Failed to seed forum categories:', error.message);
+  }
+};
+
 const startServer = async () => {
   try {
     await connectDatabase();
+    
+    // Seed forum categories after DB connection
+    await seedForumCategories();
 
     app.listen(env.port, () => {
       console.log(`\u2705 MindCure API listening on port ${env.port}`);
