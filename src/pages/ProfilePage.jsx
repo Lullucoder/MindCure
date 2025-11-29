@@ -65,7 +65,7 @@ const ProfilePage = () => {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/users/profile');
+      const response = await apiClient.get('/profile');
       const userData = response.data.data || response.data;
       setProfile({
         name: userData.name || '',
@@ -88,7 +88,7 @@ const ProfilePage = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await apiClient.get('/users/stats');
+      const response = await apiClient.get('/profile/stats');
       setStats(response.data.data || response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -118,7 +118,7 @@ const ProfilePage = () => {
     e.preventDefault();
     try {
       setSaving(true);
-      const response = await apiClient.put('/users/profile', profile);
+      const response = await apiClient.put('/profile', profile);
       const updatedUser = response.data.data || response.data;
       updateUser(updatedUser);
       showMessage('success', 'Profile updated successfully!');
@@ -150,7 +150,7 @@ const ProfilePage = () => {
 
     try {
       setSaving(true);
-      await apiClient.put('/users/change-password', {
+      await apiClient.put('/profile/password', {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       });
@@ -188,7 +188,7 @@ const ProfilePage = () => {
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const response = await apiClient.post('/users/avatar', formData, {
+      const response = await apiClient.post('/profile/avatar', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
