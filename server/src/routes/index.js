@@ -15,6 +15,7 @@ import friendRouter from './friendRoutes.js';
 import moodRouter from './moodRoutes.js';
 import achievementRouter from './achievementRoutes.js';
 import notificationRouter from './notificationRoutes.js';
+import userRouter from './userRoutes.js';
 
 const router = Router();
 
@@ -34,5 +35,6 @@ router.use('/friends', friendRouter);
 router.use('/mood', moodRouter);
 router.use('/achievements', achievementRouter);
 router.use('/notifications', notificationRouter);
+router.use('/users', userRouter);
 
 export default router;

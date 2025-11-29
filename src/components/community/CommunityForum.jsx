@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
 import counselorService from '../../services/counselorService';
@@ -20,6 +21,7 @@ import {
 
 const CommunityForum = ({ showHeader = true, embedded = false }) => {
   const { userProfile } = useAuth();
+  const navigate = useNavigate();
   const userRole = userProfile?.role || 'student';
   
   // Get the appropriate service based on role
@@ -313,7 +315,17 @@ const CommunityForum = ({ showHeader = true, embedded = false }) => {
                 {/* Post Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center text-white font-bold">
+                    <div 
+                      className={`w-10 h-10 bg-gradient-to-br from-blue-400 to-green-400 rounded-full flex items-center justify-center text-white font-bold ${
+                        !post.isAnonymous ? 'cursor-pointer hover:ring-2 hover:ring-primary-300 hover:ring-offset-2 transition-all' : ''
+                      }`}
+                      onClick={(e) => {
+                        if (!post.isAnonymous && post.author?._id) {
+                          e.stopPropagation();
+                          navigate(`/user/${post.author._id}`);
+                        }
+                      }}
+                    >
                       {post.isAnonymous ? '?' : post.author?.firstName?.[0] || 'U'}
                     </div>
                     <div>

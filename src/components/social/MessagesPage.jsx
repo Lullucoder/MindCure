@@ -340,7 +340,12 @@ export default function MessagesPage() {
                     <ArrowLeft className="w-5 h-5 text-gray-600" />
                   </button>
                 )}
-                <Avatar name={getOtherParticipant(selectedConversation)?.name} size="md" />
+                <Avatar 
+                  name={getOtherParticipant(selectedConversation)?.name} 
+                  size="md"
+                  userId={getOtherParticipant(selectedConversation)?._id}
+                  clickable
+                />
                 <div className="flex-1">
                   <p className="font-semibold text-gray-800">
                     {getOtherParticipant(selectedConversation)?.name}

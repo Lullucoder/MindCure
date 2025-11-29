@@ -4,7 +4,10 @@
  * @example
  * <Avatar name="John Doe" src="/avatar.jpg" size="lg" />
  * <Avatar name="Jane" /> // Shows initials "J"
+ * <Avatar name="John" userId="123" clickable /> // Clickable, navigates to profile
  */
+
+import { useNavigate } from 'react-router-dom';
 
 const sizes = {
   xs: 'h-6 w-6 text-xs',
@@ -43,18 +46,35 @@ const Avatar = ({
   src,
   size = 'md',
   className = '',
+  userId,
+  clickable = false,
+  onClick,
   ...props
 }) => {
+  const navigate = useNavigate();
   const sizeClass = sizes[size] || sizes.md;
   const colorClass = getColorFromName(name);
   const initials = getInitials(name);
+
+  const handleClick = (e) => {
+    if (onClick) {
+      onClick(e);
+    } else if (clickable && userId) {
+      navigate(`/user/${userId}`);
+    }
+  };
+
+  const clickableClass = (clickable || onClick) 
+    ? 'cursor-pointer hover:ring-2 hover:ring-primary-300 hover:ring-offset-2 transition-all' 
+    : '';
 
   if (src) {
     return (
       <img
         src={src}
         alt={name || 'Avatar'}
-        className={`${sizeClass} rounded-full object-cover ${className}`}
+        className={`${sizeClass} rounded-full object-cover ${clickableClass} ${className}`}
+        onClick={handleClick}
         {...props}
       />
     );
@@ -62,8 +82,9 @@ const Avatar = ({
 
   return (
     <div
-      className={`${sizeClass} ${colorClass} rounded-full flex items-center justify-center font-semibold ${className}`}
+      className={`${sizeClass} ${colorClass} rounded-full flex items-center justify-center font-semibold ${clickableClass} ${className}`}
       title={name}
+      onClick={handleClick}
       {...props}
     >
       {initials}

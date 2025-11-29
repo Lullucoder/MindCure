@@ -251,7 +251,7 @@ export default function FriendsPage({ onStartChat }) {
                         key={friend._id}
                         className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
                       >
-                        <Avatar name={friend.name} size="lg" />
+                        <Avatar name={friend.name} size="lg" userId={friend._id} clickable />
                         <div className="flex-1">
                           <p className="font-semibold text-gray-800">{friend.name}</p>
                           <p className="text-sm text-gray-500 capitalize">{friend.role}</p>
@@ -324,7 +324,7 @@ export default function FriendsPage({ onStartChat }) {
                         key={request._id}
                         className="flex items-center gap-4 p-4 bg-yellow-50 rounded-xl"
                       >
-                        <Avatar name={request.requester?.name} size="lg" />
+                        <Avatar name={request.requester?.name} size="lg" userId={request.requester?._id} clickable />
                         <div className="flex-1">
                           <p className="font-semibold text-gray-800">{request.requester?.name}</p>
                           <p className="text-sm text-gray-500 capitalize">{request.requester?.role}</p>
@@ -401,7 +401,7 @@ export default function FriendsPage({ onStartChat }) {
                           key={user._id}
                           className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl"
                         >
-                          <Avatar name={user.name} size="lg" />
+                          <Avatar name={user.name} size="lg" userId={user._id} clickable />
                           <div className="flex-1">
                             <p className="font-semibold text-gray-800">{user.name}</p>
                             <p className="text-sm text-gray-500 capitalize">{user.role}</p>

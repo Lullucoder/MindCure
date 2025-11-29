@@ -18,6 +18,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import CounselorDashboard from './pages/CounselorDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import ProfilePage from './pages/ProfilePage';
+import UserProfilePage from './pages/UserProfilePage';
 
 // Placeholder components for routes that will be implemented later
 const SettingsPage = () => <div className="p-8 text-center">Settings - Coming Soon!</div>;
@@ -144,6 +145,15 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <ProfilePage />
+              </Layout>
+            </ProtectedRoute>
+          } />
+
+          {/* User Profile - View other users */}
+          <Route path="/user/:userId" element={
+            <ProtectedRoute>
+              <Layout>
+                <UserProfilePage />
               </Layout>
             </ProtectedRoute>
           } />
