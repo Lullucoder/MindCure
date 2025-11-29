@@ -23,7 +23,9 @@ export const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
     const {
-      name,
+      firstName,
+      lastName,
+      name, // Legacy support - will be split into firstName/lastName
       avatar,
       phone,
       dateOfBirth,
@@ -43,8 +45,16 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update allowed fields
-    if (name) user.name = name;
+    // Update name fields
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    // Legacy support: if 'name' is provided, split it into firstName/lastName
+    if (name && !firstName && !lastName) {
+      const nameParts = name.trim().split(' ');
+      user.firstName = nameParts[0] || '';
+      user.lastName = nameParts.slice(1).join(' ') || '';
+    }
+    
     if (avatar !== undefined) user.avatar = avatar;
     if (phone !== undefined) user.phone = phone;
     if (dateOfBirth !== undefined) user.dateOfBirth = dateOfBirth;

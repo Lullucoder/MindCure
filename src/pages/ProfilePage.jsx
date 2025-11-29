@@ -12,7 +12,8 @@ const ProfilePage = () => {
   
   // Form states
   const [personalInfo, setPersonalInfo] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     dateOfBirth: '',
@@ -70,7 +71,8 @@ const ProfilePage = () => {
       
       // Populate form states
       setPersonalInfo({
-        name: profile.name || '',
+        firstName: profile.firstName || '',
+        lastName: profile.lastName || '',
         email: profile.email || '',
         phone: profile.phone || '',
         dateOfBirth: profile.dateOfBirth ? profile.dateOfBirth.split('T')[0] : '',
@@ -124,7 +126,8 @@ const ProfilePage = () => {
     
     try {
       const updateData = {
-        name: personalInfo.name,
+        firstName: personalInfo.firstName,
+        lastName: personalInfo.lastName,
         phone: personalInfo.phone,
         dateOfBirth: personalInfo.dateOfBirth || null,
         gender: personalInfo.gender,
@@ -144,7 +147,7 @@ const ProfilePage = () => {
       // Update stored auth data
       const authData = JSON.parse(localStorage.getItem('mental-health-app.auth') || '{}');
       if (authData.user) {
-        authData.user = { ...authData.user, name: personalInfo.name };
+        authData.user = { ...authData.user, firstName: personalInfo.firstName, lastName: personalInfo.lastName };
         localStorage.setItem('mental-health-app.auth', JSON.stringify(authData));
       }
     } catch (error) {
@@ -318,11 +321,20 @@ const ProfilePage = () => {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                     <input
                       type="text"
-                      value={personalInfo.name}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, name: e.target.value }))}
+                      value={personalInfo.firstName}
+                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, firstName: e.target.value }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                    <input
+                      type="text"
+                      value={personalInfo.lastName}
+                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, lastName: e.target.value }))}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     />
                   </div>
