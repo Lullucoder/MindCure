@@ -298,15 +298,32 @@ export default function MoodCheckInModal({
                   <div className="flex gap-3 pt-4">
                     <button
                       onClick={() => setStep(1)}
-                      className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="px-4 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Back
                     </button>
                     <button
-                      onClick={() => setStep(3)}
-                      className="flex-1 px-4 py-3 rounded-xl bg-primary-500 text-white hover:bg-primary-600 transition-colors"
+                      onClick={handleSubmit}
+                      disabled={isSubmitting}
+                      className="flex-1 px-4 py-3 rounded-xl bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      Continue
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4" />
+                          Save
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setStep(3)}
+                      className="px-4 py-3 rounded-xl bg-primary-500 text-white hover:bg-primary-600 transition-colors"
+                    >
+                      Add Note →
                     </button>
                   </div>
                 </div>
