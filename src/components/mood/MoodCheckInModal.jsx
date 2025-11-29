@@ -7,38 +7,11 @@
 import { useState, useEffect } from 'react';
 import { X, Sun, CloudSun, Cloud, CloudRain, Zap, Check, Sparkles } from 'lucide-react';
 import moodService from '../../services/moodService';
-
-const MOOD_OPTIONS = [
-  { score: 5, mood: 'great', label: 'Great', emoji: '😄', icon: Sun, color: 'bg-green-500', description: 'Feeling fantastic!' },
-  { score: 4, mood: 'good', label: 'Good', emoji: '🙂', icon: CloudSun, color: 'bg-blue-500', description: 'Pretty good day' },
-  { score: 3, mood: 'okay', label: 'Okay', emoji: '😐', icon: Cloud, color: 'bg-yellow-500', description: 'Just okay' },
-  { score: 2, mood: 'low', label: 'Low', emoji: '😔', icon: CloudRain, color: 'bg-orange-500', description: 'Not my best' },
-  { score: 1, mood: 'struggling', label: 'Struggling', emoji: '😢', icon: Zap, color: 'bg-red-500', description: 'Having a hard time' },
-];
-
-const ACTIVITY_OPTIONS = [
-  { id: 'exercise', label: 'Exercise', emoji: '🏃' },
-  { id: 'meditation', label: 'Meditation', emoji: '🧘' },
-  { id: 'socializing', label: 'Socializing', emoji: '👥' },
-  { id: 'work', label: 'Work/Study', emoji: '💼' },
-  { id: 'nature', label: 'Nature', emoji: '🌳' },
-  { id: 'music', label: 'Music', emoji: '🎵' },
-  { id: 'reading', label: 'Reading', emoji: '📚' },
-  { id: 'gaming', label: 'Gaming', emoji: '🎮' },
-  { id: 'creative', label: 'Creative', emoji: '🎨' },
-  { id: 'rest', label: 'Resting', emoji: '😴' },
-];
-
-const TAG_OPTIONS = [
-  { id: 'anxious', label: 'Anxious', color: 'bg-purple-100 text-purple-700' },
-  { id: 'calm', label: 'Calm', color: 'bg-blue-100 text-blue-700' },
-  { id: 'energetic', label: 'Energetic', color: 'bg-yellow-100 text-yellow-700' },
-  { id: 'tired', label: 'Tired', color: 'bg-gray-100 text-gray-700' },
-  { id: 'motivated', label: 'Motivated', color: 'bg-green-100 text-green-700' },
-  { id: 'stressed', label: 'Stressed', color: 'bg-red-100 text-red-700' },
-  { id: 'grateful', label: 'Grateful', color: 'bg-pink-100 text-pink-700' },
-  { id: 'lonely', label: 'Lonely', color: 'bg-indigo-100 text-indigo-700' },
-];
+import { 
+  MOOD_OPTIONS, 
+  ACTIVITY_OPTIONS, 
+  TAG_OPTIONS 
+} from '../../constants/moodConstants';
 
 export default function MoodCheckInModal({ 
   isOpen, 
