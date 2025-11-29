@@ -28,10 +28,9 @@ const moodEntrySchema = new mongoose.Schema({
     maxlength: 500,
     default: ''
   },
-  // Factors that influenced the mood
+  // Factors that influenced the mood (tags and activities)
   factors: [{
-    type: String,
-    enum: ['sleep', 'exercise', 'social', 'work', 'health', 'relationships', 'weather', 'other']
+    type: String
   }],
   // Track if mood was updated later in the day
   updates: [{

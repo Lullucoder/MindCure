@@ -121,11 +121,11 @@ export const hasCheckedInToday = async (req, res) => {
   try {
     const userId = req.user.id;
     const hasCheckedIn = await MoodEntry.hasCheckedInToday(userId);
-    const todaysMood = hasCheckedIn ? await MoodEntry.getTodaysMood(userId) : null;
+    const todaysEntry = hasCheckedIn ? await MoodEntry.getTodaysMood(userId) : null;
 
     res.json({
       hasCheckedIn,
-      todaysMood
+      todaysEntry
     });
   } catch (error) {
     console.error('Check today status error:', error);

@@ -60,8 +60,9 @@ export default function AchievementsSection({ userId = null }) {
       
       setAchievements(achievementsData.achievements || []);
       setTotalXP(achievementsData.totalXP || 0);
-      setDefinitions(definitionsData || []);
-      setStats(statsData);
+      // Ensure definitions is always an array
+      setDefinitions(Array.isArray(definitionsData) ? definitionsData : []);
+      setStats(statsData || {});
     } catch (error) {
       console.error('Error loading achievements:', error);
     } finally {

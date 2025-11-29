@@ -43,10 +43,14 @@ const achievementService = {
   async getDefinitions() {
     try {
       const data = await apiCall('/achievements/definitions');
-      return data; // Array of achievement definitions
+      // Backend returns { definitions: {...} }, convert to array
+      if (data.definitions && typeof data.definitions === 'object') {
+        return Object.entries(data.definitions).map(([id, def]) => ({ id, ...def }));
+      }
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Error getting achievement definitions:', error);
-      throw error;
+      return []; // Return empty array on error instead of throwing
     }
   },
 
@@ -54,10 +58,16 @@ const achievementService = {
   async getMyAchievements() {
     try {
       const data = await apiCall('/achievements');
-      return data; // { achievements: [], totalXP: number }
+      return {
+        achievements: data.achievements || [],
+        totalXP: data.totalXP || 0,
+        stats: data.stats || {}
+      };
     } catch (error) {
       console.error('Error getting achievements:', error);
-      throw error;
+      return { achievements: [], totalXP: 0, stats: {} }; // Return defaults on error
+    }
+  },
     }
   },
 
@@ -65,10 +75,10 @@ const achievementService = {
   async getStatsSummary() {
     try {
       const data = await apiCall('/achievements/stats');
-      return data; // { moodsFixed, currentStreak, longestStreak, totalCheckIns, friendsHelped, totalXP }
+      return data;
     } catch (error) {
       console.error('Error getting stats summary:', error);
-      throw error;
+      return { moodsHelped: 0, checkInStreak: 0, longestStreak: 0, totalCheckIns: 0 };
     }
   },
 

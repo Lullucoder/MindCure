@@ -43,6 +43,11 @@ const moodService = {
   async hasCheckedInToday() {
     try {
       const data = await apiCall('/mood/today');
+      // Map backend fields to frontend expected format
+      if (data.todaysEntry) {
+        data.todaysEntry.score = data.todaysEntry.moodScore;
+        data.todaysEntry.mood = data.todaysEntry.moodLabel?.replace('-', '') || this.scoreToMood(data.todaysEntry.moodScore);
+      }
       return data; // { hasCheckedIn: boolean, todaysEntry: MoodEntry | null }
     } catch (error) {
       console.error('Error checking today\'s mood:', error);
