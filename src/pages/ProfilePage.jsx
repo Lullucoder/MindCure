@@ -67,9 +67,15 @@ const ProfilePage = () => {
     try {
       setLoading(true);
       const response = await apiClient.get('/profile');
-      const userData = response.data.data || response.data;
+      // Backend returns { profile: user } structure
+      const userData = response.data.profile || response.data.data || response.data;
+      
+      // Construct full name from firstName + lastName if name doesn't exist
+      const fullName = userData.name || 
+        [userData.firstName, userData.lastName].filter(Boolean).join(' ') || '';
+      
       setProfile({
-        name: userData.name || userData.firstName || '',
+        name: fullName,
         email: userData.email || '',
         phone: userData.phone || '',
         dateOfBirth: userData.dateOfBirth
@@ -83,8 +89,10 @@ const ProfilePage = () => {
       console.error('Error fetching profile:', error);
       // Use user data from context as fallback
       if (user) {
+        const fullName = user.name || 
+          [user.firstName, user.lastName].filter(Boolean).join(' ') || '';
         setProfile({
-          name: user.name || user.firstName || '',
+          name: fullName,
           email: user.email || '',
           phone: user.phone || '',
           dateOfBirth: user.dateOfBirth
@@ -104,14 +112,17 @@ const ProfilePage = () => {
   const fetchStats = async () => {
     try {
       const response = await apiClient.get('/profile/stats');
-      const statsData = response.data.data || response.data;
+      // Backend returns { stats: {...}, daysSinceJoined, memberSince }
+      const statsObj = response.data.stats || response.data.data || response.data;
+      const memberSince = response.data.memberSince || user?.createdAt || new Date().toISOString();
+      
       setStats({
-        totalSessions: statsData.totalSessions || 0,
-        totalMessages: statsData.totalMessages || 0,
-        totalAppointments: statsData.totalAppointments || 0,
-        resourcesViewed: statsData.resourcesViewed || 0,
-        moodCheckIns: statsData.moodCheckIns || 0,
-        memberSince: statsData.memberSince || user?.createdAt || new Date().toISOString(),
+        totalSessions: statsObj?.sessionsCompleted || statsObj?.totalSessions || 0,
+        totalMessages: statsObj?.totalChatMessages || statsObj?.totalMessages || 0,
+        totalAppointments: statsObj?.appointmentsBooked || statsObj?.totalAppointments || 0,
+        resourcesViewed: statsObj?.resourcesViewed || 0,
+        moodCheckIns: statsObj?.moodCheckIns || 0,
+        memberSince: memberSince,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -142,7 +153,8 @@ const ProfilePage = () => {
     try {
       setSaving(true);
       const response = await apiClient.put('/profile', profile);
-      const updatedUser = response.data.data || response.data;
+      // Backend returns { profile: user } or { user: {...} }
+      const updatedUser = response.data.profile || response.data.user || response.data.data || response.data;
       updateUser(updatedUser);
       showMessage('success', 'Profile updated successfully!');
     } catch (error) {
