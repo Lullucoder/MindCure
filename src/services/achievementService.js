@@ -68,8 +68,6 @@ const achievementService = {
       return { achievements: [], totalXP: 0, stats: {} }; // Return defaults on error
     }
   },
-    }
-  },
 
   // Get stats summary (moods fixed, streaks, etc.)
   async getStatsSummary() {
