@@ -1,29 +1,42 @@
+/**
+ * App.jsx - Main Application Entry Point
+ * 
+ * Features:
+ * - Centralized routing with lazy loading
+ * - Role-based access control
+ * - Error boundary for graceful error handling
+ * - Authentication context provider
+ */
+
+import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import PageLoader from './components/ui/PageLoader';
 
-// Pages
-import LandingPage from './pages/LandingPage';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
-import Dashboard from './pages/Dashboard';
-import MoodTracker from './pages/MoodTracker';
-import SelfHelpResources from './pages/SelfHelpResources';
-import CrisisPage from './pages/CrisisPage';
-import TherapyChatInterface from './components/chat/TherapyChatInterface';
-import AppointmentBooking from './pages/AppointmentBooking';
-import SupportGroups from './pages/SupportGroups';
-import AdminDashboard from './pages/AdminDashboard';
-import CounselorDashboard from './pages/CounselorDashboard';
-import StudentDashboard from './pages/StudentDashboard';
-import ProfilePage from './pages/ProfilePage';
-import UserProfilePage from './pages/UserProfilePage';
+// ============================================
+// Lazy-loaded Pages for Code Splitting
+// ============================================
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const Login = lazy(() => import('./components/auth/Login'));
+const Register = lazy(() => import('./components/auth/Register'));
+const MoodTracker = lazy(() => import('./pages/MoodTracker'));
+const SelfHelpResources = lazy(() => import('./pages/SelfHelpResources'));
+const CrisisPage = lazy(() => import('./pages/CrisisPage'));
+const TherapyChatInterface = lazy(() => import('./components/chat/TherapyChatInterface'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const CounselorDashboard = lazy(() => import('./pages/CounselorDashboard'));
+const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
-// Placeholder components for routes that will be implemented later
-const SettingsPage = () => <div className="p-8 text-center">Settings - Coming Soon!</div>;
-
-// Role-based dashboard redirect component
+// ============================================
+// Role-Based Dashboard Component
+// ============================================
 const RoleBasedDashboard = () => {
   const { userProfile } = useAuth();
 
@@ -40,7 +53,9 @@ const RoleBasedDashboard = () => {
   }
 };
 
-// Protected route for specific roles
+// ============================================
+// Role-Protected Route Guard
+// ============================================
 const RoleProtectedRoute = ({ children, allowedRoles }) => {
   const { userProfile } = useAuth();
 
@@ -53,147 +68,97 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
+// ============================================
+// Route Configuration
+// ============================================
+const publicRoutes = [
+  { path: '/', element: <LandingPage />, layout: { showFooter: true, showCrisisRibbon: true } },
+  { path: '/login', element: <Login />, layout: { showFooter: false, showCrisisRibbon: false } },
+  { path: '/register', element: <Register />, layout: { showFooter: false, showCrisisRibbon: false } },
+  { path: '/crisis', element: <CrisisPage />, layout: { showFooter: true, showCrisisRibbon: true } },
+];
+
+const protectedRoutes = [
+  { path: '/dashboard', element: <RoleBasedDashboard /> },
+  { path: '/student', element: <StudentDashboard /> },
+  { path: '/chat', element: <TherapyChatInterface /> },
+  { path: '/mood', element: <MoodTracker /> },
+  { path: '/resources', element: <SelfHelpResources /> },
+  { path: '/profile', element: <ProfilePage /> },
+  { path: '/user/:userId', element: <UserProfilePage /> },
+  { path: '/settings', element: <SettingsPage /> },
+  { path: '/appointments', element: <StudentDashboard /> },
+  { path: '/forum', element: <StudentDashboard /> },
+];
+
+const roleProtectedRoutes = [
+  { path: '/counselor', element: <CounselorDashboard />, allowedRoles: ['counselor', 'admin'] },
+  { path: '/admin', element: <AdminDashboard />, allowedRoles: ['admin'] },
+];
+
+// ============================================
+// Main App Component
+// ============================================
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={
-            <Layout>
-              <LandingPage />
-            </Layout>
-          } />
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Public Routes */}
+              {publicRoutes.map(({ path, element, layout }) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    <Layout
+                      showFooter={layout?.showFooter ?? true}
+                      showCrisisRibbon={layout?.showCrisisRibbon ?? true}
+                    >
+                      {element}
+                    </Layout>
+                  }
+                />
+              ))}
 
-          <Route path="/login" element={
-            <Layout showFooter={false} showCrisisRibbon={false}>
-              <Login />
-            </Layout>
-          } />
+              {/* Protected Routes */}
+              {protectedRoutes.map(({ path, element }) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    <ProtectedRoute>
+                      <Layout>{element}</Layout>
+                    </ProtectedRoute>
+                  }
+                />
+              ))}
 
-          <Route path="/register" element={
-            <Layout showFooter={false} showCrisisRibbon={false}>
-              <Register />
-            </Layout>
-          } />
+              {/* Role-Protected Routes */}
+              {roleProtectedRoutes.map(({ path, element, allowedRoles }) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <RoleProtectedRoute allowedRoles={allowedRoles}>
+                          {element}
+                        </RoleProtectedRoute>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+              ))}
 
-          {/* Role-based Dashboard */}
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Layout>
-                <RoleBasedDashboard />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          {/* Counselor-only routes */}
-          <Route path="/counselor" element={
-            <ProtectedRoute>
-              <Layout>
-                <RoleProtectedRoute allowedRoles={['counselor', 'admin']}>
-                  <CounselorDashboard />
-                </RoleProtectedRoute>
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          {/* Admin-only routes */}
-          <Route path="/admin" element={
-            <ProtectedRoute>
-              <Layout>
-                <RoleProtectedRoute allowedRoles={['admin']}>
-                  <AdminDashboard />
-                </RoleProtectedRoute>
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          {/* Student routes (accessible by all authenticated users) */}
-          <Route path="/student" element={
-            <ProtectedRoute>
-              <Layout>
-                <StudentDashboard />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          <Route path="/chat" element={
-            <ProtectedRoute>
-              <Layout>
-                <TherapyChatInterface />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          <Route path="/mood" element={
-            <ProtectedRoute>
-              <Layout>
-                <MoodTracker />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          <Route path="/resources" element={
-            <ProtectedRoute>
-              <Layout>
-                <SelfHelpResources />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <Layout>
-                <ProfilePage />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          {/* User Profile - View other users */}
-          <Route path="/user/:userId" element={
-            <ProtectedRoute>
-              <Layout>
-                <UserProfilePage />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          <Route path="/settings" element={
-            <ProtectedRoute>
-              <Layout>
-                <SettingsPage />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          <Route path="/crisis" element={
-            <Layout>
-              <CrisisPage />
-            </Layout>
-          } />
-
-          {/* Legacy routes - redirect to dashboard for role-based handling */}
-          <Route path="/appointments" element={
-            <ProtectedRoute>
-              <Layout>
-                <StudentDashboard />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          <Route path="/forum" element={
-            <ProtectedRoute>
-              <Layout>
-                <StudentDashboard />
-              </Layout>
-            </ProtectedRoute>
-          } />
-
-          {/* Redirect to dashboard instead of home for demo */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+              {/* 404 Not Found */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
