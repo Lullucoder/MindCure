@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../lib/apiClient';
+import BackButton from '../components/common/BackButton';
 import {
   User,
   Shield,
@@ -68,7 +69,7 @@ const ProfilePage = () => {
       const response = await apiClient.get('/profile');
       const userData = response.data.data || response.data;
       setProfile({
-        name: userData.name || '',
+        name: userData.name || userData.firstName || '',
         email: userData.email || '',
         phone: userData.phone || '',
         dateOfBirth: userData.dateOfBirth
@@ -80,7 +81,21 @@ const ProfilePage = () => {
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
-      showMessage('error', 'Failed to load profile data');
+      // Use user data from context as fallback
+      if (user) {
+        setProfile({
+          name: user.name || user.firstName || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          dateOfBirth: user.dateOfBirth
+            ? new Date(user.dateOfBirth).toISOString().split('T')[0]
+            : '',
+          gender: user.gender || '',
+          bio: user.bio || '',
+          avatar: user.avatar || '',
+        });
+      }
+      showMessage('error', 'Using cached profile data');
     } finally {
       setLoading(false);
     }
@@ -89,7 +104,15 @@ const ProfilePage = () => {
   const fetchStats = async () => {
     try {
       const response = await apiClient.get('/profile/stats');
-      setStats(response.data.data || response.data);
+      const statsData = response.data.data || response.data;
+      setStats({
+        totalSessions: statsData.totalSessions || 0,
+        totalMessages: statsData.totalMessages || 0,
+        totalAppointments: statsData.totalAppointments || 0,
+        resourcesViewed: statsData.resourcesViewed || 0,
+        moodCheckIns: statsData.moodCheckIns || 0,
+        memberSince: statsData.memberSince || user?.createdAt || new Date().toISOString(),
+      });
     } catch (error) {
       console.error('Error fetching stats:', error);
       // Set default stats if fetch fails
@@ -640,6 +663,9 @@ const ProfilePage = () => {
   return (
     <div className="profile-page">
       <div className="profile-container">
+        {/* Navigation */}
+        <BackButton fallbackPath="/dashboard" />
+        
         {/* Header */}
         <div className="profile-header">
           <h1>My Profile</h1>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../lib/apiClient';
+import BackButton from '../components/common/BackButton';
 import {
   Bell,
   BellOff,
@@ -14,7 +14,6 @@ import {
   AlertCircle,
   Info,
   Loader2,
-  ArrowLeft,
 } from 'lucide-react';
 import '../styles/notifications.css';
 
@@ -32,7 +31,9 @@ const NotificationsPage = () => {
     try {
       setLoading(true);
       const response = await apiClient.get('/notifications');
-      setNotifications(response.data.data || response.data || []);
+      const data = response.data.data || response.data;
+      // Ensure we always have an array
+      setNotifications(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching notifications:', error);
       // Set mock notifications for demo
@@ -154,13 +155,16 @@ const NotificationsPage = () => {
     return date.toLocaleDateString();
   };
 
-  const filteredNotifications = notifications.filter((n) => {
+  // Ensure notifications is always an array before filtering
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+  
+  const filteredNotifications = safeNotifications.filter((n) => {
     if (filter === 'unread') return !n.read;
     if (filter === 'read') return n.read;
     return true;
   });
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = safeNotifications.filter((n) => !n.read).length;
 
   if (loading) {
     return (
@@ -176,12 +180,12 @@ const NotificationsPage = () => {
   return (
     <div className="notifications-page">
       <div className="notifications-container">
+        {/* Navigation */}
+        <BackButton fallbackPath="/dashboard" />
+        
         {/* Header */}
         <div className="notifications-header">
           <div className="header-left">
-            <Link to="/dashboard" className="back-link">
-              <ArrowLeft size={20} />
-            </Link>
             <div>
               <h1>
                 <Bell size={28} />
@@ -205,7 +209,7 @@ const NotificationsPage = () => {
                 <span>Mark all read</span>
               </button>
             )}
-            {notifications.length > 0 && (
+            {safeNotifications.length > 0 && (
               <button
                 onClick={clearAll}
                 className="btn btn-ghost danger"
@@ -224,7 +228,7 @@ const NotificationsPage = () => {
             className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
             onClick={() => setFilter('all')}
           >
-            All ({notifications.length})
+            All ({safeNotifications.length})
           </button>
           <button
             className={`filter-btn ${filter === 'unread' ? 'active' : ''}`}
@@ -236,7 +240,7 @@ const NotificationsPage = () => {
             className={`filter-btn ${filter === 'read' ? 'active' : ''}`}
             onClick={() => setFilter('read')}
           >
-            Read ({notifications.length - unreadCount})
+            Read ({safeNotifications.length - unreadCount})
           </button>
         </div>
 
