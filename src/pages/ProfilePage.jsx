@@ -8,7 +8,6 @@ import {
   BarChart3,
   Save,
   Loader2,
-  Camera,
   Eye,
   EyeOff,
   CheckCircle,
@@ -18,7 +17,24 @@ import {
   BookOpen,
   Heart,
   Clock,
+  Check,
 } from 'lucide-react';
+
+// Predefined avatar options
+const AVATAR_OPTIONS = [
+  { id: 1, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4', label: 'Avatar 1' },
+  { id: 2, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&backgroundColor=c0aede', label: 'Avatar 2' },
+  { id: 3, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Luna&backgroundColor=d1d4f9', label: 'Avatar 3' },
+  { id: 4, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Max&backgroundColor=ffd5dc', label: 'Avatar 4' },
+  { id: 5, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie&backgroundColor=ffdfbf', label: 'Avatar 5' },
+  { id: 6, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver&backgroundColor=a3e635', label: 'Avatar 6' },
+  { id: 7, url: 'https://api.dicebear.com/7.x/bottts/svg?seed=Buddy&backgroundColor=b6e3f4', label: 'Robot 1' },
+  { id: 8, url: 'https://api.dicebear.com/7.x/bottts/svg?seed=Gizmo&backgroundColor=c0aede', label: 'Robot 2' },
+  { id: 9, url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Lily&backgroundColor=ffdfbf', label: 'Lorelei 1' },
+  { id: 10, url: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Rose&backgroundColor=ffd5dc', label: 'Lorelei 2' },
+  { id: 11, url: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Happy&backgroundColor=b6e3f4', label: 'Emoji 1' },
+  { id: 12, url: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cool&backgroundColor=c0aede', label: 'Emoji 2' },
+];
 import '../styles/profile.css';
 
 const ProfilePage = () => {
@@ -51,6 +67,7 @@ const ProfilePage = () => {
     new: false,
     confirm: false,
   });
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
   const tabs = [
     { id: 'personal', label: 'Personal Info', icon: User },
@@ -203,40 +220,10 @@ const ProfilePage = () => {
     }
   };
 
-  const handleAvatarChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validate file
-    if (!file.type.startsWith('image/')) {
-      showMessage('error', 'Please select an image file');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      showMessage('error', 'Image must be less than 5MB');
-      return;
-    }
-
-    try {
-      setSaving(true);
-      const formData = new FormData();
-      formData.append('avatar', file);
-
-      const response = await apiClient.post('/profile/avatar', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      const avatarUrl = response.data.data?.avatar || response.data.avatar;
-      setProfile((prev) => ({ ...prev, avatar: avatarUrl }));
-      updateUser({ ...user, avatar: avatarUrl });
-      showMessage('success', 'Avatar updated successfully!');
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      showMessage('error', 'Failed to upload avatar');
-    } finally {
-      setSaving(false);
-    }
+  const handleAvatarSelect = (avatarUrl) => {
+    setProfile((prev) => ({ ...prev, avatar: avatarUrl }));
+    setShowAvatarPicker(false);
+    showMessage('success', 'Avatar selected! Click Save Changes to apply.');
   };
 
   const formatDate = (dateString) => {
@@ -292,17 +279,39 @@ const ProfilePage = () => {
               <User size={48} />
             </div>
           )}
-          <label className="avatar-upload">
-            <Camera size={20} />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              className="hidden"
-            />
-          </label>
         </div>
-        <p className="avatar-hint">Click the camera icon to upload a new photo</p>
+        <button
+          type="button"
+          className="btn btn-outline avatar-change-btn"
+          onClick={() => setShowAvatarPicker(!showAvatarPicker)}
+        >
+          {showAvatarPicker ? 'Close' : 'Choose Avatar'}
+        </button>
+        
+        {/* Avatar Picker Grid */}
+        {showAvatarPicker && (
+          <div className="avatar-picker">
+            <p className="avatar-picker-title">Select an avatar:</p>
+            <div className="avatar-grid">
+              {AVATAR_OPTIONS.map((avatar) => (
+                <button
+                  key={avatar.id}
+                  type="button"
+                  className={`avatar-option ${profile.avatar === avatar.url ? 'selected' : ''}`}
+                  onClick={() => handleAvatarSelect(avatar.url)}
+                  title={avatar.label}
+                >
+                  <img src={avatar.url} alt={avatar.label} />
+                  {profile.avatar === avatar.url && (
+                    <div className="avatar-check">
+                      <Check size={16} />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Form Fields */}
