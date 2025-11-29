@@ -13,7 +13,8 @@ import {
   LogOut,
   LayoutDashboard,
   Settings,
-  Shield
+  Shield,
+  Bell
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -126,6 +127,14 @@ const Navbar = () => {
                     {getRoleBadge()}
                   </span>
                 )}
+                <Link 
+                  to="/notifications" 
+                  className="btn btn--ghost notification-btn" 
+                  aria-label="View notifications"
+                  title="Notifications"
+                >
+                  <Bell className="h-4 w-4" />
+                </Link>
                 <Link to="/profile" className="btn btn--ghost" aria-label="View profile">
                   <User className="h-4 w-4" />
                   <span>{accountLabel}</span>
@@ -200,6 +209,16 @@ const Navbar = () => {
               <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full mb-2 inline-block">
                 {getRoleBadge()}
               </span>
+            )}
+            {currentUser && (
+              <Link 
+                to="/notifications" 
+                className="btn btn--ghost" 
+                onClick={() => setIsOpen(false)}
+              >
+                <Bell className="h-4 w-4" />
+                <span>Notifications</span>
+              </Link>
             )}
             <Link to="/crisis" className="btn btn--secondary" onClick={() => setIsOpen(false)}>
               <Phone className="h-4 w-4" />

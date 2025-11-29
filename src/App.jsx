@@ -32,6 +32,7 @@ const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // ============================================
@@ -87,6 +88,7 @@ const protectedRoutes = [
   { path: '/profile', element: <ProfilePage /> },
   { path: '/user/:userId', element: <UserProfilePage /> },
   { path: '/settings', element: <SettingsPage /> },
+  { path: '/notifications', element: <NotificationsPage /> },
   { path: '/appointments', element: <StudentDashboard /> },
   { path: '/forum', element: <StudentDashboard /> },
 ];
