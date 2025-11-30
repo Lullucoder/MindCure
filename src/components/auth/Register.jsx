@@ -203,7 +203,7 @@ const Register = () => {
                       type="text"
                       autoComplete="given-name"
                       className={`input-field pl-10 ${errors.firstName ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
-                      placeholder="John"
+                      placeholder="First name"
                       aria-invalid={errors.firstName ? 'true' : 'false'}
                     />
                   </div>
@@ -229,7 +229,7 @@ const Register = () => {
                       type="text"
                       autoComplete="family-name"
                       className={`input-field pl-10 ${errors.lastName ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
-                      placeholder="Doe"
+                      placeholder="Last name"
                       aria-invalid={errors.lastName ? 'true' : 'false'}
                     />
                   </div>
@@ -257,7 +257,7 @@ const Register = () => {
                     type="email"
                     autoComplete="email"
                     className={`input-field pl-10 ${errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
-                    placeholder="you@example.com"
+                    placeholder="Email address"
                     aria-invalid={errors.email ? 'true' : 'false'}
                   />
                 </div>

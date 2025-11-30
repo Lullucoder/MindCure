@@ -102,7 +102,7 @@ const Login = () => {
                     type="email"
                     autoComplete="email"
                     className={`input-field pl-10 ${errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
-                    placeholder="you@example.com"
+                    placeholder="Email address"
                     aria-invalid={errors.email ? 'true' : 'false'}
                     aria-describedby={errors.email ? 'email-error' : undefined}
                   />
