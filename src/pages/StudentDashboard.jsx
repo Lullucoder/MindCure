@@ -197,28 +197,28 @@ const StudentDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header with Notifications */}
-        <div className="mb-8 flex items-start justify-between">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
               Welcome back, {userProfile?.firstName}! 👋
             </h1>
-            <p className="mt-1 text-gray-600">
+            <p className="mt-1 text-sm sm:text-base text-gray-600">
               Your mental health matters. Explore resources, book appointments, and connect with others.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
             {/* Today's Mood */}
             {todaysMood && (
               <button
                 onClick={() => setShowUpdateMood(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm hover:shadow-md transition-all"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-white rounded-xl shadow-sm hover:shadow-md transition-all"
                 title="Update your mood"
               >
-                <span className="text-2xl">{getMoodEmoji(todaysMood.mood)}</span>
-                <span className="text-sm text-gray-600 hidden sm:inline">Today's mood</span>
-                <RefreshCw className="w-4 h-4 text-gray-400" />
+                <span className="text-xl sm:text-2xl">{getMoodEmoji(todaysMood.mood)}</span>
+                <span className="text-xs sm:text-sm text-gray-600 hidden sm:inline">Today's mood</span>
+                <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
               </button>
             )}
             {/* Notifications */}
@@ -227,22 +227,22 @@ const StudentDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-2xl shadow-lg mb-8 p-2">
-          <div className="flex gap-2 overflow-x-auto">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg mb-6 sm:mb-8 p-1.5 sm:p-2">
+          <div className="flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide pb-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all whitespace-nowrap text-xs sm:text-sm ${
                     activeTab === tab.id
                       ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white shadow-md'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
-                  {tab.label}
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <span className="hidden xs:inline sm:inline">{tab.label}</span>
                 </button>
               );
             })}
@@ -251,53 +251,53 @@ const StudentDashboard = () => {
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Stats */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-blue-500">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-blue-500">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 uppercase">Upcoming Sessions</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">{dashboardData?.stats?.upcomingAppointments || 0}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 uppercase">Upcoming Sessions</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">{dashboardData?.stats?.upcomingAppointments || 0}</p>
                   </div>
-                  <Calendar className="h-10 w-10 text-blue-500" />
+                  <Calendar className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-green-500">
+              <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-green-500">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 uppercase">Completed Sessions</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">{dashboardData?.stats?.completedAppointments || 0}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 uppercase">Completed Sessions</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">{dashboardData?.stats?.completedAppointments || 0}</p>
                   </div>
-                  <CheckCircle className="h-10 w-10 text-green-500" />
+                  <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 text-green-500" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-purple-500">
+              <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-purple-500 sm:col-span-2 lg:col-span-1">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500 uppercase">Forum Posts</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">{dashboardData?.stats?.totalPosts || 0}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 uppercase">Forum Posts</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">{dashboardData?.stats?.totalPosts || 0}</p>
                   </div>
-                  <MessageSquare className="h-10 w-10 text-purple-500" />
+                  <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 text-purple-500" />
                 </div>
               </div>
             </div>
 
             {/* Next Appointment */}
             {dashboardData?.nextAppointment && (
-              <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl shadow-lg p-6 text-white">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
+              <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 text-white">
+                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
                   Your Next Appointment
                 </h3>
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold flex-shrink-0">
                     {dashboardData.nextAppointment.counselor?.firstName?.[0]}
                   </div>
                   <div>
-                    <p className="font-bold text-xl">
+                    <p className="font-bold text-lg sm:text-xl">
                       {dashboardData.nextAppointment.counselor?.firstName} {dashboardData.nextAppointment.counselor?.lastName}
                     </p>
                     <p className="text-white/80">

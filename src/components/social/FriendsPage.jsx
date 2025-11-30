@@ -187,36 +187,36 @@ export default function FriendsPage({ onStartChat }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-4 sm:p-6 border-b border-gray-100">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-primary-100 rounded-lg">
-            <Users className="w-6 h-6 text-primary-600" />
+            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-800">Support Circle</h2>
-            <p className="text-sm text-gray-500">Connect with friends who care about your wellbeing</p>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">Support Circle</h2>
+            <p className="text-xs sm:text-sm text-gray-500">Connect with friends who care about your wellbeing</p>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-100">
+      <div className="flex border-b border-gray-100 overflow-x-auto">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3 px-4 flex items-center justify-center gap-2 transition-colors ${
+              className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-4 flex items-center justify-center gap-1 sm:gap-2 transition-colors whitespace-nowrap min-w-0 ${
                 activeTab === tab.id
                   ? 'text-primary-600 border-b-2 border-primary-500 bg-primary-50/50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="font-medium">{tab.label}</span>
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span className="font-medium text-xs sm:text-sm">{tab.label}</span>
               {tab.count > 0 && (
-                <span className={`px-2 py-0.5 text-xs rounded-full ${
+                <span className={`px-1.5 sm:px-2 py-0.5 text-xs rounded-full ${
                   activeTab === tab.id
                     ? 'bg-primary-500 text-white'
                     : 'bg-gray-200 text-gray-600'
@@ -231,7 +231,7 @@ export default function FriendsPage({ onStartChat }) {
 
       {/* Messages */}
       {error && (
-        <div className="mx-6 mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+        <div className="mx-3 sm:mx-6 mt-3 sm:mt-4 p-2.5 sm:p-3 bg-red-50 text-red-700 rounded-lg text-xs sm:text-sm">
           {error}
           <button onClick={() => setError('')} className="ml-2 text-red-500 hover:underline">
             Dismiss
@@ -239,13 +239,13 @@ export default function FriendsPage({ onStartChat }) {
         </div>
       )}
       {successMessage && (
-        <div className="mx-6 mt-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm">
+        <div className="mx-3 sm:mx-6 mt-3 sm:mt-4 p-2.5 sm:p-3 bg-green-50 text-green-700 rounded-lg text-xs sm:text-sm">
           {successMessage}
         </div>
       )}
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Spinner size="lg" />
@@ -275,33 +275,35 @@ export default function FriendsPage({ onStartChat }) {
                     {friends.map(friend => (
                       <div
                         key={friend._id || friend.friendshipId}
-                        className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                        className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
                       >
-                        <Avatar name={friend.name} size="lg" userId={friend._id} clickable />
-                        <div 
-                          className="flex-1 cursor-pointer"
-                          onClick={() => friend._id && navigate(`/user/${friend._id}`)}
-                        >
-                          <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors">{friend.name || 'Unknown User'}</p>
-                          <p className="text-sm text-gray-500 capitalize">{friend.role || 'user'}</p>
-                          {friend.lastMood && (
-                            <div className="flex items-center gap-1 mt-1">
-                              <span className="text-sm">
-                                {friend.lastMood.score >= 4 ? '😊' : friend.lastMood.score <= 2 ? '😔' : '😐'}
-                              </span>
-                              <span className="text-xs text-gray-400">
-                                {friend.lastMood.mood}
-                              </span>
-                            </div>
-                          )}
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                          <Avatar name={friend.name} size="md" userId={friend._id} clickable className="flex-shrink-0" />
+                          <div 
+                            className="flex-1 cursor-pointer min-w-0"
+                            onClick={() => friend._id && navigate(`/user/${friend._id}`)}
+                          >
+                            <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors text-sm sm:text-base truncate">{friend.name || 'Unknown User'}</p>
+                            <p className="text-xs sm:text-sm text-gray-500 capitalize">{friend.role || 'user'}</p>
+                            {friend.lastMood && (
+                              <div className="flex items-center gap-1 mt-1">
+                                <span className="text-xs sm:text-sm">
+                                  {friend.lastMood.score >= 4 ? '😊' : friend.lastMood.score <= 2 ? '😔' : '😐'}
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                  {friend.lastMood.mood}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:ml-auto">
                           <button
                             onClick={() => handleStartChat(friend)}
                             className="p-2 bg-primary-100 text-primary-600 rounded-lg hover:bg-primary-200 transition-colors"
                             title="Send message"
                           >
-                            <MessageCircle className="w-5 h-5" />
+                            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                           </button>
                           <button
                             onClick={() => handleRemoveFriend(friend.friendshipId, friend.name)}
@@ -312,7 +314,7 @@ export default function FriendsPage({ onStartChat }) {
                             {actionLoading[friend.friendshipId] === 'removing' ? (
                               <Spinner size="sm" />
                             ) : (
-                              <UserMinus className="w-5 h-5" />
+                              <UserMinus className="w-4 h-4 sm:w-5 sm:h-5" />
                             )}
                           </button>
                         </div>
@@ -322,12 +324,12 @@ export default function FriendsPage({ onStartChat }) {
                 )}
 
                 {/* Info Box */}
-                <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-                  <div className="flex items-start gap-3">
-                    <Bell className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 rounded-xl">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm text-blue-800 font-medium">Support Circle Notifications</p>
-                      <p className="text-sm text-blue-600 mt-1">
+                      <p className="text-xs sm:text-sm text-blue-800 font-medium">Support Circle Notifications</p>
+                      <p className="text-xs sm:text-sm text-blue-600 mt-1">
                         When your friends log a low mood, you'll receive a notification so you can 
                         reach out and support them. You'll also be notified when your support helps 
                         improve their mood!
@@ -342,29 +344,31 @@ export default function FriendsPage({ onStartChat }) {
             {activeTab === 'requests' && (
               <div>
                 {pendingRequests.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Clock className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                    <p className="text-gray-500">No pending friend requests</p>
+                  <div className="text-center py-8 sm:py-12">
+                    <Clock className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-gray-500 text-sm sm:text-base">No pending friend requests</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {pendingRequests.map(request => (
                       <div
                         key={request._id}
-                        className="flex items-center gap-4 p-4 bg-yellow-50 rounded-xl"
+                        className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-yellow-50 rounded-xl"
                       >
-                        <Avatar name={request.requester?.name} size="lg" userId={request.requester?._id} clickable />
-                        <div 
-                          className="flex-1 cursor-pointer"
-                          onClick={() => request.requester?._id && navigate(`/user/${request.requester._id}`)}
-                        >
-                          <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors">{request.requester?.name}</p>
-                          <p className="text-sm text-gray-500 capitalize">{request.requester?.role}</p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            Sent {new Date(request.createdAt).toLocaleDateString()}
-                          </p>
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                          <Avatar name={request.requester?.name} size="md" userId={request.requester?._id} clickable className="flex-shrink-0" />
+                          <div 
+                            className="flex-1 cursor-pointer min-w-0"
+                            onClick={() => request.requester?._id && navigate(`/user/${request.requester._id}`)}
+                          >
+                            <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors text-sm sm:text-base truncate">{request.requester?.name}</p>
+                            <p className="text-xs sm:text-sm text-gray-500 capitalize">{request.requester?.role}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Sent {new Date(request.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:ml-auto">
                           <button
                             onClick={() => handleAcceptRequest(request._id)}
                             disabled={actionLoading[request._id]}
@@ -374,7 +378,7 @@ export default function FriendsPage({ onStartChat }) {
                             {actionLoading[request._id] === 'accepting' ? (
                               <Spinner size="sm" className="text-white" />
                             ) : (
-                              <Check className="w-5 h-5" />
+                              <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                             )}
                           </button>
                           <button
@@ -386,7 +390,7 @@ export default function FriendsPage({ onStartChat }) {
                             {actionLoading[request._id] === 'rejecting' ? (
                               <Spinner size="sm" />
                             ) : (
-                              <X className="w-5 h-5" />
+                              <X className="w-4 h-4 sm:w-5 sm:h-5" />
                             )}
                           </button>
                         </div>
@@ -400,22 +404,22 @@ export default function FriendsPage({ onStartChat }) {
             {/* Search Tab */}
             {activeTab === 'search' && (
               <div>
-                <form onSubmit={handleSearch} className="mb-6">
-                  <div className="flex gap-3">
+                <form onSubmit={handleSearch} className="mb-4 sm:mb-6">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                       <input
                         type="text"
                         placeholder="Search by name or email..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm sm:text-base"
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={isSearching || !searchQuery.trim()}
-                      className="px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 sm:px-6 py-2.5 sm:py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium"
                     >
                       {isSearching ? <Spinner size="sm" className="text-white" /> : 'Search'}
                     </button>
@@ -431,32 +435,34 @@ export default function FriendsPage({ onStartChat }) {
                       return (
                         <div
                           key={user._id}
-                          className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl"
+                          className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl"
                         >
-                          <Avatar name={user.name} size="lg" userId={user._id} clickable />
-                          <div 
-                            className="flex-1 cursor-pointer hover:opacity-80"
-                            onClick={() => navigate(`/user/${user._id}`)}
-                          >
-                            <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors">{user.name}</p>
-                            <p className="text-sm text-gray-500 capitalize">{user.role}</p>
+                          <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <Avatar name={user.name} size="md" userId={user._id} clickable className="flex-shrink-0" />
+                            <div 
+                              className="flex-1 cursor-pointer hover:opacity-80 min-w-0"
+                              onClick={() => navigate(`/user/${user._id}`)}
+                            >
+                              <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors text-sm sm:text-base truncate">{user.name}</p>
+                              <p className="text-xs sm:text-sm text-gray-500 capitalize">{user.role}</p>
+                            </div>
                           </div>
-                          <div>
+                          <div className="w-full sm:w-auto sm:ml-auto">
                             {isFriend ? (
-                              <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-sm font-medium flex items-center gap-1">
-                                <Check className="w-4 h-4" />
+                              <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1 justify-center sm:justify-start w-full sm:w-auto">
+                                <Check className="w-3 h-3 sm:w-4 sm:h-4" />
                                 Friends
                               </span>
                             ) : isPending ? (
-                              <span className="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-medium flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
+                              <span className="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1 justify-center sm:justify-start w-full sm:w-auto">
+                                <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                                 Pending
                               </span>
                             ) : (
                               <button
                                 onClick={() => handleSendRequest(user._id)}
                                 disabled={actionLoading[user._id]}
-                                className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2"
+                                className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2 justify-center text-sm w-full sm:w-auto"
                               >
                                 {actionLoading[user._id] === 'sending' ? (
                                   <Spinner size="sm" className="text-white" />
@@ -474,10 +480,10 @@ export default function FriendsPage({ onStartChat }) {
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-12">
-                    <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                    <p className="text-gray-500">Search for users to add to your Support Circle</p>
-                    <p className="text-sm text-gray-400 mt-2">
+                  <div className="text-center py-8 sm:py-12">
+                    <Search className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-gray-500 text-sm sm:text-base">Search for users to add to your Support Circle</p>
+                    <p className="text-xs sm:text-sm text-gray-400 mt-2">
                       Find classmates, counselors, or other students
                     </p>
                   </div>

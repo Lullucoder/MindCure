@@ -159,14 +159,14 @@ export default function UserProfilePage() {
         <button
           onClick={handleRemoveFriend}
           disabled={actionLoading === 'remove'}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all shadow-md font-semibold w-full sm:w-auto"
         >
           {actionLoading === 'remove' ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <UserCheck className="w-4 h-4" />
           )}
-          Friends
+          Friends ✓
         </button>
       );
     }
@@ -175,7 +175,7 @@ export default function UserProfilePage() {
       return (
         <button
           disabled
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-lg cursor-not-allowed shadow-md font-semibold w-full sm:w-auto"
         >
           <Clock className="w-4 h-4" />
           Request Sent
@@ -188,7 +188,7 @@ export default function UserProfilePage() {
         <button
           onClick={handleAcceptRequest}
           disabled={actionLoading === 'accept'}
-          className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all shadow-md font-semibold w-full sm:w-auto"
         >
           {actionLoading === 'accept' ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -204,7 +204,7 @@ export default function UserProfilePage() {
       <button
         onClick={handleSendFriendRequest}
         disabled={actionLoading === 'friend'}
-        className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-primary-600 rounded-lg hover:bg-primary-50 transition-colors shadow-md font-medium"
+        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all shadow-md font-semibold w-full sm:w-auto"
       >
         {actionLoading === 'friend' ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -278,58 +278,58 @@ export default function UserProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary-500 to-primary-700 text-white">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-white/80 hover:text-white mb-6"
+            className="flex items-center gap-2 text-white/80 hover:text-white mb-4 sm:mb-6"
           >
             <ArrowLeft className="w-5 h-5" />
             Back
           </button>
 
           {/* Profile Header */}
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+          <div className="flex flex-col items-center gap-4 sm:gap-6">
             {/* Avatar */}
             <div className="relative">
               <Avatar
                 src={profile.user.avatar}
                 name={profile.user.name}
                 size="xl"
-                className="w-32 h-32 border-4 border-white shadow-lg"
+                className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-white shadow-lg"
               />
               {profile.currentMood && (
-                <div className={`absolute -bottom-2 -right-2 w-10 h-10 rounded-full ${MOOD_ICONS[profile.currentMood.score]?.bg || 'bg-gray-100'} flex items-center justify-center border-2 border-white`}>
+                <div className={`absolute -bottom-2 -right-2 w-8 h-8 sm:w-10 sm:h-10 rounded-full ${MOOD_ICONS[profile.currentMood.score]?.bg || 'bg-gray-100'} flex items-center justify-center border-2 border-white`}>
                   {(() => {
                     const MoodIcon = MOOD_ICONS[profile.currentMood.score]?.icon || Cloud;
-                    return <MoodIcon className={`w-5 h-5 ${MOOD_ICONS[profile.currentMood.score]?.color || 'text-gray-500'}`} />;
+                    return <MoodIcon className={`w-4 h-4 sm:w-5 sm:h-5 ${MOOD_ICONS[profile.currentMood.score]?.color || 'text-gray-500'}`} />;
                   })()}
                 </div>
               )}
             </div>
 
             {/* Info */}
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="text-2xl font-bold">{profile.user.name}</h1>
-              <p className="text-primary-100 capitalize">{profile.user.role}</p>
+            <div className="flex-1 text-center">
+              <h1 className="text-xl sm:text-2xl font-bold">{profile.user.name}</h1>
+              <p className="text-indigo-200 capitalize">{profile.user.role}</p>
               
               {profile.user.bio && (
-                <p className="mt-2 text-primary-100">{profile.user.bio}</p>
+                <p className="mt-2 text-indigo-200 text-sm sm:text-base max-w-md mx-auto">{profile.user.bio}</p>
               )}
 
               {/* Stats Row */}
-              <div className="flex items-center justify-center md:justify-start gap-6 mt-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold">{profile.friendsCount}</p>
-                  <p className="text-xs text-primary-100">Friends</p>
+              <div className="flex items-center justify-center gap-4 sm:gap-6 mt-4">
+                <div className="text-center px-3 py-2 bg-white/10 rounded-lg">
+                  <p className="text-xl sm:text-2xl font-bold">{profile.friendsCount}</p>
+                  <p className="text-xs text-indigo-200">Friends</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold">{profile.postsCount}</p>
-                  <p className="text-xs text-primary-100">Posts</p>
+                <div className="text-center px-3 py-2 bg-white/10 rounded-lg">
+                  <p className="text-xl sm:text-2xl font-bold">{profile.postsCount}</p>
+                  <p className="text-xs text-indigo-200">Posts</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold">{profile.achievements?.length || 0}</p>
-                  <p className="text-xs text-primary-100">Badges</p>
+                <div className="text-center px-3 py-2 bg-white/10 rounded-lg">
+                  <p className="text-xl sm:text-2xl font-bold">{profile.achievements?.length || 0}</p>
+                  <p className="text-xs text-indigo-200">Badges</p>
                 </div>
               </div>
 
@@ -343,12 +343,12 @@ export default function UserProfilePage() {
 
             {/* Action Buttons */}
             {!profile.isOwnProfile && (
-              <div className="flex flex-col gap-2 mt-4 md:mt-0">
+              <div className="flex flex-col sm:flex-row gap-3 mt-4 w-full max-w-xs sm:max-w-none sm:w-auto">
                 {renderFriendButton()}
                 <button
                   onClick={handleStartChat}
                   disabled={actionLoading === 'chat'}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-primary-600 rounded-lg hover:bg-primary-50 transition-colors shadow-md"
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all shadow-md font-semibold w-full sm:w-auto"
                 >
                   {actionLoading === 'chat' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -364,9 +364,9 @@ export default function UserProfilePage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Tabs */}
-        <div className="flex gap-4 mb-6 border-b border-gray-200">
+        <div className="flex gap-2 sm:gap-4 mb-4 sm:mb-6 border-b border-gray-200 overflow-x-auto pb-px">
           {['overview', 'achievements', 'mood'].map((tab) => (
             <button
               key={tab}
