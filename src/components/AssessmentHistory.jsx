@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 const AssessmentHistory = ({ onClose }) => {
-  const [assessmentHistory, setAssessmentHistory] =    ([]);
+  const [assessmentHistory, setAssessmentHistory] = useState([]);
   const [selectedTimeRange, setSelectedTimeRange] = useState('3months');
   const [selectedAssessmentType, setSelectedAssessmentType] = useState('all');
   const [viewMode, setViewMode] = useState('list'); // list or chart
