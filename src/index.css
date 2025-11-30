@@ -286,16 +286,82 @@ button:focus {
   margin-bottom: 2rem;
 }
 
-.auth-logo {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 1.5rem;
-  background: linear-gradient(135deg, #0ea5e9, #10b981);
-  border-radius: 16px;
+.auth-logo-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 40px -10px rgba(14, 165, 233, 0.5);
+  gap: 12px;
+  margin-bottom: 1.75rem;
+}
+
+.auth-logo {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #10b981 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 8px 32px -8px rgba(14, 165, 233, 0.5),
+    0 4px 16px -4px rgba(16, 185, 129, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  position: relative;
+  animation: logoPulse 3s ease-in-out infinite;
+}
+
+.auth-logo::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0ea5e9, #10b981);
+  z-index: -1;
+  opacity: 0.4;
+  filter: blur(8px);
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 8px 32px -8px rgba(14, 165, 233, 0.5),
+      0 4px 16px -4px rgba(16, 185, 129, 0.3),
+      inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 
+      0 12px 40px -8px rgba(14, 165, 233, 0.6),
+      0 6px 20px -4px rgba(16, 185, 129, 0.4),
+      inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  }
+}
+
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.auth-brand-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0ea5e9, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.auth-brand-tagline {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .auth-title {
