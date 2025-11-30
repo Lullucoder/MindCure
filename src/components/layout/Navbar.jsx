@@ -79,23 +79,6 @@ const Navbar = () => {
     : currentUser?.email || 'Account';
 
   return (
-<<<<<<< HEAD
-    <nav className="bg-white shadow-sm   sticky top-0 z-50 backdrop-blur-sm bg-white/95">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-green-400 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                <Heart className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-bold text-gray-800">Mental Health</span>
-                <span className="text-xs text-gray-500 font-medium -mt-1">SUPPORT PLATFORM</span>
-              </div>
-            </Link>
-          </div>
-=======
     <nav className="navbar">
       <div className="layout-container">
         <div className="navbar__surface">
@@ -108,24 +91,15 @@ const Navbar = () => {
               <span>THERAPY &amp; WELLNESS</span>
             </span>
           </Link>
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
 
           <div className="navbar__links hidden lg:flex">
             {commonNav.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-<<<<<<< HEAD
-                className={`nav-link text-base font-medium transition-colors hover:text-accessible-interactive-primary focus:outline-3 focus:outline-yellow-400 focus:outline-offset-2 focus:bg-accessible-bg-focus focus:rounded focus:px-2 focus:py-1 ${
-                  isCurrentPath(item.href)
-                    ? 'text-accessible-interactive-primary font-semibold'
-                    : 'text-accessible-text-secondary'
-                }`}
-=======
                 className="nav-link"
                 data-active={isActive(item.href)}
                 aria-current={isActive(item.href) ? 'page' : undefined}
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
               >
                 <item.icon className="h-4 w-4" />
                 <span>{item.name}</span>
@@ -145,15 +119,6 @@ const Navbar = () => {
             ))}
           </div>
 
-<<<<<<< HEAD
-          {/* Right side - Desktop */}
-          <div className="hidden lg:flex items-center space-x-6">
-            <Link
-              to="/dashboard"
-              className="bg-accessible-interactive-primary text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-accessible-interactive-primary-hover focus:outline-3 focus:outline-yellow-400 focus:outline-offset-2 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl min-h-[44px] min-w-[44px] flex items-center justify-center"
-            >
-              Log In
-=======
           <div className="navbar__actions hidden lg:flex">
             {currentUser && (
               <div className="flex items-center gap-2">
@@ -179,7 +144,6 @@ const Navbar = () => {
             <Link to="/crisis" className="btn btn--secondary" aria-label="Crisis resources">
               <Phone className="h-4 w-4" />
               <span>Crisis</span>
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
             </Link>
             {currentUser ? (
               <button
@@ -199,18 +163,6 @@ const Navbar = () => {
             )}
           </div>
 
-<<<<<<< HEAD
-          {/* Mobile menu button */}
-          <div className="lg:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-xl text-accessible-text-secondary hover:text-accessible-text-primary hover:bg-accessible-bg-interactive transition-colors focus:outline-3 focus:outline-yellow-400 focus:outline-offset-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label={isOpen ? 'Close menu' : 'Open menu'}
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-=======
           <button
             onClick={() => setIsOpen((open) => !open)}
             className="navbar__mobile-toggle lg:hidden"
@@ -219,20 +171,13 @@ const Navbar = () => {
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
         </div>
       </div>
 
       {isOpen && (
-<<<<<<< HEAD
-        <div className="lg:hidden">
-          <div className="px-4 pt-4 pb-6 space-y-3 bg-white  shadow-lg">
-            {navigation.map((item) => (
-=======
         <div id="mobile-nav" className="navbar__mobile-panel lg:hidden">
           <nav className="navbar__mobile-list" aria-label="Mobile navigation">
             {commonNav.map((item) => (
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
               <Link
                 key={item.name}
                 to={item.href}
@@ -240,24 +185,12 @@ const Navbar = () => {
                 data-active={isActive(item.href)}
                 aria-current={isActive(item.href) ? 'page' : undefined}
                 onClick={() => setIsOpen(false)}
-<<<<<<< HEAD
-                className={`nav-link block px-4 py-3 rounded-xl text-base font-medium transition-colors min-h-[44px] ${
-                  isCurrentPath(item.href)
-                    ? 'bg-accessible-bg-interactive text-accessible-interactive-primary font-semibold'
-                    : 'text-accessible-text-secondary hover:text-accessible-text-primary hover:bg-accessible-bg-interactive-hover'
-                }`}
-=======
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
               >
                 <item.icon className="h-5 w-5" />
                 <span>{item.name}</span>
               </Link>
             ))}
-<<<<<<< HEAD
-            <div className="pt-4 ">
-=======
             {roleBasedNav.map((item) => (
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
               <Link
                 key={item.name}
                 to={item.href}
@@ -265,10 +198,6 @@ const Navbar = () => {
                 data-active={isActive(item.href)}
                 aria-current={isActive(item.href) ? 'page' : undefined}
                 onClick={() => setIsOpen(false)}
-<<<<<<< HEAD
-                className="nav-link block w-full bg-accessible-interactive-primary text-white px-4 py-3 rounded-xl font-semibold text-center hover:bg-accessible-interactive-primary-hover transition-colors min-h-[44px] flex items-center justify-center"
-=======
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
               >
                 <item.icon className="h-5 w-5" />
                 <span>{item.name}</span>

@@ -416,31 +416,12 @@ const CrisisPage = () => {
               ))}
             </div>
 
-<<<<<<< HEAD
-          {/* Other sections remain the same but with proper spacing for the page layout */}
-          {currentSection === 'local' && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Local Emergency Resources</h2>
-                <p className="text-gray-600 mb-6 text-lg">
-                  Find immediate help in your area for Crisis situations.
-                </p>
-              </div>
-
-              <div className="grid gap-6">
-                {crisisResources.local.map((resource, index) => (
-                  <div
-                    key={index}
-                    className={`border-2 rounded-lg p-6 ${getPriorityColor(resource.priority)}`}
-                  >
-=======
             {/* Online Resources */}
             <div>
               <h3 className="text-2xl font-semibold text-gray-900 mb-6">Online Support</h3>
               <div className="grid gap-4">
                 {crisisResources.online.map((resource, index) => (
                   <div key={index} className="bg-blue-50 border border-blue-200 rounded-xl p-6">
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="p-3 bg-blue-100 rounded-lg">
@@ -451,28 +432,6 @@ const CrisisPage = () => {
                           <p className="text-gray-600">{resource.description}</p>
                         </div>
                       </div>
-<<<<<<< HEAD
-
-                      <div className="flex space-x-3">
-                        {resource.type === 'emergency' ? (
-                          <a
-                            href="tel:911"
-                            className="px-8 py-4 bg-red-800 hover:bg-red-900 text-white rounded-lg font-bold transition-colors"
-                          >
-                            Call 911
-                          </a>
-                        ) : resource.type === 'location' ? (
-                          <button className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-semibold transition-colors flex items-center">
-                            <Navigation className="h-4 w-4 mr-2" />
-                            Find Nearby
-                          </button>
-                        ) : (
-                          <button className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors">
-                            Contact
-                          </button>
-                        )}
-                      </div>
-=======
                       
                       <a
                         href={resource.url}
@@ -483,7 +442,6 @@ const CrisisPage = () => {
                         Visit Site
                         <ExternalLink className="h-5 w-5 ml-2" />
                       </a>
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
                     </div>
                   </div>
                 ))}
@@ -612,84 +570,6 @@ const CrisisPage = () => {
                   <AlertTriangle className="h-6 w-6 mr-3" />
                   Immediate Warning Signs - Seek Help Now
                 </h3>
-<<<<<<< HEAD
-                <div className="space-y-3 text-gray-700">
-                  <p>• Identify your nearest hospital with psychiatric services</p>
-                  <p>• Know your insurance information and have it readily available</p>
-                  <p>• Keep important phone numbers saved in your phone</p>
-                  <p>• Have a trusted person who can accompany you if needed</p>
-                  <p>• Consider transportation options to emergency services</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Coping Strategies and Warning Signs sections would follow the same pattern */}
-          {currentSection === 'coping' && (
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Immediate Coping Strategies</h2>
-                <p className="text-gray-600 mb-6 text-lg">
-                  These techniques can help you manage Crisis moments and stay safe.
-                </p>
-              </div>
-
-              <div className="grid gap-8">
-                {copingStrategies.map((strategy, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-8">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                      <div className="p-3 bg-primary-100 rounded-lg mr-4">
-                        {strategy.icon}
-                      </div>
-                      {strategy.title}
-                    </h3>
-                    
-                    <div className="space-y-4">
-                      {strategy.techniques.map((technique, techIndex) => (
-                        <div key={techIndex} className="flex items-start space-x-4">
-                          <div className="w-3 h-3 bg-primary-500 rounded-full mt-2 flex-shrink-0" />
-                          <p className="text-gray-700 text-lg">{technique}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {currentSection === 'warning' && (
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Recognizing Warning Signs</h2>
-                <p className="text-gray-600 mb-6 text-lg">
-                  Learn to identify signs that may indicate you or someone you know needs immediate help.
-                </p>
-              </div>
-
-              <div className="grid gap-8">
-                {/* Immediate Warning Signs */}
-                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-8">
-                  <h3 className="text-xl font-semibold text-red-900 mb-6 flex items-center">
-                    <AlertTriangle className="h-6 w-6 mr-3" />
-                    Immediate Warning Signs - Seek Help Now
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {warningSignsData.immediate.map((sign, index) => (
-                      <div key={index} className="flex items-start space-x-3">
-                        <div className="w-3 h-3 bg-red-500 rounded-full mt-2 flex-shrink-0" />
-                        <p className="text-red-800 text-lg">{sign}</p>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-6 p-4 bg-red-100 rounded-lg">
-                    <p className="text-red-800 font-medium">
-                      If you or someone you know shows these signs, seek immediate professional help or call a Crisis hotline.
-                    </p>
-                  </div>
-=======
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {warningSignsData.immediate.map((sign, index) => (
@@ -698,7 +578,6 @@ const CrisisPage = () => {
                       <p className="text-red-800">{sign}</p>
                     </div>
                   ))}
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
                 </div>
                 
                 <div className="mt-6 p-4 bg-red-100 rounded-lg">
