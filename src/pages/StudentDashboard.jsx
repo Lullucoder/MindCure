@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import studentService from '../services/studentService';
 import moodService from '../services/moodService';
+import messageService from '../services/messageService';
 import ResourcesSection from '../components/resources/ResourcesSection';
 import CommunityForum from '../components/community/CommunityForum';
 import MoodCheckInModal from '../components/mood/MoodCheckInModal';
@@ -26,11 +28,15 @@ import {
 
 const StudentDashboard = () => {
   const { userProfile } = useAuth();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [dashboardData, setDashboardData] = useState(null);
   const [counselors, setCounselors] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Chat state for passing conversation between components
+  const [pendingConversation, setPendingConversation] = useState(null);
 
   // Mood check-in states
   const [showMoodCheckIn, setShowMoodCheckIn] = useState(false);
@@ -44,6 +50,33 @@ const StudentDashboard = () => {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState('');
   const [bookingReason, setBookingReason] = useState('');
+
+  // Handle navigation state (from UserProfilePage send message)
+  useEffect(() => {
+    const handleLocationState = async () => {
+      if (location.state?.openMessages) {
+        setActiveTab('messages');
+        
+        // If we have a conversationId, fetch and set it
+        if (location.state?.conversationId) {
+          try {
+            const data = await messageService.getConversations();
+            const conversation = data.conversations?.find(c => c._id === location.state.conversationId);
+            if (conversation) {
+              setPendingConversation(conversation);
+            }
+          } catch (error) {
+            console.error('Error loading conversation:', error);
+          }
+        }
+        
+        // Clear the state to prevent re-triggering
+        window.history.replaceState({}, document.title);
+      }
+    };
+    
+    handleLocationState();
+  }, [location.state]);
 
   useEffect(() => {
     loadDashboard();
@@ -249,6 +282,21 @@ const StudentDashboard = () => {
           </div>
         </div>
 
+        {/* Mobile Section Header - shows current section name with back option */}
+        {activeTab !== 'overview' && (
+          <div className="sm:hidden mb-4 flex items-center gap-3">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50"
+            >
+              <LayoutDashboard className="w-5 h-5 text-gray-600" />
+            </button>
+            <h2 className="text-lg font-semibold text-gray-800">
+              {tabs.find(t => t.id === activeTab)?.label}
+            </h2>
+          </div>
+        )}
+
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6 sm:space-y-8">
@@ -439,12 +487,18 @@ const StudentDashboard = () => {
         {activeTab === 'community' && <CommunityForum />}
 
         {/* Messages Tab */}
-        {activeTab === 'messages' && <MessagesPage />}
+        {activeTab === 'messages' && (
+          <MessagesPage 
+            initialConversation={pendingConversation}
+            onConversationOpened={() => setPendingConversation(null)}
+          />
+        )}
 
         {/* Friends/Support Circle Tab */}
         {activeTab === 'friends' && (
           <FriendsPage 
             onStartChat={(conversation, friend) => {
+              setPendingConversation(conversation);
               setActiveTab('messages');
             }} 
           />

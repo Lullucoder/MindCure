@@ -1,11 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, Heart, BookOpen, Phone } from 'lucide-react';
+import { MessageCircle, Heart, BookOpen, Home, Users } from 'lucide-react';
 
 const items = [
+  { label: 'Home', to: '/dashboard', icon: Home },
   { label: 'Chat', to: '/chat', icon: MessageCircle },
   { label: 'Check-in', to: '/mood', icon: Heart },
-  { label: 'Resources', to: '/resources', icon: BookOpen },
-  { label: 'Crisis', to: '/crisis', icon: Phone }
+  { label: 'Social', to: '/student', icon: Users, state: { tab: 'friends' } },
 ];
 
 const BottomNav = () => {

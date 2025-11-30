@@ -75,5 +75,6 @@ export default {
   getMessages,
   sendMessage,
   markMessagesAsRead,
+  markAsRead: markMessagesAsRead, // alias
   getUnreadMessageCount
 };

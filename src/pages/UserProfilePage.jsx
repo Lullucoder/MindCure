@@ -142,10 +142,17 @@ export default function UserProfilePage() {
   const handleStartChat = async () => {
     setActionLoading('chat');
     try {
-      const conversation = await messageService.getOrCreateConversation(userId);
-      navigate('/student', { state: { openMessages: true, conversationId: conversation._id } });
+      const data = await messageService.getOrCreateConversation(userId);
+      // Navigate with the conversation ID to open messages
+      navigate('/student', { 
+        state: { 
+          openMessages: true, 
+          conversationId: data.conversation?._id || data._id 
+        } 
+      });
     } catch (err) {
-      setError(err.message);
+      console.error('Error starting chat:', err);
+      setError(err.message || 'Failed to start chat');
     } finally {
       setActionLoading('');
     }

@@ -23,7 +23,7 @@ import friendService from '../../services/friendService';
 import Avatar from '../ui/Avatar';
 import Spinner from '../ui/Spinner';
 
-export default function MessagesPage() {
+export default function MessagesPage({ initialConversation, onConversationOpened }) {
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -35,6 +35,7 @@ export default function MessagesPage() {
   const [showNewChat, setShowNewChat] = useState(false);
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
+  const initialConversationHandled = useRef(false);
 
   // Get current user
   const getCurrentUser = () => {
@@ -57,6 +58,26 @@ export default function MessagesPage() {
     loadConversations();
     loadFriends();
   }, []);
+
+  // Handle initial conversation from props (e.g., from FriendsPage or UserProfile)
+  useEffect(() => {
+    if (initialConversation && !initialConversationHandled.current) {
+      initialConversationHandled.current = true;
+      // Small delay to ensure conversations are loaded first
+      const timer = setTimeout(() => {
+        handleSelectConversation(initialConversation);
+        onConversationOpened?.();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [initialConversation]);
+
+  // Reset handled flag when initialConversation changes to null
+  useEffect(() => {
+    if (!initialConversation) {
+      initialConversationHandled.current = false;
+    }
+  }, [initialConversation]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -93,7 +114,24 @@ export default function MessagesPage() {
   const loadFriends = async () => {
     try {
       const data = await friendService.getFriends();
-      setFriends(data.friends || []);
+      // Normalize friend data in case of old format (friend nested object)
+      const normalizedFriends = (data.friends || []).map(f => {
+        // If the data has a nested 'friend' object (old format), flatten it
+        if (f.friend && f.friend._id) {
+          return {
+            _id: f.friend._id,
+            name: f.friend.name || `${f.friend.firstName || ''} ${f.friend.lastName || ''}`.trim() || f.friend.email,
+            email: f.friend.email,
+            role: f.friend.role,
+          };
+        }
+        // New format - data is already flat
+        return {
+          ...f,
+          name: f.name || `${f.firstName || ''} ${f.lastName || ''}`.trim() || f.email || 'Unknown'
+        };
+      });
+      setFriends(normalizedFriends);
     } catch (error) {
       console.error('Error loading friends:', error);
     }
@@ -171,7 +209,14 @@ export default function MessagesPage() {
   };
 
   const getOtherParticipant = (conversation) => {
-    return conversation.participants?.find(p => p._id !== currentUser?._id);
+    // Handle both 'participant' (singular from API) and 'participants' (array)
+    if (conversation.participant) {
+      return conversation.participant;
+    }
+    if (conversation.participants?.length) {
+      return conversation.participants.find(p => p._id !== currentUser?._id);
+    }
+    return null;
   };
 
   const formatTime = (date) => {
@@ -191,9 +236,20 @@ export default function MessagesPage() {
     }
   };
 
+  // Get display name from participant (handles both 'name' and 'firstName lastName')
+  const getParticipantName = (participant) => {
+    if (!participant) return 'Unknown';
+    if (participant.name) return participant.name;
+    if (participant.firstName || participant.lastName) {
+      return `${participant.firstName || ''} ${participant.lastName || ''}`.trim();
+    }
+    return participant.email || 'Unknown';
+  };
+
   const filteredConversations = conversations.filter(conv => {
     const other = getOtherParticipant(conv);
-    return other?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const name = getParticipantName(other);
+    return name?.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   // Mobile view: show either list or chat
@@ -299,14 +355,14 @@ export default function MessagesPage() {
                     }`}
                   >
                     <div className="relative">
-                      <Avatar name={other?.name} size="md" />
+                      <Avatar name={getParticipantName(other)} size="md" />
                       {other?.isOnline && (
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <div className="flex items-center justify-between">
-                        <p className="font-medium text-gray-800 truncate">{other?.name}</p>
+                        <p className="font-medium text-gray-800 truncate">{getParticipantName(other)}</p>
                         <span className="text-xs text-gray-400">
                           {conversation.lastMessage?.createdAt && formatTime(conversation.lastMessage.createdAt)}
                         </span>
@@ -341,14 +397,14 @@ export default function MessagesPage() {
                   </button>
                 )}
                 <Avatar 
-                  name={getOtherParticipant(selectedConversation)?.name} 
+                  name={getParticipantName(getOtherParticipant(selectedConversation))} 
                   size="md"
                   userId={getOtherParticipant(selectedConversation)?._id}
                   clickable
                 />
                 <div className="flex-1">
                   <p className="font-semibold text-gray-800">
-                    {getOtherParticipant(selectedConversation)?.name}
+                    {getParticipantName(getOtherParticipant(selectedConversation))}
                   </p>
                   <p className="text-sm text-gray-500 capitalize">
                     {getOtherParticipant(selectedConversation)?.role}
@@ -375,7 +431,7 @@ export default function MessagesPage() {
                     >
                       {showAvatar ? (
                         <Avatar 
-                          name={getOtherParticipant(selectedConversation)?.name} 
+                          name={getParticipantName(getOtherParticipant(selectedConversation))} 
                           size="sm" 
                         />
                       ) : (
