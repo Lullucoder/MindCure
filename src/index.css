@@ -150,7 +150,6 @@
   --duration-slow: 360ms;
 }
 
-<<<<<<< HEAD
 /* WCAG AA Compliant Button Styles */
 .btn-primary {
   background-color: #2b6cb0; /* WCAG AA compliant blue (4.9:1 on white) */
@@ -299,14 +298,12 @@
 }
 
 /* Reset body styles for our app */
-=======
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
 body {
   margin: 0;
   min-height: 100vh;
@@ -324,7 +321,6 @@ main {
 
 /* WCAG AA Compliant Link Styles */
 a {
-<<<<<<< HEAD
   color: #2b6cb0; /* High contrast blue (4.9:1 ratio) */
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -358,16 +354,6 @@ a:focus {
 .nav-link:hover {
   color: #2b6cb0;
   text-decoration: none;
-=======
-  color: var(--color-primary-600);
-  text-decoration: none;
-  transition: color var(--duration-base) var(--easing-standard);
-}
-
-a:hover,
-a:focus-visible {
-  color: var(--color-primary-500);
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
 }
 
 .nav-link:focus {
