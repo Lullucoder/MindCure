@@ -1,4 +1,5 @@
-﻿import { Link } from 'react-router-dom';
+﻿import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   Brain,
@@ -11,339 +12,280 @@ import {
   Shield,
   Sparkles,
   Users,
-  BookOpen
+  BookOpen,
+  Smile,
+  Calendar,
+  Trophy,
+  Star,
+  Zap,
+  Target,
+  TrendingUp,
+  ChevronRight
 } from 'lucide-react';
 
-const heroShortcuts = [
-  {
-    to: '/chat',
-    icon: MessageCircle,
-    label: 'AI chat',
-    gradient: 'linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500))'
-  },
-  {
-    to: '/mood',
-    icon: Heart,
-    label: 'Mood log',
-    gradient: 'linear-gradient(135deg, var(--color-emerald-400), var(--color-emerald-500))'
-  },
-  {
-    to: '/crisis',
-    icon: Phone,
-    label: 'Crisis help',
-    gradient: 'linear-gradient(135deg, var(--color-coral-400), var(--color-coral-500))'
-  }
-];
-
-const quickSteps = [
-  {
-    number: '01',
-    title: 'Share your goals',
-    description: 'Tell us how you are feeling and what a good day looks like so support feels personal.'
-  },
-  {
-    number: '02',
-    title: 'Try supportive tools',
-    description: 'Chat with the AI guide, explore calming practices, or reach a counselor in minutes.'
-  },
-  {
-    number: '03',
-    title: 'Keep growing daily',
-    description: 'Reflect, track your mood, and build restorative habits one gentle step at a time.'
-  }
-];
-
-const trustStats = [
-  { number: '10K+', label: 'Students supported' },
-  { number: '24/7', label: 'Responsive care access' },
-  { number: '95%', label: 'Feel calmer after check-ins' },
-  { number: '500+', label: 'Curated wellness practices' }
-];
-
-const featureHighlights = [
+const features = [
   {
     icon: MessageCircle,
-    title: 'Virtual counseling & therapy',
-    description: 'AI-supported sessions with optional warm handoffs to licensed professionals when you need human care.',
-    tone: 'primary',
-    to: '/chat'
+    title: 'AI Therapy Chat',
+    description: 'Talk to our empathetic AI companion anytime. Get instant support, coping strategies, and a safe space to express yourself.',
+    color: '#0ea5e9',
+    gradient: 'linear-gradient(135deg, #0ea5e9, #06b6d4)'
+  },
+  {
+    icon: Smile,
+    title: 'Mood Tracking',
+    description: 'Log your emotions daily and discover patterns. Beautiful visualizations help you understand your mental wellness journey.',
+    color: '#22c55e',
+    gradient: 'linear-gradient(135deg, #22c55e, #10b981)'
   },
   {
     icon: Users,
-    title: 'Peer circles & moderated spaces',
-    description: 'Join safe discussion rooms and journaling prompts that help you feel connected and seen.',
-    tone: 'accent',
-    to: '/dashboard'
+    title: 'Support Circle',
+    description: 'Connect with friends who care. Share your journey, send encouragement, and build a supportive community.',
+    color: '#8b5cf6',
+    gradient: 'linear-gradient(135deg, #8b5cf6, #a855f7)'
+  },
+  {
+    icon: Calendar,
+    title: 'Book Counselors',
+    description: 'Schedule sessions with professional counselors. Get expert guidance when you need human support.',
+    color: '#f59e0b',
+    gradient: 'linear-gradient(135deg, #f59e0b, #f97316)'
+  },
+  {
+    icon: Trophy,
+    title: 'Achievements & XP',
+    description: 'Stay motivated with gamified wellness. Earn badges, track streaks, and celebrate your mental health wins.',
+    color: '#ec4899',
+    gradient: 'linear-gradient(135deg, #ec4899, #f43f5e)'
+  },
+  {
+    icon: BookOpen,
+    title: 'Self-Help Resources',
+    description: 'Access guided exercises, breathing techniques, and educational content curated by mental health experts.',
+    color: '#14b8a6',
+    gradient: 'linear-gradient(135deg, #14b8a6, #06b6d4)'
   }
 ];
 
-const supportPillars = [
+const testimonials = [
   {
-    icon: Brain,
-    title: 'AI insights you can trust',
-    description: 'Context-aware reflections grounded in CBT, DBT, and mindfulness research to help you move forward with clarity.',
-    gradient: 'linear-gradient(135deg, var(--color-primary-400), var(--color-emerald-400))'
+    quote: "MindCure helped me through my toughest semester. The AI chat feels like talking to a friend who truly understands.",
+    author: "Priya S.",
+    role: "Engineering Student",
+    avatar: "🎓"
   },
   {
-    icon: Shield,
-    title: 'Privacy-first design',
-    description: 'Encrypted conversations, transparent consent, and control over what you share at every step.',
-    gradient: 'linear-gradient(135deg, var(--color-primary-400), var(--color-coral-400))'
+    quote: "I love tracking my mood daily. Seeing my progress over weeks gave me hope and motivation to keep going.",
+    author: "Rahul M.",
+    role: "Medical Student",
+    avatar: "💪"
   },
   {
-    icon: Clock,
-    title: 'Support that never sleeps',
-    description: '24/7 responses, crisis escalation, and gentle nudges that respect your pace and boundaries.',
-    gradient: 'linear-gradient(135deg, var(--color-emerald-400), var(--color-primary-400))'
-  },
-  {
-    icon: Headphones,
-    title: 'Human care network',
-    description: 'Counselors, campus partners, and helplines ready for warm transfers whenever you want a human voice.',
-    gradient: 'linear-gradient(135deg, var(--color-coral-400), var(--color-primary-400))'
+    quote: "The crisis resources are a lifesaver. Knowing help is just one tap away gives me so much peace of mind.",
+    author: "Ananya K.",
+    role: "Arts Student",
+    avatar: "🌟"
   }
 ];
 
-const heroGlows = [
+const chatScenarios = [
   {
-    top: '-32%',
-    right: '-12%',
-    width: '420px',
-    height: '420px',
-    background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.28), rgba(59, 130, 246, 0.22))'
+    user: "I've been feeling overwhelmed with exams lately...",
+    ai: "I hear you. Exam stress is really tough. Let's take a moment together. Would you like to try a quick breathing exercise?"
   },
   {
-    bottom: '-28%',
-    left: '-16%',
-    width: '360px',
-    height: '360px',
-    background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(59, 130, 246, 0.18))'
-  }
-];
-
-const statsGlows = [
-  {
-    top: '-30%',
-    left: '-12%',
-    width: '320px',
-    height: '320px',
-    background: 'rgba(255, 255, 255, 0.32)'
+    user: "I just feel so anxious all the time.",
+    ai: "It takes courage to share that. Anxiety can be heavy. I'm here to listen. What does that anxiety feel like for you right now?"
   },
   {
-    bottom: '-32%',
-    right: '-10%',
-    width: '360px',
-    height: '360px',
-    background: 'rgba(255, 255, 255, 0.22)'
+    user: "I'm having trouble sleeping.",
+    ai: "Sleep is so important for your mind. We have some calming sleep stories and meditation guides. Shall we explore them?"
   }
 ];
-
-const ctaGlows = [
-  {
-    top: '-22%',
-    left: '8%',
-    width: '300px',
-    height: '300px',
-    background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.28), rgba(59, 130, 246, 0.18))'
-  },
-  {
-    bottom: '-26%',
-    right: '6%',
-    width: '340px',
-    height: '340px',
-    background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(59, 130, 246, 0.16))'
-  }
-];
-
-const toneGradient = (tone) => {
-  if (tone === 'primary') {
-    return 'linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500))';
-  }
-
-  if (tone === 'secondary') {
-    return 'linear-gradient(135deg, var(--color-emerald-400), var(--color-emerald-500))';
-  }
-
-  return 'linear-gradient(135deg, var(--color-coral-400), var(--color-coral-500))';
-};
 
 const LandingPage = () => {
+  const [activeScenario, setActiveScenario] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
+  const [showAiResponse, setShowAiResponse] = useState(true);
+
+  // Chat animation loop
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsTyping(true);
+      setShowAiResponse(false);
+      
+      setTimeout(() => {
+        setActiveScenario((prev) => (prev + 1) % chatScenarios.length);
+        setIsTyping(false);
+        setTimeout(() => setShowAiResponse(true), 300);
+      }, 1500);
+      
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Scroll animation observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    document.querySelectorAll('.reveal-on-scroll').forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div>
-      <section className="landing-hero">
-        <div className="landing-hero__background" aria-hidden="true">
-          {heroGlows.map((glow, index) => (
-            <span key={`hero-glow-${index}`} className="landing-hero__glow animate-float-soft" style={glow} />
-          ))}
+    <div className="landing-page">
+      {/* Hero Section */}
+      <section className="hero-section">
+        <div className="hero-bg">
+          <div className="hero-gradient-1"></div>
+          <div className="hero-gradient-2"></div>
+          <div className="hero-gradient-3"></div>
+          <div className="hero-gradient-4"></div>
         </div>
-
+        
         <div className="layout-container">
-          <div className="landing-hero__grid">
-            <div>
-              <div className="landing-hero__badge">
-                <span className="landing-hero__logo">
-                  <Heart className="h-7 w-7" />
-                </span>
-                <div className="landing-hero__brand">
-                  <span>MindCure</span>
-                  <small>Therapy platform</small>
-                </div>
-              </div>
-
-              <h1 className="landing-hero__title">
-                Real support for the moments
-                <span>you need it most</span>
-              </h1>
-
-              <p className="landing-hero__subtitle">
-                Access compassionate AI guidance, crisis resources, and restorative practices that meet you exactly where you are.
-              </p>
-
-              <div className="landing-hero__actions">
-                <Link to="/chat" className="btn btn--primary">
-                  <Sparkles className="h-5 w-5" />
-                  <span>Start a guided session</span>
-                </Link>
-                <Link to="/mood" className="btn btn--alert">
-                  <CheckCircle className="h-5 w-5" />
-                  <span>Log a quick check-in</span>
-                </Link>
-                <Link to="/crisis" className="btn btn--outline-accent">
-                  <Phone className="h-5 w-5" />
-                  <span>Emergency contacts</span>
-                </Link>
-              </div>
-
-              <div className="landing-shortcuts">
-                {heroShortcuts.map((shortcut) => {
-                  const ShortcutIcon = shortcut.icon;
-                  return (
-                    <Link key={shortcut.label} to={shortcut.to} className="landing-shortcut-card">
-                      <span className="landing-shortcut-card__icon" style={{ background: shortcut.gradient }}>
-                        <ShortcutIcon className="h-4 w-4" />
-                      </span>
-                      <span className="landing-shortcut-card__label">{shortcut.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-
-              <Link to="/crisis" className="landing-crisis">
-                <span className="landing-crisis__icon">
-                  <Phone className="h-4 w-4" />
-                </span>
-                <span>
-                  Crisis support (India): Call <strong>14416</strong> (Tele-MANAS) or national emergency number <strong>112</strong> for immediate help.
-                </span>
+          <div className="hero-content reveal-on-scroll">
+            <div className="hero-badge">
+              <Sparkles className="h-4 w-4" />
+              <span>Your Mental Wellness Companion</span>
+            </div>
+            
+            <h1 className="hero-title">
+              Take care of your
+              <span className="hero-title-gradient"> mind</span>,
+              <br />
+              one day at a time
+            </h1>
+            
+            <p className="hero-subtitle">
+              MindCure provides 24/7 AI-powered mental health support, mood tracking, 
+              and connection with peers who understand. You're never alone.
+            </p>
+            
+            <div className="hero-actions">
+              <Link to="/register" className="hero-btn hero-btn--primary">
+                <Sparkles className="h-5 w-5" />
+                <span>Start Free Today</span>
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+              <Link to="/chat" className="hero-btn hero-btn--secondary">
+                <MessageCircle className="h-5 w-5" />
+                <span>Try AI Chat</span>
               </Link>
             </div>
-
-            <div className="landing-hero__visual" aria-hidden="true">
-              <div className="landing-hero__visual-outer">
-                <div className="landing-hero__visual-panel">
-                  <span className="landing-hero__visual-avatar">
-                    <Sparkles className="h-6 w-6" />
-                  </span>
-                  <span className="landing-hero__bubble landing-hero__bubble--user">
-                    ΓÇ£I cannot sleep and my mind keeps racing. I just need something that calms me down right now.ΓÇ¥
-                  </span>
-                  <span className="landing-hero__bubble landing-hero__bubble--ai">
-                    <strong>MindCure:</strong> I am with you. Let us slow the rush together with a two-minute breathing reset and a grounding exercise.
-                  </span>
-                  <div className="landing-hero__visual-meter">
-                    <span />
-                  </div>
-                  <div className="landing-hero__badge">
-                    <CheckCircle className="h-5 w-5" />
-                    <div>
-                      <strong>Wellness streak</strong>
-                      <div>3 gentle check-ins this week</div>
-                    </div>
-                  </div>
+            
+            <div className="hero-trust">
+              <div className="hero-trust-avatars">
+                <span>😊</span>
+                <span>🎓</span>
+                <span>💪</span>
+                <span>🌟</span>
+              </div>
+              <p>Trusted by <strong>10,000+</strong> students worldwide</p>
+            </div>
+          </div>
+          
+          <div className="hero-visual reveal-on-scroll" style={{ transitionDelay: '0.2s' }}>
+            <div className="hero-card hero-card--main">
+              <div className="hero-card-header">
+                <div className="hero-card-avatar">
+                  <Brain className="h-6 w-6" />
+                </div>
+                <div>
+                  <strong>MindCure AI</strong>
+                  <span>Online • Ready to help</span>
                 </div>
               </div>
+              
+              <div className="hero-chat-container">
+                <div key={`user-${activeScenario}`} className="hero-chat-bubble hero-chat-bubble--user animate-pop-in">
+                  {chatScenarios[activeScenario].user}
+                </div>
+                
+                {isTyping && (
+                  <div className="hero-card-typing">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                )}
+                
+                {!isTyping && showAiResponse && (
+                  <div key={`ai-${activeScenario}`} className="hero-chat-bubble hero-chat-bubble--ai animate-pop-in">
+                    {chatScenarios[activeScenario].ai}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="hero-card hero-card--mood animate-float-delayed">
+              <div className="hero-card-mood-header">
+                <Smile className="h-5 w-5" />
+                <span>Today's Mood</span>
+              </div>
+              <div className="hero-mood-emoji">😊</div>
+              <div className="hero-mood-label">Feeling Good</div>
+              <div className="hero-mood-streak">
+                <Zap className="h-4 w-4" />
+                <span>7 day streak!</span>
+              </div>
+            </div>
+            
+            <div className="hero-card hero-card--achievement animate-float">
+              <Trophy className="h-5 w-5" />
+              <span>+50 XP</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="landing-steps">
+      {/* Features Section */}
+      <section className="features-section">
         <div className="layout-container">
-          <div className="landing-section-heading">
-            <h2>How it works</h2>
-            <p>Three simple steps to feel grounded, supported, and in control of your mental wellness journey.</p>
+          <div className="section-header reveal-on-scroll">
+            <span className="section-badge">
+              <Star className="h-4 w-4" />
+              Features
+            </span>
+            <h2 className="section-title">
+              Everything you need for
+              <span> mental wellness</span>
+            </h2>
+            <p className="section-subtitle">
+              Comprehensive tools designed with care to support every aspect of your mental health journey
+            </p>
           </div>
-          <div className="landing-steps__grid">
-            {quickSteps.map((step) => (
-              <div key={step.number} className="landing-step-card">
-                <span className="landing-step-card__icon">
-                  <span>{step.number}</span>
-                </span>
-                <h3>{step.title}</h3>
-                <p>{step.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-stats">
-        <div className="landing-stats__background" aria-hidden="true">
-          {statsGlows.map((glow, index) => (
-            <span key={`stats-glow-${index}`} className="landing-stats__glow" style={glow} />
-          ))}
-        </div>
-        <div className="layout-container">
-          <div className="landing-section-heading landing-section-heading--light">
-            <h2>Trusted by students worldwide</h2>
-            <p>Join a compassionate community of learners who rely on MindCure for daily support, crisis help, and restorative routines.</p>
-          </div>
-          <div className="landing-stats__grid">
-            {trustStats.map((stat) => (
-              <div key={stat.label} className="landing-stat-card">
-                <strong>{stat.number}</strong>
-                <span>{stat.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-features">
-        <div className="layout-container">
-          <div className="landing-section-heading">
-            <h2>Comprehensive mental health support</h2>
-            <p>Tools, people, and practices designed to meet the full spectrum of what you might need on any given day.</p>
-          </div>
-          <div className="landing-features__grid">
-            {featureHighlights.map((feature) => {
+          
+          <div className="features-grid">
+            {features.map((feature, index) => {
               const FeatureIcon = feature.icon;
               return (
-                <article key={feature.title} className="landing-feature-card">
-                  <span className="landing-feature-card__icon" style={{ background: toneGradient(feature.tone) }}>
-                    <FeatureIcon className="h-7 w-7" />
-                  </span>
+                <div 
+                  key={feature.title} 
+                  className="feature-card reveal-on-scroll"
+                  style={{ transitionDelay: `${index * 0.1}s` }}
+                >
+                  <div className="feature-icon" style={{ background: feature.gradient }}>
+                    <FeatureIcon className="h-6 w-6" />
+                  </div>
                   <h3>{feature.title}</h3>
                   <p>{feature.description}</p>
-                  <Link to={feature.to} className="landing-feature-card__cta">
+                  <div className="feature-link">
                     <span>Learn more</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </article>
-              );
-            })}
-          </div>
-
-          <div className="landing-pillar-grid">
-            {supportPillars.map((pillar) => {
-              const PillarIcon = pillar.icon;
-              return (
-                <div key={pillar.title} className="landing-pillar-card">
-                  <span className="landing-pillar-card__icon" style={{ background: pillar.gradient }}>
-                    <PillarIcon className="h-5 w-5" />
-                  </span>
-                  <h4>{pillar.title}</h4>
-                  <p>{pillar.description}</p>
+                    <ChevronRight className="h-4 w-4" />
+                  </div>
                 </div>
               );
             })}
@@ -351,30 +293,124 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <section className="landing-cta">
-        <div className="landing-cta__background" aria-hidden="true">
-          {ctaGlows.map((glow, index) => (
-            <span key={`cta-glow-${index}`} className="landing-cta__glow" style={glow} />
-          ))}
-        </div>
+      {/* How It Works */}
+      <section className="how-section">
         <div className="layout-container">
-          <div className="landing-cta__content">
-            <h2 className="landing-cta__title">
-              Ready to start your
-              <span> wellness journey?</span>
+          <div className="section-header reveal-on-scroll">
+            <span className="section-badge section-badge--alt">
+              <Target className="h-4 w-4" />
+              How It Works
+            </span>
+            <h2 className="section-title">
+              Start feeling better in
+              <span> 3 simple steps</span>
             </h2>
-            <p>
-              We are here 24/7 with calm voices, science-backed practices, and crisis support whenever you need extra care.
-            </p>
-            <div className="landing-cta__actions">
-              <Link to="/dashboard" className="btn btn--primary">
+          </div>
+          
+          <div className="steps-grid">
+            <div className="step-card reveal-on-scroll" style={{ transitionDelay: '0s' }}>
+              <div className="step-number">1</div>
+              <div className="step-content">
+                <h3>Create Your Space</h3>
+                <p>Sign up in seconds and personalize your wellness dashboard. Set your goals and preferences.</p>
+              </div>
+              <div className="step-visual">
+                <Shield className="h-8 w-8" />
+              </div>
+            </div>
+            
+            <div className="step-card reveal-on-scroll" style={{ transitionDelay: '0.2s' }}>
+              <div className="step-number">2</div>
+              <div className="step-content">
+                <h3>Connect & Explore</h3>
+                <p>Chat with AI, track your mood, join support circles, and access self-help resources anytime.</p>
+              </div>
+              <div className="step-visual">
+                <TrendingUp className="h-8 w-8" />
+              </div>
+            </div>
+            
+            <div className="step-card reveal-on-scroll" style={{ transitionDelay: '0.4s' }}>
+              <div className="step-number">3</div>
+              <div className="step-content">
+                <h3>Grow Every Day</h3>
+                <p>Build healthy habits, earn achievements, and watch your mental wellness improve over time.</p>
+              </div>
+              <div className="step-visual">
+                <Sparkles className="h-8 w-8" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="testimonials-section">
+        <div className="layout-container">
+          <div className="section-header reveal-on-scroll">
+            <span className="section-badge">
+              <Heart className="h-4 w-4" />
+              Stories
+            </span>
+            <h2 className="section-title">
+              Loved by students
+              <span> everywhere</span>
+            </h2>
+          </div>
+          
+          <div className="testimonials-grid">
+            {testimonials.map((testimonial, index) => (
+              <div 
+                key={index} 
+                className="testimonial-card reveal-on-scroll"
+                style={{ transitionDelay: `${index * 0.1}s` }}
+              >
+                <div className="testimonial-stars">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-current text-yellow-400" />
+                  ))}
+                </div>
+                <div className="testimonial-quote">"{testimonial.quote}"</div>
+                <div className="testimonial-author">
+                  <span className="testimonial-avatar">{testimonial.avatar}</span>
+                  <div>
+                    <strong>{testimonial.author}</strong>
+                    <span>{testimonial.role}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="cta-section reveal-on-scroll">
+        <div className="cta-bg">
+          <div className="cta-gradient-1"></div>
+          <div className="cta-gradient-2"></div>
+          <div className="cta-gradient-3"></div>
+        </div>
+        
+        <div className="layout-container">
+          <div className="cta-content">
+            <h2>Ready to prioritize your mental health?</h2>
+            <p>Join thousands of students who are taking care of their minds with MindCure. It's free, private, and always here for you.</p>
+            
+            <div className="cta-actions">
+              <Link to="/register" className="cta-btn cta-btn--primary">
                 <Sparkles className="h-5 w-5" />
-                <span>Enter the app</span>
+                <span>Get Started Free</span>
               </Link>
-              <Link to="/crisis" className="btn btn--outline-accent">
+              <Link to="/crisis" className="cta-btn cta-btn--secondary">
                 <Phone className="h-5 w-5" />
-                <span>Get urgent help</span>
+                <span>Crisis Support</span>
               </Link>
+            </div>
+            
+            <div className="cta-crisis-info">
+              <Phone className="h-4 w-4" />
+              <span>Need immediate help? Call <strong>14416</strong> (Tele-MANAS) or <strong>112</strong> (Emergency)</span>
             </div>
           </div>
         </div>

@@ -1,22 +1,39 @@
 /**
- * Login Component
+ * Login Component - With Icons
  * 
- * Features:
- * - Form validation with react-hook-form + zod
- * - Password visibility toggle
- * - Loading state handling
- * - Error display with icons
- * - Redirect after successful login
- * - Accessible form elements
+ * Clean, accessible login form with properly aligned icons
  */
 
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, Heart, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Heart, AlertCircle, Loader2, Mail, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { loginSchema } from '../../utils/validators';
+
+// Reusable input wrapper with icon
+const InputWithIcon = ({ icon: Icon, children, hasError }) => (
+  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+    <div
+      style={{
+        position: 'absolute',
+        left: '14px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        pointerEvents: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: hasError ? '#f87171' : '#94a3b8',
+        zIndex: 1,
+      }}
+    >
+      <Icon style={{ width: '18px', height: '18px' }} />
+    </div>
+    {children}
+  </div>
+);
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +58,7 @@ const Login = () => {
     formState: { errors, isSubmitting }
   } = useForm({
     resolver: zodResolver(loginSchema),
-    mode: 'onBlur' // Validate on blur for real-time feedback
+    mode: 'onBlur'
   });
 
   const onSubmit = async (data) => {
@@ -60,55 +77,48 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
+    <div className="auth-page">
+      <div className="auth-container">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center items-center mb-4">
-            <div className="p-3 bg-primary-100 rounded-full">
-              <Heart className="h-10 w-10 text-primary-600" />
-            </div>
+        <div className="auth-header">
+          <div className="auth-logo">
+            <Heart className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="auth-title">Welcome back</h1>
+          <p className="auth-subtitle">
             Sign in to continue your wellness journey
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="auth-card">
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             {/* Error Alert */}
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3" role="alert">
-                <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700">{error}</p>
+              <div className="auth-error">
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                <p>{error}</p>
               </div>
             )}
 
-            <div className="space-y-5">
+            <div className="auth-form-fields">
               {/* Email Field */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="auth-field">
+                <label htmlFor="email" className="auth-label">
                   Email address
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className={`h-5 w-5 ${errors.email ? 'text-red-400' : 'text-gray-400'}`} />
-                  </div>
+                <InputWithIcon icon={Mail} hasError={errors.email}>
                   <input
                     {...register('email')}
                     id="email"
                     type="email"
                     autoComplete="email"
-                    className={`input-field pl-10 ${errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
-                    placeholder="Email address"
-                    aria-invalid={errors.email ? 'true' : 'false'}
-                    aria-describedby={errors.email ? 'email-error' : undefined}
+                    className={`auth-input auth-input-icon ${errors.email ? 'auth-input-error' : ''}`}
+                    placeholder="you@example.com"
                   />
-                </div>
+                </InputWithIcon>
                 {errors.email && (
-                  <p id="email-error" className="mt-1.5 text-sm text-red-600 flex items-center gap-1" role="alert">
+                  <p className="auth-field-error">
                     <AlertCircle className="h-4 w-4" />
                     {errors.email.message}
                   </p>
@@ -116,39 +126,73 @@ const Login = () => {
               </div>
 
               {/* Password Field */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="auth-field">
+                <label htmlFor="password" className="auth-label">
                   Password
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className={`h-5 w-5 ${errors.password ? 'text-red-400' : 'text-gray-400'}`} />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: '14px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      pointerEvents: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: errors.password ? '#f87171' : '#94a3b8',
+                      zIndex: 1,
+                    }}
+                  >
+                    <Lock style={{ width: '18px', height: '18px' }} />
                   </div>
                   <input
                     {...register('password')}
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
-                    className={`input-field pl-10 pr-10 ${errors.password ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+                    className={`auth-input auth-input-icon-both ${errors.password ? 'auth-input-error' : ''}`}
                     placeholder="Enter your password"
-                    aria-invalid={errors.password ? 'true' : 'false'}
-                    aria-describedby={errors.password ? 'password-error' : undefined}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600 transition-colors"
                     onClick={() => setShowPassword((prev) => !prev)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'transparent',
+                      border: 'none',
+                      padding: '4px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#64748b',
+                      borderRadius: '6px',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#0ea5e9';
+                      e.currentTarget.style.background = 'rgba(14, 165, 233, 0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#64748b';
+                      e.currentTarget.style.background = 'transparent';
+                    }}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400" />
+                      <EyeOff style={{ width: '20px', height: '20px' }} />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400" />
+                      <Eye style={{ width: '20px', height: '20px' }} />
                     )}
                   </button>
                 </div>
                 {errors.password && (
-                  <p id="password-error" className="mt-1.5 text-sm text-red-600 flex items-center gap-1" role="alert">
+                  <p className="auth-field-error">
                     <AlertCircle className="h-4 w-4" />
                     {errors.password.message}
                   </p>
@@ -157,11 +201,8 @@ const Login = () => {
             </div>
 
             {/* Forgot Password Link */}
-            <div className="mt-4 text-right">
-              <Link
-                to="/forgot-password"
-                className="text-sm font-medium text-primary-600 hover:text-primary-500 transition-colors"
-              >
+            <div className="auth-forgot">
+              <Link to="/forgot-password">
                 Forgot your password?
               </Link>
             </div>
@@ -170,41 +211,31 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading || isSubmitting}
-              className="mt-6 btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="auth-submit"
             >
               {isLoading ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Signing in...
+                  <span>Signing in...</span>
                 </>
               ) : (
-                'Sign in'
+                <span>Sign in</span>
               )}
             </button>
 
             {/* Register Link */}
-            <p className="mt-6 text-center text-sm text-gray-600">
+            <p className="auth-switch">
               Don't have an account?{' '}
-              <Link
-                to="/register"
-                className="font-semibold text-primary-600 hover:text-primary-500 transition-colors"
-              >
-                Sign up for free
-              </Link>
+              <Link to="/register">Sign up for free</Link>
             </p>
           </form>
         </div>
 
         {/* Crisis Help */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
+        <div className="auth-crisis">
+          <p>
             Need immediate help?{' '}
-            <a
-              href="tel:14416"
-              className="font-semibold text-red-600 hover:text-red-500 transition-colors"
-            >
-              Call Tele-MANAS 14416
-            </a>
+            <a href="tel:14416">Call Tele-MANAS 14416</a>
           </p>
         </div>
       </div>
