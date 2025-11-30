@@ -257,6 +257,24 @@ export default function UserProfilePage() {
     );
   }
 
+  // Guard against null profile
+  if (!profile || !profile.user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">User profile not found</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="mt-4 text-primary-500 hover:underline"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

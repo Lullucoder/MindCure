@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   UserPlus, 
@@ -24,6 +25,7 @@ import Avatar from '../ui/Avatar';
 import Spinner from '../ui/Spinner';
 
 export default function FriendsPage({ onStartChat }) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('friends');
   const [friends, setFriends] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -252,8 +254,11 @@ export default function FriendsPage({ onStartChat }) {
                         className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
                       >
                         <Avatar name={friend.name} size="lg" userId={friend._id} clickable />
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-800">{friend.name}</p>
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={() => navigate(`/user/${friend._id}`)}
+                        >
+                          <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors">{friend.name}</p>
                           <p className="text-sm text-gray-500 capitalize">{friend.role}</p>
                           {friend.lastMood && (
                             <div className="flex items-center gap-1 mt-1">
@@ -325,8 +330,11 @@ export default function FriendsPage({ onStartChat }) {
                         className="flex items-center gap-4 p-4 bg-yellow-50 rounded-xl"
                       >
                         <Avatar name={request.requester?.name} size="lg" userId={request.requester?._id} clickable />
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-800">{request.requester?.name}</p>
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={() => request.requester?._id && navigate(`/user/${request.requester._id}`)}
+                        >
+                          <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors">{request.requester?.name}</p>
                           <p className="text-sm text-gray-500 capitalize">{request.requester?.role}</p>
                           <p className="text-xs text-gray-400 mt-1">
                             Sent {new Date(request.createdAt).toLocaleDateString()}
@@ -402,8 +410,11 @@ export default function FriendsPage({ onStartChat }) {
                           className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl"
                         >
                           <Avatar name={user.name} size="lg" userId={user._id} clickable />
-                          <div className="flex-1">
-                            <p className="font-semibold text-gray-800">{user.name}</p>
+                          <div 
+                            className="flex-1 cursor-pointer hover:opacity-80"
+                            onClick={() => navigate(`/user/${user._id}`)}
+                          >
+                            <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors">{user.name}</p>
                             <p className="text-sm text-gray-500 capitalize">{user.role}</p>
                           </div>
                           <div>
