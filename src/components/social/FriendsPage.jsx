@@ -48,7 +48,26 @@ export default function FriendsPage({ onStartChat }) {
         friendService.getFriends(),
         friendService.getPendingRequests(),
       ]);
-      setFriends(friendsData.friends || []);
+      // Normalize friend data in case of old format (friend nested object)
+      const normalizedFriends = (friendsData.friends || []).map(f => {
+        // If the data has a nested 'friend' object (old format), flatten it
+        if (f.friend && f.friend._id) {
+          return {
+            _id: f.friend._id,
+            name: f.friend.name || `${f.friend.firstName || ''} ${f.friend.lastName || ''}`.trim() || f.friend.email,
+            email: f.friend.email,
+            role: f.friend.role,
+            friendshipId: f.friendshipId,
+            lastMood: f.lastMood
+          };
+        }
+        // New format - data is already flat
+        return {
+          ...f,
+          name: f.name || `${f.firstName || ''} ${f.lastName || ''}`.trim() || f.email || 'Unknown'
+        };
+      });
+      setFriends(normalizedFriends);
       setPendingRequests(requestsData.requests || []);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -145,6 +164,11 @@ export default function FriendsPage({ onStartChat }) {
   };
 
   const handleStartChat = async (friend) => {
+    if (!friend?._id) {
+      console.error('Cannot start chat: friend._id is undefined', friend);
+      setError('Failed to start chat - user data is missing');
+      return;
+    }
     try {
       const data = await messageService.getOrCreateConversation(friend._id);
       onStartChat?.(data.conversation, friend);
@@ -250,16 +274,16 @@ export default function FriendsPage({ onStartChat }) {
                   <div className="space-y-3">
                     {friends.map(friend => (
                       <div
-                        key={friend._id}
+                        key={friend._id || friend.friendshipId}
                         className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
                       >
                         <Avatar name={friend.name} size="lg" userId={friend._id} clickable />
                         <div 
                           className="flex-1 cursor-pointer"
-                          onClick={() => navigate(`/user/${friend._id}`)}
+                          onClick={() => friend._id && navigate(`/user/${friend._id}`)}
                         >
-                          <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors">{friend.name}</p>
-                          <p className="text-sm text-gray-500 capitalize">{friend.role}</p>
+                          <p className="font-semibold text-gray-800 hover:text-primary-600 transition-colors">{friend.name || 'Unknown User'}</p>
+                          <p className="text-sm text-gray-500 capitalize">{friend.role || 'user'}</p>
                           {friend.lastMood && (
                             <div className="flex items-center gap-1 mt-1">
                               <span className="text-sm">

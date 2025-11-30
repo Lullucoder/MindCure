@@ -55,8 +55,11 @@ friendshipSchema.statics.getFriends = async function(userId) {
       ? f.recipient 
       : f.requester;
     return {
+      _id: friend._id,
+      name: `${friend.firstName || ''} ${friend.lastName || ''}`.trim() || friend.email,
+      email: friend.email,
+      role: friend.role,
       friendshipId: f._id,
-      friend,
       connectionType: f.connectionType,
       since: f.updatedAt
     };
@@ -65,10 +68,21 @@ friendshipSchema.statics.getFriends = async function(userId) {
 
 // Static method to get pending friend requests for a user
 friendshipSchema.statics.getPendingRequests = async function(userId) {
-  return this.find({
+  const requests = await this.find({
     recipient: userId,
     status: 'pending'
-  }).populate('requester', 'firstName lastName email');
+  }).populate('requester', 'firstName lastName email role');
+
+  return requests.map(r => ({
+    _id: r._id,
+    createdAt: r.createdAt,
+    requester: {
+      _id: r.requester._id,
+      name: `${r.requester.firstName || ''} ${r.requester.lastName || ''}`.trim() || r.requester.email,
+      email: r.requester.email,
+      role: r.requester.role
+    }
+  }));
 };
 
 export const Friendship = mongoose.model('Friendship', friendshipSchema);
