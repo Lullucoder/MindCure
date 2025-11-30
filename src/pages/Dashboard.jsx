@@ -120,17 +120,6 @@ const Dashboard = () => {
 
             {/* Quick mood check */}
             <div className="flex justify-center space-x-4 mb-8">
-<<<<<<< HEAD
-              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-40 focus:outline-3 focus:outline-yellow-300 focus:outline-offset-2 transition-all duration-200 flex items-center space-x-2 min-h-[44px] min-w-[44px] font-semibold text-white hover:scale-105">
-                <Smile className="h-6 w-6" />
-                <span className="font-medium">Great</span>
-              </button>
-              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-40 focus:outline-3 focus:outline-yellow-300 focus:outline-offset-2 transition-all duration-200 flex items-center space-x-2 min-h-[44px] min-w-[44px] font-semibold text-white hover:scale-105">
-                <Meh className="h-6 w-6" />
-                <span className="font-medium">Okay</span>
-              </button>
-              <button className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-opacity-40 focus:outline-3 focus:outline-yellow-300 focus:outline-offset-2 transition-all duration-200 flex items-center space-x-2 min-h-[44px] min-w-[44px] font-semibold text-white hover:scale-105">
-=======
               <button
                 aria-label="Quick mood: Great"
                 onClick={() => navigate('/mood?feeling=great')}
@@ -152,7 +141,6 @@ const Dashboard = () => {
                 onClick={() => navigate('/mood?feeling=struggling')}
                 className="glass-card rounded-2xl px-6 py-4 hover:bg-white/20 transition-all duration-200 flex items-center space-x-2 border border-white/20"
               >
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
                 <Frown className="h-6 w-6" />
                 <span className="font-medium">Struggling</span>
               </button>
@@ -357,36 +345,6 @@ const Dashboard = () => {
                   <div className="text-sm text-gray-600">Taken on Jan 10, 2024 • Recommendation: Practice anxiety management techniques</div>
                 </div>
               </div>
-<<<<<<< HEAD
-
-              {/* Achievements */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <Target className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">5-Day Streak!</div>
-                    <div className="text-sm text-gray-600">Keep up the consistency</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <BookOpen className="h-4 w-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Resource Explorer</div>
-                    <div className="text-sm text-gray-600">Accessed 12 resources</div>
-                  </div>
-                </div>
-              </div>
-
-              <button className="w-full bg-accessible-interactive-secondary text-white px-6 py-3 rounded-xl font-semibold hover:bg-accessible-interactive-secondary-hover focus:outline-3 focus:outline-yellow-400 focus:outline-offset-2 transition-all duration-200 min-h-[44px]">
-                View All Achievements
-              </button>
-=======
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
             </div>
           </div>
         </div>

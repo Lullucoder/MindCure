@@ -358,13 +358,8 @@ const CrisisIntervention = ({ onClose }) => {
 
                         {resource.type === 'text' && (
                           <a
-<<<<<<< HEAD
-                            href={`sms:741741?body=HOME`}
-                            className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-semibold transition-colors"
-=======
                             href={`tel:1800-599-0019`}
                             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
                           >
                             Call Now
                           </a>
@@ -439,13 +434,8 @@ const CrisisIntervention = ({ onClose }) => {
                       <div className="flex space-x-2">
                         {resource.type === 'emergency' ? (
                           <a
-<<<<<<< HEAD
-                            href="tel:911"
-                            className="px-6 py-3 bg-red-800 hover:bg-red-900 text-white rounded-lg font-bold transition-colors"
-=======
                             href="tel:112"
                             className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-colors"
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
                           >
                             Call 112
                           </a>
@@ -656,13 +646,8 @@ const CrisisIntervention = ({ onClose }) => {
             
             <div className="flex space-x-3">
               <a
-<<<<<<< HEAD
-                href="tel:988"
-                className="px-4 py-2 bg-red-800 hover:bg-red-900 text-white rounded-lg font-semibold transition-colors"
-=======
                 href="tel:14416"
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
               >
                 Call 14416
               </a>
