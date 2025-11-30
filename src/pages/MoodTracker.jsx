@@ -1,72 +1,86 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import moodService from '../services/moodService';
 import { 
-  Calendar, 
-  TrendingUp, 
+  MOOD_OPTIONS, 
+  ACTIVITY_OPTIONS, 
+  TAG_OPTIONS,
+  getMoodEmoji as getMoodEmojiFromConstants,
+  getMoodTextColor,
+  getMoodByScore
+} from '../constants/moodConstants';
+import { 
   Plus, 
-  BarChart3, 
   Heart,
-  Zap,
-  Cloud,
-  Moon,
-  Target,
-  Smile,
-  Meh,
-  Frown,
-  Sun,
-  Star,
   Save,
-  Activity
+  Activity,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
-
-// Local storage helper functions
-const getMoodEntries = () => {
-  const entries = localStorage.getItem('moodEntries');
-  return entries ? JSON.parse(entries) : [];
-};
-
-const saveMoodEntries = (entries) => {
-  localStorage.setItem('moodEntries', JSON.stringify(entries));
-};
 
 const MoodTracker = () => {
   const { userProfile } = useAuth();
   const [moodEntries, setMoodEntries] = useState([]);
   const [showEntryForm, setShowEntryForm] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState('week');
   const [todayEntry, setTodayEntry] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
   
   // Form state
   const [moodRating, setMoodRating] = useState(3);
   const [moodNote, setMoodNote] = useState('');
-  const [selectedEmotions, setSelectedEmotions] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const [selectedActivities, setSelectedActivities] = useState([]);
 
   useEffect(() => {
     loadMoodData();
   }, []);
 
-  const loadMoodData = () => {
-    const entries = getMoodEntries();
-    setMoodEntries(entries);
-
-    // Check if user has logged mood today
-    const today = new Date().toDateString();
-    const todaysEntry = entries.find(entry => 
-      new Date(entry.date).toDateString() === today
-    );
-    setTodayEntry(todaysEntry);
+  const loadMoodData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Check today's entry
+      const todayData = await moodService.hasCheckedInToday();
+      if (todayData.hasCheckedIn && todayData.todaysEntry) {
+        const entry = todayData.todaysEntry;
+        setTodayEntry({
+          id: entry._id,
+          date: entry.date,
+          mood: entry.moodScore,
+          moodLabel: entry.moodLabel,
+          note: entry.notes,
+          factors: entry.factors || [],
+        });
+      }
+      
+      // Get history
+      const historyData = await moodService.getHistory(30);
+      const entries = (historyData.entries || []).map(entry => ({
+        id: entry._id,
+        date: entry.date,
+        mood: entry.moodScore,
+        moodLabel: entry.moodLabel,
+        note: entry.notes,
+        factors: entry.factors || [],
+      }));
+      setMoodEntries(entries);
+    } catch (err) {
+      console.error('Error loading mood data:', err);
+      setError('Failed to load mood data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getMoodEmoji = (mood) => {
-    const emojis = ['😢', '😞', '😐', '😊', '😃'];
-    return emojis[Math.floor(mood) - 1] || '😐';
+  const getMoodEmoji = (score) => {
+    return getMoodEmojiFromConstants(score);
   };
 
-  const getMoodColor = (mood) => {
-    if (mood >= 4) return 'text-green-500';
-    if (mood >= 3) return 'text-yellow-500';
-    return 'text-red-500';
+  const getMoodColor = (score) => {
+    return getMoodTextColor(score);
   };
 
   const getMoodBgColor = (mood) => {
@@ -75,58 +89,51 @@ const MoodTracker = () => {
     return 'bg-red-50 border-red-200';
   };
 
-  const emotions = [
-    { name: 'Happy', icon: '😊', color: 'bg-yellow-100 text-yellow-700' },
-    { name: 'Sad', icon: '😢', color: 'bg-blue-100 text-blue-700' },
-    { name: 'Anxious', icon: '😰', color: 'bg-purple-100 text-purple-700' },
-    { name: 'Calm', icon: '😌', color: 'bg-green-100 text-green-700' },
-    { name: 'Excited', icon: '🤩', color: 'bg-orange-100 text-orange-700' },
-    { name: 'Frustrated', icon: '😤', color: 'bg-red-100 text-red-700' },
-    { name: 'Grateful', icon: '🙏', color: 'bg-pink-100 text-pink-700' },
-    { name: 'Lonely', icon: '😔', color: 'bg-gray-100 text-gray-700' }
-  ];
-
-  const activities = [
-    { name: 'Exercise', icon: '🏃‍♂️' },
-    { name: 'Meditation', icon: '🧘‍♀️' },
-    { name: 'Reading', icon: '📚' },
-    { name: 'Music', icon: '🎵' },
-    { name: 'Friends', icon: '👥' },
-    { name: 'Work/Study', icon: '📝' },
-    { name: 'Sleep', icon: '😴' },
-    { name: 'Nature', icon: '🌳' }
-  ];
-
-  const handleSubmitMood = () => {
+  const handleSubmitMood = async () => {
     if (!moodRating) return;
 
-    const newEntry = {
-      id: Date.now(),
-      date: new Date().toISOString(),
-      mood: moodRating,
-      note: moodNote,
-      emotions: selectedEmotions,
-      activities: selectedActivities,
-      timestamp: new Date()
-    };
+    try {
+      setSaving(true);
+      setError(null);
+      
+      const moodData = {
+        score: moodRating,
+        mood: getMoodByScore(moodRating)?.mood || 'okay',
+        tags: selectedTags,
+        activities: selectedActivities,
+        notes: moodNote,
+      };
 
-    const updatedEntries = [newEntry, ...moodEntries];
-    setMoodEntries(updatedEntries);
-    saveMoodEntries(updatedEntries);
-    setTodayEntry(newEntry);
-    
-    // Reset form
-    setMoodRating(3);
-    setMoodNote('');
-    setSelectedEmotions([]);
-    setSelectedActivities([]);
-    setShowEntryForm(false);
+      let result;
+      if (todayEntry) {
+        // Update existing entry
+        result = await moodService.updateTodaysMood(moodData);
+      } else {
+        // Create new entry
+        result = await moodService.checkIn(moodData);
+      }
+
+      // Refresh data
+      await loadMoodData();
+      
+      // Reset form
+      setMoodRating(3);
+      setMoodNote('');
+      setSelectedTags([]);
+      setSelectedActivities([]);
+      setShowEntryForm(false);
+    } catch (err) {
+      console.error('Error saving mood:', err);
+      setError('Failed to save mood. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const getStats = () => {
     if (moodEntries.length === 0) return null;
     
-    const recent = moodEntries.slice(0, 7); // Last 7 entries
+    const recent = moodEntries.slice(0, 7);
     const avgMood = recent.reduce((sum, entry) => sum + entry.mood, 0) / recent.length;
     const streak = calculateStreak();
     
@@ -134,7 +141,7 @@ const MoodTracker = () => {
       averageMood: avgMood,
       totalEntries: moodEntries.length,
       streak: streak,
-      mostCommonEmotion: getMostCommonEmotion()
+      mostCommonFactor: getMostCommonFactor()
     };
   };
 
@@ -161,20 +168,33 @@ const MoodTracker = () => {
     return streak;
   };
 
-  const getMostCommonEmotion = () => {
-    const emotionCount = {};
+  const getMostCommonFactor = () => {
+    const factorCount = {};
     moodEntries.forEach(entry => {
-      entry.emotions?.forEach(emotion => {
-        emotionCount[emotion] = (emotionCount[emotion] || 0) + 1;
+      entry.factors?.forEach(factor => {
+        factorCount[factor] = (factorCount[factor] || 0) + 1;
       });
     });
     
-    return Object.keys(emotionCount).reduce((a, b) => 
-      emotionCount[a] > emotionCount[b] ? a : b, 'N/A'
+    if (Object.keys(factorCount).length === 0) return 'N/A';
+    
+    return Object.keys(factorCount).reduce((a, b) => 
+      factorCount[a] > factorCount[b] ? a : b, 'N/A'
     );
   };
 
-    const stats = getStats();
+  const stats = getStats();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading mood data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -185,7 +205,21 @@ const MoodTracker = () => {
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Track your emotions and discover patterns in your mental wellness journey
           </p>
+          <button 
+            onClick={loadMoodData}
+            className="mt-4 text-blue-500 hover:text-blue-700 inline-flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </button>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl">
+            {error}
+          </div>
+        )}
 
         {/* Today's Entry Section */}
         <div className="mb-8">
@@ -199,6 +233,11 @@ const MoodTracker = () => {
                     <p className="text-gray-600">You're feeling {todayEntry.mood}/5 today</p>
                     {todayEntry.note && (
                       <p className="text-sm text-gray-500 mt-1">"{todayEntry.note}"</p>
+                    )}
+                    {todayEntry.factors?.length > 0 && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        {todayEntry.factors.join(', ')}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -252,9 +291,9 @@ const MoodTracker = () => {
             
             <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
               <div className="text-xl font-bold text-pink-500 mb-2">
-                {stats.mostCommonEmotion}
+                {stats.mostCommonFactor}
               </div>
-              <div className="text-gray-600">Common Emotion</div>
+              <div className="text-gray-600">Common Factor</div>
             </div>
           </div>
         )}
@@ -274,84 +313,85 @@ const MoodTracker = () => {
                   </button>
                 </div>
 
-                {/* Mood Rating */}
+                {/* Mood Rating - Using shared MOOD_OPTIONS */}
                 <div className="mb-6">
                   <label className="block text-lg font-semibold text-gray-800 mb-4">
-                    Rate your mood (1-5)
+                    Rate your mood
                   </label>
                   <div className="flex justify-center space-x-4">
-                    {[1, 2, 3, 4, 5].map((rating) => (
+                    {MOOD_OPTIONS.map((mood) => (
                       <button
-                        key={rating}
-                        onClick={() => setMoodRating(rating)}
-                        className={`w-16 h-16 rounded-full text-2xl transition-all duration-200 ${
-                          moodRating === rating
-                            ? 'scale-110 shadow-lg ' + getMoodBgColor(rating)
+                        key={mood.score}
+                        onClick={() => setMoodRating(mood.score)}
+                        className={`w-16 h-16 rounded-full text-2xl transition-all duration-200 flex flex-col items-center justify-center ${
+                          moodRating === mood.score
+                            ? 'scale-110 shadow-lg ' + getMoodBgColor(mood.score)
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
+                        title={mood.label}
                       >
-                        {getMoodEmoji(rating)}
+                        {mood.emoji}
                       </button>
                     ))}
                   </div>
                   <div className="text-center mt-2 text-gray-600">
-                    Selected: {moodRating}/5
+                    {getMoodByScore(moodRating)?.label} ({moodRating}/5)
                   </div>
                 </div>
 
-                {/* Emotions */}
+                {/* Tags / Emotions - Using shared TAG_OPTIONS */}
                 <div className="mb-6">
                   <label className="block text-lg font-semibold text-gray-800 mb-4">
                     What emotions are you experiencing?
                   </label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {emotions.map((emotion) => (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {TAG_OPTIONS.map((tag) => (
                       <button
-                        key={emotion.name}
+                        key={tag.id}
                         onClick={() => {
-                          setSelectedEmotions(prev => 
-                            prev.includes(emotion.name)
-                              ? prev.filter(e => e !== emotion.name)
-                              : [...prev, emotion.name]
+                          setSelectedTags(prev => 
+                            prev.includes(tag.id)
+                              ? prev.filter(t => t !== tag.id)
+                              : [...prev, tag.id]
                           );
                         }}
                         className={`p-3 rounded-xl transition-all duration-200 ${
-                          selectedEmotions.includes(emotion.name)
-                            ? emotion.color + ' ring-2 ring-blue-400'
+                          selectedTags.includes(tag.id)
+                            ? tag.color + ' ring-2 ring-blue-400'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                       >
-                        <div className="text-2xl mb-1">{emotion.icon}</div>
-                        <div className="text-sm font-medium">{emotion.name}</div>
+                        <div className="text-2xl mb-1">{tag.emoji}</div>
+                        <div className="text-sm font-medium">{tag.label}</div>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Activities */}
+                {/* Activities - Using shared ACTIVITY_OPTIONS */}
                 <div className="mb-6">
                   <label className="block text-lg font-semibold text-gray-800 mb-4">
                     What activities did you do today?
                   </label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {activities.map((activity) => (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {ACTIVITY_OPTIONS.map((activity) => (
                       <button
-                        key={activity.name}
+                        key={activity.id}
                         onClick={() => {
                           setSelectedActivities(prev => 
-                            prev.includes(activity.name)
-                              ? prev.filter(a => a !== activity.name)
-                              : [...prev, activity.name]
+                            prev.includes(activity.id)
+                              ? prev.filter(a => a !== activity.id)
+                              : [...prev, activity.id]
                           );
                         }}
                         className={`p-3 rounded-xl transition-all duration-200 ${
-                          selectedActivities.includes(activity.name)
+                          selectedActivities.includes(activity.id)
                             ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-400'
                             : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                       >
-                        <div className="text-2xl mb-1">{activity.icon}</div>
-                        <div className="text-sm font-medium">{activity.name}</div>
+                        <div className="text-2xl mb-1">{activity.emoji}</div>
+                        <div className="text-sm font-medium">{activity.label}</div>
                       </button>
                     ))}
                   </div>
@@ -374,10 +414,20 @@ const MoodTracker = () => {
                 {/* Submit Button */}
                 <button
                   onClick={handleSubmitMood}
-                  className="w-full bg-gradient-to-r from-blue-400 to-green-400 text-white py-4 rounded-xl font-semibold hover:from-blue-500 hover:to-green-500 transition-all duration-200 flex items-center justify-center space-x-2"
+                  disabled={saving}
+                  className="w-full bg-gradient-to-r from-blue-400 to-green-400 text-white py-4 rounded-xl font-semibold hover:from-blue-500 hover:to-green-500 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
                 >
-                  <Save className="h-5 w-5" />
-                  <span>Save Mood Entry</span>
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-5 w-5" />
+                      <span>{todayEntry ? 'Update Mood' : 'Save Mood Entry'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -413,8 +463,8 @@ const MoodTracker = () => {
                       </div>
                       <div className="text-sm text-gray-600">
                         Mood: {entry.mood}/5
-                        {entry.emotions?.length > 0 && (
-                          <span> • {entry.emotions.join(', ')}</span>
+                        {entry.factors?.length > 0 && (
+                          <span> • {entry.factors.join(', ')}</span>
                         )}
                       </div>
                       {entry.note && (
@@ -436,4 +486,3 @@ const MoodTracker = () => {
 }
 
 export default MoodTracker;
-            

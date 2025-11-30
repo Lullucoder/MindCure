@@ -22,84 +22,109 @@ const CrisisIntervention = ({ onClose }) => {
   const crisisResources = {
     immediate: [
       {
-        name: 'National Suicide Prevention Lifeline',
-        number: '988',
-        description: '24/7 crisis support and suicide prevention',
+        name: 'Tele-MANAS (Govt. of India)',
+        number: '14416',
+        description: '24/7 toll-free mental health support across India (alternate: 1-800-891-4416)',
         type: 'call',
         priority: 'high',
-        languages: ['English', 'Spanish'],
+        languages: ['English', 'Hindi', 'Regional languages'],
         availability: '24/7'
       },
       {
-        name: 'Crisis Text Line',
-        number: 'Text HOME to 741741',
-        description: 'Free 24/7 crisis support via text',
-        type: 'text',
-        priority: 'high',
-        languages: ['English'],
-        availability: '24/7'
-      },
-      {
-        name: 'National Domestic Violence Hotline',
-        number: '1-800-799-7233',
-        description: 'Support for domestic violence situations',
+        name: 'KIRAN Mental Health Helpline',
+        number: '1800-599-0019',
+        description: '24/7 mental health and rehabilitation support (MoSJE/NIMHANS)',
         type: 'call',
         priority: 'high',
-        languages: ['English', 'Spanish', '200+ others'],
+        languages: ['English', 'Hindi', '13+ Indian languages'],
         availability: '24/7'
       },
       {
-        name: 'SAMHSA National Helpline',
-        number: '1-800-662-4357',
-        description: 'Mental health and substance abuse support',
+        name: 'CHILDLINE',
+        number: '1098',
+        description: 'Emergency assistance for children and adolescents',
+        type: 'call',
+        priority: 'high',
+        languages: ['Multiple Indian languages'],
+        availability: '24/7'
+      },
+      {
+        name: 'Women Helpline',
+        number: '181',
+        description: 'Support for women in distress, including domestic violence',
+        type: 'call',
+        priority: 'high',
+        languages: ['Multiple Indian languages'],
+        availability: '24/7'
+      },
+      {
+        name: 'AASRA',
+        number: '9820466726',
+        description: 'Suicide prevention and crisis support (NGO)',
+        type: 'call',
+        priority: 'high',
+        languages: ['English', 'Hindi', 'Marathi'],
+        availability: '24/7'
+      },
+      {
+        name: 'iCALL (TISS)',
+        number: '9152987821',
+        description: 'Professional counselling support via phone and online',
         type: 'call',
         priority: 'medium',
-        languages: ['English', 'Spanish'],
-        availability: '24/7'
+        languages: ['English', 'Hindi'],
+        availability: 'Mon–Sat, 8am–10pm IST'
       }
     ],
     local: [
       {
-        name: 'Emergency Services',
-        number: '911',
-        description: 'Immediate emergency response',
+        name: 'Emergency Services (Police/Fire/Ambulance)',
+        number: '112',
+        description: 'Unified emergency response across India',
         type: 'emergency',
         priority: 'critical'
       },
       {
-        name: 'Local Crisis Center',
-        number: 'Find Local Center',
-        description: 'Community-based crisis intervention',
+        name: 'District Mental Health Programme (DMHP)',
+        number: 'Find local DMHP center',
+        description: 'Government mental health services in your district',
         type: 'location',
         priority: 'medium'
       },
       {
-        name: 'Hospital Emergency Room',
-        number: 'Nearest Hospital',
-        description: 'Emergency psychiatric evaluation',
+        name: 'Government Hospital Psychiatry Dept.',
+        number: 'Nearest Govt. Hospital',
+        description: 'Emergency psychiatric evaluation and care',
         type: 'location',
         priority: 'high'
       }
     ],
     online: [
       {
-        name: 'Crisis Chat',
-        url: 'https://suicidepreventionlifeline.org/chat/',
-        description: 'Online crisis support chat',
-        type: 'chat',
+        name: 'Tele-MANAS Portal',
+        url: 'https://telemanas.mohfw.gov.in',
+        description: 'Official portal for India’s national mental health helpline',
+        type: 'website',
         availability: '24/7'
       },
       {
-        name: 'NAMI Support',
-        url: 'https://nami.org/help',
-        description: 'Mental health information and support',
+        name: 'iCALL Online Counselling',
+        url: 'https://icallhelpline.org',
+        description: 'Information and access to counselling via phone, email, and chat',
+        type: 'website',
+        availability: 'Service hours apply'
+      },
+      {
+        name: 'CHILDLINE India',
+        url: 'https://childlineindia.org',
+        description: 'Support and protection services for children (1098)',
         type: 'website',
         availability: 'Always'
       },
       {
-        name: 'Mental Health America',
-        url: 'https://www.mhanational.org/finding-help',
-        description: 'Mental health resources and screening tools',
+        name: 'UNICEF – Mental Health Resources',
+        url: 'https://www.unicef.org/mental-health',
+        description: 'Information and resources for young people and caregivers',
         type: 'website',
         availability: 'Always'
       }
@@ -169,9 +194,7 @@ const CrisisIntervention = ({ onClose }) => {
   };
 
   const formatPhoneNumber = (number) => {
-    // Simple phone number formatting for display
-    if (number === '988') return '988';
-    if (number.includes('741741')) return number;
+    // Keep numbers as provided for India context
     return number;
   };
 
@@ -234,7 +257,7 @@ const CrisisIntervention = ({ onClose }) => {
               <Zap className="h-6 w-6 mr-3 text-yellow-300" />
               <div>
                 <h3 className="font-semibold">If you're in immediate danger:</h3>
-                <p className="text-red-100 text-sm">Call 911 or go to your nearest emergency room</p>
+                <p className="text-red-100 text-sm">Call 112 (India Emergency Services) or go to the nearest hospital emergency department</p>
               </div>
             </div>
           </div>
@@ -335,10 +358,15 @@ const CrisisIntervention = ({ onClose }) => {
 
                         {resource.type === 'text' && (
                           <a
+<<<<<<< HEAD
                             href={`sms:741741?body=HOME`}
                             className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-semibold transition-colors"
+=======
+                            href={`tel:1800-599-0019`}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+>>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
                           >
-                            Text Now
+                            Call Now
                           </a>
                         )}
                       </div>
@@ -411,10 +439,15 @@ const CrisisIntervention = ({ onClose }) => {
                       <div className="flex space-x-2">
                         {resource.type === 'emergency' ? (
                           <a
+<<<<<<< HEAD
                             href="tel:911"
                             className="px-6 py-3 bg-red-800 hover:bg-red-900 text-white rounded-lg font-bold transition-colors"
+=======
+                            href="tel:112"
+                            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-colors"
+>>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
                           >
-                            Call 911
+                            Call 112
                           </a>
                         ) : resource.type === 'location' ? (
                           <button className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-semibold transition-colors flex items-center">
@@ -623,10 +656,15 @@ const CrisisIntervention = ({ onClose }) => {
             
             <div className="flex space-x-3">
               <a
+<<<<<<< HEAD
                 href="tel:988"
                 className="px-4 py-2 bg-red-800 hover:bg-red-900 text-white rounded-lg font-semibold transition-colors"
+=======
+                href="tel:14416"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+>>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
               >
-                Call 988
+                Call 14416
               </a>
               <button
                 onClick={onClose}

@@ -13,7 +13,7 @@ import {
   ArrowDown
 } from 'lucide-react';
 
-const BodyScanMeditation = ({ onClose }) => {
+const BodyScanMeditation = ({ session, onClose }) => {
   const [isActive, setIsActive] = useState(false);
   const [currentArea, setCurrentArea] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -21,6 +21,14 @@ const BodyScanMeditation = ({ onClose }) => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [isAudioOn, setIsAudioOn] = useState(true);
   const [sessionDuration, setSessionDuration] = useState(15); // minutes
+
+  const sessionDetails = {
+    title: session?.title || 'Body Scan Meditation',
+    description: session?.description || 'Mindful awareness of physical sensations',
+    focus: session?.focus || 'Whole-body presence',
+    videoUrl: session?.videoUrl,
+    source: session?.source
+  };
 
   const bodyAreas = [
     {
@@ -125,6 +133,40 @@ const BodyScanMeditation = ({ onClose }) => {
 
   const totalDuration = bodyAreas.reduce((total, area) => total + area.duration, 0) + 120; // Add 2 minutes for intro/outro
 
+  const videoSrc = sessionDetails.videoUrl
+    ? `${sessionDetails.videoUrl}${sessionDetails.videoUrl.includes('?') ? '&' : '?'}rel=0`
+    : null;
+
+  useEffect(() => {
+    // Reset state when a new session configuration is supplied
+    setIsActive(false);
+    setCurrentArea(0);
+    setTimeRemaining(0);
+    setCompletedAreas([]);
+  }, [sessionDetails.title]);
+
+  const playCue = () => {
+    if (!isAudioOn) return;
+    if (typeof window === 'undefined' || !window.AudioContext) return;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.frequency.value = 360;
+    oscillator.type = 'sine';
+
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 0.1);
+    gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + 0.4);
+  };
+
   useEffect(() => {
     let interval = null;
     
@@ -140,6 +182,11 @@ const BodyScanMeditation = ({ onClose }) => {
       if (interval) clearInterval(interval);
     };
   }, [isActive, timeRemaining]);
+
+  useEffect(() => {
+    if (!isActive || !isAudioOn) return;
+    playCue();
+  }, [currentArea, isActive, isAudioOn]);
 
   const handleAreaComplete = () => {
     setCompletedAreas(prev => [...prev, currentArea]);
@@ -257,8 +304,8 @@ const BodyScanMeditation = ({ onClose }) => {
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Body Scan Meditation</h2>
-              <p className="text-gray-600">Mindful awareness of physical sensations</p>
+              <h2 className="text-xl font-bold text-gray-900">{sessionDetails.title}</h2>
+              <p className="text-gray-600">{sessionDetails.description}</p>
             </div>
             
             <div className="flex items-center space-x-2">
@@ -312,6 +359,23 @@ const BodyScanMeditation = ({ onClose }) => {
 
         {/* Main Content */}
         <div className="p-6">
+          {videoSrc && (
+            <div className="mb-8">
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg">
+                <iframe
+                  src={videoSrc}
+                  title={sessionDetails.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+              <p className="mt-2 text-xs text-gray-500">
+                Pair this timer with the companion video/audio for additional guidance if helpful.
+              </p>
+            </div>
+          )}
+
           {/* Current Area Display */}
           <div className="text-center mb-8">
             <div className={`inline-block px-4 py-2 rounded-full text-sm font-medium mb-4 ${
@@ -327,6 +391,12 @@ const BodyScanMeditation = ({ onClose }) => {
             <p className="text-gray-600 mb-4">
               {bodyAreas[currentArea]?.description}
             </p>
+
+            {sessionDetails.focus && (
+              <p className="text-sm text-gray-500">
+                Focus: {sessionDetails.focus}
+              </p>
+            )}
 
             {/* Timer Display */}
             {isActive && timeRemaining > 0 && (
@@ -470,6 +540,14 @@ const BodyScanMeditation = ({ onClose }) => {
               </div>
             </div>
           </div>
+
+          {sessionDetails.source && (
+            <div className="mt-6 text-xs text-gray-500">
+              Reference: <a href={sessionDetails.source.url} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">
+                {sessionDetails.source.label}
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>

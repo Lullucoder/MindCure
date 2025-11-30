@@ -13,7 +13,7 @@ import {
   Target
 } from 'lucide-react';
 
-const ProgressiveMuscleRelaxation = ({ onClose }) => {
+const ProgressiveMuscleRelaxation = ({ session, onClose }) => {
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [phase, setPhase] = useState('prepare'); // prepare, tense, relax, transition
@@ -21,6 +21,14 @@ const ProgressiveMuscleRelaxation = ({ onClose }) => {
   const [completedSteps, setCompletedSteps] = useState([]);
   const [showInstructions, setShowInstructions] = useState(false);
   const [isAudioOn, setIsAudioOn] = useState(true);
+
+  const sessionDetails = {
+    title: session?.title || 'Progressive Muscle Relaxation',
+    description: session?.description || 'Systematic tension and release for deep relaxation',
+    focus: session?.focus || 'Physical release',
+    videoUrl: session?.videoUrl,
+    source: session?.source
+  };
 
   const muscleGroups = [
     {
@@ -109,6 +117,41 @@ const ProgressiveMuscleRelaxation = ({ onClose }) => {
     total + group.tenseTime + group.relaxTime + 3, 0
   ) + 60; // Add 60 seconds for intro and conclusion
 
+  const videoSrc = sessionDetails.videoUrl
+    ? `${sessionDetails.videoUrl}${sessionDetails.videoUrl.includes('?') ? '&' : '?'}rel=0`
+    : null;
+
+  useEffect(() => {
+    // Reset session state when configuration changes
+    setIsActive(false);
+    setCurrentStep(0);
+    setPhase('prepare');
+    setTimeRemaining(0);
+    setCompletedSteps([]);
+  }, [sessionDetails.title]);
+
+  const playCue = (frequency) => {
+    if (!isAudioOn) return;
+    if (typeof window === 'undefined' || !window.AudioContext) return;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.frequency.value = frequency;
+    oscillator.type = 'sine';
+
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.1);
+    gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + 0.4);
+  };
+
   useEffect(() => {
     let interval = null;
     
@@ -124,6 +167,16 @@ const ProgressiveMuscleRelaxation = ({ onClose }) => {
       if (interval) clearInterval(interval);
     };
   }, [isActive, timeRemaining]);
+
+  useEffect(() => {
+    if (!isActive || !isAudioOn) return;
+
+    if (phase === 'tense') {
+      playCue(420);
+    } else if (phase === 'relax') {
+      playCue(300);
+    }
+  }, [phase, isActive, isAudioOn]);
 
   const handlePhaseComplete = () => {
     switch (phase) {
@@ -274,8 +327,8 @@ const ProgressiveMuscleRelaxation = ({ onClose }) => {
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Progressive Muscle Relaxation</h2>
-              <p className="text-gray-600">Systematic tension and release for deep relaxation</p>
+              <h2 className="text-xl font-bold text-gray-900">{sessionDetails.title}</h2>
+              <p className="text-gray-600">{sessionDetails.description}</p>
             </div>
             
             <div className="flex items-center space-x-2">
@@ -328,6 +381,23 @@ const ProgressiveMuscleRelaxation = ({ onClose }) => {
 
         {/* Main Content */}
         <div className="p-6">
+          {videoSrc && (
+            <div className="mb-8">
+              <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg">
+                <iframe
+                  src={videoSrc}
+                  title={sessionDetails.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+              <p className="mt-2 text-xs text-gray-500">
+                Optional guided audio/video if you prefer to listen while the timer advances each phase automatically.
+              </p>
+            </div>
+          )}
+
           {/* Current Step Display */}
           <div className="text-center mb-8">
             <div className={`inline-block px-4 py-2 rounded-full text-sm font-medium mb-4 ${getPhaseColor()}`}>
@@ -341,6 +411,12 @@ const ProgressiveMuscleRelaxation = ({ onClose }) => {
             <p className="text-gray-600 text-lg mb-4">
               {getPhaseInstruction()}
             </p>
+
+            {sessionDetails.focus && (
+              <p className="text-sm text-gray-500">
+                Focus: {sessionDetails.focus}
+              </p>
+            )}
 
             {/* Timer Display */}
             {isActive && timeRemaining > 0 && (
@@ -457,6 +533,14 @@ const ProgressiveMuscleRelaxation = ({ onClose }) => {
               ))}
             </div>
           </div>
+
+          {sessionDetails.source && (
+            <div className="mt-6 text-xs text-gray-500">
+              Reference: <a href={sessionDetails.source.url} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">
+                {sessionDetails.source.label}
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>

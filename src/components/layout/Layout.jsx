@@ -1,14 +1,23 @@
 import Navbar from './Navbar';
 import Footer from './Footer';
+import CrisisRibbon from './CrisisRibbon';
+import BottomNav from './BottomNav';
 
-const Layout = ({ children, showFooter = true }) => {
+const Layout = ({ children, showFooter = true, showCrisisRibbon = true }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="app-shell">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+      <div className="app-shell__backdrop" aria-hidden="true" />
+
       <Navbar />
-      <main className="flex-1">
+      {showCrisisRibbon && <CrisisRibbon />}
+
+      <main id="main-content" role="main" className="app-shell__content">
         {children}
       </main>
+
       {showFooter && <Footer />}
+      <BottomNav />
     </div>
   );
 };

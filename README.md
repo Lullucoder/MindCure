@@ -5,7 +5,7 @@ A comprehensive mental health support platform for students that provides virtua
 ## 🌟 Features
 
 ### Phase 1 - Foundation (Completed)
-- ✅ **Authentication System**: Secure Firebase-based authentication with role-based access
+- ✅ **Authentication System**: Mock authentication for offline use
 - ✅ **Responsive Design**: Modern UI with TailwindCSS and mobile-first approach
 - ✅ **Landing Page**: Professional landing page with feature highlights
 - ✅ **Dashboard**: Personalized dashboard with wellness overview
@@ -25,8 +25,8 @@ A comprehensive mental health support platform for students that provides virtua
 
 - **Frontend**: React 18 + Vite
 - **Styling**: TailwindCSS with custom design system
-- **Authentication**: Firebase Auth
-- **Database**: Firebase Firestore
+- **Authentication**: Mock Context (Offline)
+- **Database**: LocalStorage (for Mood Tracking)
 - **AI**: Google Gemini API for mental health support
 - **Routing**: React Router DOM
 - **Forms**: React Hook Form + Zod validation
@@ -38,8 +38,7 @@ A comprehensive mental health support platform for students that provides virtua
 ### Prerequisites
 - Node.js 18+ 
 - npm or yarn
-- Firebase project with Firestore and Authentication enabled
-- Google Gemini API key
+- Google Gemini API key (Optional, for AI features)
 
 ### Installation
 
@@ -56,14 +55,8 @@ A comprehensive mental health support platform for students that provides virtua
 
 3. **Environment Setup**
    - Copy `.env.example` to `.env`
-   - Fill in your Firebase configuration:
+   - Fill in your Gemini API key (optional):
      ```env
-     VITE_FIREBASE_API_KEY=your_firebase_api_key
-     VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-     VITE_FIREBASE_PROJECT_ID=your_project_id
-     VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-     VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-     VITE_FIREBASE_APP_ID=your_app_id
      VITE_GEMINI_API_KEY=your_gemini_api_key
      ```
 
@@ -75,34 +68,7 @@ A comprehensive mental health support platform for students that provides virtua
 5. **Open your browser**
    Navigate to `http://localhost:5173`
 
-## 🔐 Firebase Setup
 
-### Authentication
-1. Enable Email/Password authentication in Firebase Console
-2. Configure authorized domains for your deployment
-
-### Firestore Rules
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Users can read/write their own data
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Mood entries are private to each user
-    match /moods/{moodId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-    }
-    
-    // Chat messages are private to each user
-    match /conversations/{conversationId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-    }
-  }
-}
-```
 
 ## 🎨 Design System
 
@@ -133,13 +99,15 @@ service cloud.firestore {
 
 The application includes multiple crisis intervention features:
 - **Crisis Detection**: AI analyzes messages for concerning content
-- **Immediate Resources**: Quick access to crisis hotlines (988, 911)
+- **Immediate Resources**: Quick access to crisis hotlines (Tele-MANAS 14416, Emergency 112)
 - **Professional Referrals**: Guidance to seek professional help when needed
 
-### Emergency Contacts
-- **Crisis Lifeline**: 988 (US)
-- **Emergency Services**: 911
-- **Crisis Text Line**: Text HOME to 741741
+### Emergency Contacts (India)
+- **Tele-MANAS**: 14416 (National Mental Health Helpline)
+- **Emergency Services**: 112 (Police/Fire/Ambulance)
+- **KIRAN Helpline**: 1800-599-0019 (24/7 Mental Health Support)
+- **Women Helpline**: 181
+- **CHILDLINE**: 1098
 
 ## 📱 Responsive Design
 
@@ -163,14 +131,7 @@ npm run test:a11y
 
 ## 🚀 Deployment
 
-### Firebase Hosting
-```bash
-# Build the project
-npm run build
 
-# Deploy to Firebase
-firebase deploy --only hosting
-```
 
 ### Environment Variables for Production
 Make sure to set all required environment variables in your hosting platform.
@@ -189,12 +150,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## ⚠️ Disclaimer
 
-This platform provides mental health support but is not a substitute for professional medical care. If you're experiencing a mental health emergency, please contact emergency services immediately.
+This platform provides mental health support but is not a substitute for professional medical care. If you're experiencing a mental health emergency, please contact Tele-MANAS at 14416 or emergency services at 112 immediately.
 
 ## 📞 Support
 
 - **Technical Issues**: Create an issue on GitHub
-- **Mental Health Crisis**: Call 988 (Suicide & Crisis Lifeline)
+- **Mental Health Crisis**: Call 14416 (Tele-MANAS) or 112 (Emergency Services)
 - **General Support**: Contact our support team
 
 ---

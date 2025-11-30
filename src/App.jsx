@@ -1,96 +1,166 @@
+/**
+ * App.jsx - Main Application Entry Point
+ * 
+ * Features:
+ * - Centralized routing with lazy loading
+ * - Role-based access control
+ * - Error boundary for graceful error handling
+ * - Authentication context provider
+ */
+
+import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';  // Keep for minimal context
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/layout/Layout';
-// import ProtectedRoute from './components/auth/ProtectedRoute';  // COMMENTED OUT FOR NON-AUTH VERSION
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import PageLoader from './components/ui/PageLoader';
 
-// Pages
-import LandingPage from './pages/LandingPage';
-// import Login from './components/auth/Login';  // COMMENTED OUT FOR NON-AUTH VERSION
-// import Register from './components/auth/Register';  // COMMENTED OUT FOR NON-AUTH VERSION
-import Dashboard from './pages/Dashboard';
-import MoodTracker from './pages/MoodTracker';
-import SelfHelpResources from './pages/SelfHelpResources';
-import CrisisPage from './pages/CrisisPage';
-import ChatInterface from './components/chat/ChatInterface';
+// ============================================
+// Lazy-loaded Pages for Code Splitting
+// ============================================
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const Login = lazy(() => import('./components/auth/Login'));
+const Register = lazy(() => import('./components/auth/Register'));
+const MoodTracker = lazy(() => import('./pages/MoodTracker'));
+const SelfHelpResources = lazy(() => import('./pages/SelfHelpResources'));
+const CrisisPage = lazy(() => import('./pages/CrisisPage'));
+const TherapyChatInterface = lazy(() => import('./components/chat/TherapyChatInterface'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const CounselorDashboard = lazy(() => import('./pages/CounselorDashboard'));
+const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
-// Placeholder components for routes that will be implemented later
-const ProfilePage = () => <div className="p-8 text-center">Profile - Coming Soon!</div>;
-const SettingsPage = () => <div className="p-8 text-center">Settings - Coming Soon!</div>;
+// ============================================
+// Role-Based Dashboard Component
+// ============================================
+const RoleBasedDashboard = () => {
+  const { userProfile } = useAuth();
 
+  if (!userProfile) return <Navigate to="/login" replace />;
+
+  switch (userProfile.role) {
+    case 'admin':
+      return <AdminDashboard />;
+    case 'counselor':
+      return <CounselorDashboard />;
+    case 'student':
+    default:
+      return <StudentDashboard />;
+  }
+};
+
+// ============================================
+// Role-Protected Route Guard
+// ============================================
+const RoleProtectedRoute = ({ children, allowedRoles }) => {
+  const { userProfile } = useAuth();
+
+  if (!userProfile) return <Navigate to="/login" replace />;
+
+  if (!allowedRoles.includes(userProfile.role)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
+// ============================================
+// Route Configuration
+// ============================================
+const publicRoutes = [
+  { path: '/', element: <LandingPage />, layout: { showFooter: true, showCrisisRibbon: true } },
+  { path: '/login', element: <Login />, layout: { showFooter: false, showCrisisRibbon: false } },
+  { path: '/register', element: <Register />, layout: { showFooter: false, showCrisisRibbon: false } },
+  { path: '/crisis', element: <CrisisPage />, layout: { showFooter: true, showCrisisRibbon: true } },
+];
+
+const protectedRoutes = [
+  { path: '/dashboard', element: <RoleBasedDashboard /> },
+  { path: '/student', element: <StudentDashboard /> },
+  { path: '/chat', element: <TherapyChatInterface /> },
+  { path: '/mood', element: <MoodTracker /> },
+  { path: '/resources', element: <SelfHelpResources /> },
+  { path: '/profile', element: <ProfilePage /> },
+  { path: '/user/:userId', element: <UserProfilePage /> },
+  { path: '/settings', element: <SettingsPage /> },
+  { path: '/notifications', element: <NotificationsPage /> },
+  { path: '/appointments', element: <StudentDashboard /> },
+  { path: '/forum', element: <StudentDashboard /> },
+];
+
+const roleProtectedRoutes = [
+  { path: '/counselor', element: <CounselorDashboard />, allowedRoles: ['counselor', 'admin'] },
+  { path: '/admin', element: <AdminDashboard />, allowedRoles: ['admin'] },
+];
+
+// ============================================
+// Main App Component
+// ============================================
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={
-            <Layout>
-              <LandingPage />
-            </Layout>
-          } />
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Public Routes */}
+              {publicRoutes.map(({ path, element, layout }) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    <Layout
+                      showFooter={layout?.showFooter ?? true}
+                      showCrisisRibbon={layout?.showCrisisRibbon ?? true}
+                    >
+                      {element}
+                    </Layout>
+                  }
+                />
+              ))}
 
-          {/* COMMENTED OUT LOGIN/REGISTER ROUTES FOR NON-AUTH VERSION
-          <Route path="/login" element={
-            <Layout showFooter={false}>
-              <Login />
-            </Layout>
-          } />
-          
-          <Route path="/register" element={
-            <Layout showFooter={false}>
-              <Register />
-            </Layout>
-          } />
-          */}
+              {/* Protected Routes */}
+              {protectedRoutes.map(({ path, element }) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    <ProtectedRoute>
+                      <Layout>{element}</Layout>
+                    </ProtectedRoute>
+                  }
+                />
+              ))}
 
-          {/* All Routes - Made accessible without protection for non-auth version */}
-          <Route path="/dashboard" element={
-            <Layout>
-              <Dashboard />
-            </Layout>
-          } />
+              {/* Role-Protected Routes */}
+              {roleProtectedRoutes.map(({ path, element, allowedRoles }) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <RoleProtectedRoute allowedRoles={allowedRoles}>
+                          {element}
+                        </RoleProtectedRoute>
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+              ))}
 
-          <Route path="/chat" element={
-            <Layout>
-              <ChatInterface />
-            </Layout>
-          } />
-
-          <Route path="/mood" element={
-            <Layout>
-              <MoodTracker />
-            </Layout>
-          } />
-
-          <Route path="/resources" element={
-            <Layout>
-              <SelfHelpResources />
-            </Layout>
-          } />
-
-          <Route path="/crisis" element={
-            <Layout>
-              <CrisisPage />
-            </Layout>
-          } />
-
-          <Route path="/profile" element={
-            <Layout>
-              <ProfilePage />
-            </Layout>
-          } />
-
-          <Route path="/settings" element={
-            <Layout>
-              <SettingsPage />
-            </Layout>
-          } />
-
-          {/* Redirect to dashboard instead of home for demo */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+              {/* 404 Not Found */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

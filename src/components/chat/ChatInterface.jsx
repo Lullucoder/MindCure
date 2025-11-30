@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, AlertTriangle, Heart, Loader, Smile, MessageCircle, Shield } from 'lucide-react';
+import { Send, Bot, User, AlertTriangle, Heart, Loader, Smile, MessageCircle, Shield, Brain, Lightbulb } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import geminiService from '../../services/geminiService';
 
-// Enhanced AI responses for mental health support
-const generateAIResponse = (userMessage, conversationHistory = []) => {
+// Fallback AI responses for mental health support when the live model is unavailable
+const generateFallbackResponse = (userMessage, conversationHistory = []) => {
   const message = userMessage.toLowerCase();
   
   // Crisis detection keywords
@@ -12,7 +13,7 @@ const generateAIResponse = (userMessage, conversationHistory = []) => {
   
   if (isCrisis) {
     return {
-      response: "I'm very concerned about what you've shared. Your life has value, and there are people who want to help you. Please reach out for immediate support:\n\n• Call 988 (Suicide & Crisis Lifeline) - Available 24/7\n• Text 'HELLO' to 741741 (Crisis Text Line)\n• Go to your nearest emergency room\n• Call 911\n\nWould you like me to help you find local crisis resources or talk about what's troubling you?",
+      response: "I'm very concerned about what you've shared. Your life has value, and there are people who want to help you. Please reach out for immediate support:\n\n• Call 14416 (Tele-MANAS) - Available 24/7\n• Call 1800-599-0019 (KIRAN Helpline)\n• Go to your nearest emergency room\n• Call 112 (Emergency Services)\n\nWould you like me to help you find local crisis resources or talk about what's troubling you?",
       sentiment: { needsAttention: true, score: 0.1 }
     };
   }
@@ -89,13 +90,16 @@ const ChatInterface = () => {
     {
       id: 1,
       role: 'assistant',
-      content: "Hello! I'm your mental health support companion. 🌸 I'm here to listen with empathy, provide emotional support, and help you explore your feelings in a safe space. How are you feeling today?",
-      timestamp: new Date()
+      content: "Hello! I'm here to provide a safe, supportive space for you to share your thoughts and feelings. 🌸 I'm trained to listen with empathy and help you explore your emotions. Take your time - there's no pressure. How are you feeling today?",
+      timestamp: new Date(),
+      category: 'greeting'
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sentimentAnalysis, setSentimentAnalysis] = useState(null);
+  const [sessionInsights, setSessionInsights] = useState(null);
+  const [showInsights, setShowInsights] = useState(false);
   const messagesEndRef = useRef(null);
   const { userProfile } = useAuth();
 
@@ -123,34 +127,61 @@ const ChatInterface = () => {
 
     try {
       // Simulate typing delay for more natural feel
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-      
-      // Generate AI response using our enhanced function
-      const { response, sentiment } = generateAIResponse(userMessage.content, messages);
-      setSentimentAnalysis(sentiment);
+      await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 800));
+
+      const conversationHistory = [...messages, userMessage].map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      }));
+
+      let aiResult = null;
+      let sentimentResult = null;
+
+      try {
+        aiResult = await geminiService.generateResponse(userMessage.content, conversationHistory);
+      } catch (serviceError) {
+        console.warn('Falling back to offline responses:', serviceError?.message || serviceError);
+      }
+
+      if (geminiService.analyzeSentiment) {
+        try {
+          sentimentResult = await geminiService.analyzeSentiment(userMessage.content);
+        } catch (sentimentError) {
+          console.warn('Sentiment analysis unavailable:', sentimentError?.message || sentimentError);
+        }
+      }
+
+  const fallback = generateFallbackResponse(userMessage.content, conversationHistory);
 
       const assistantMessage = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: response,
+        content: aiResult?.response || fallback.response,
         timestamp: new Date(),
-        sentiment: sentiment
+        sentiment: sentimentResult || { needsAttention: aiResult?.needsAttention || fallback.sentiment?.needsAttention || false },
+        category: aiResult?.category || fallback.category || 'support'
       };
 
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Show crisis intervention if needed
-      if (sentiment.needsAttention) {
+      if (aiResult?.sessionInsights) {
+        setSessionInsights(aiResult.sessionInsights);
+      }
+
+      const needsAttention = assistantMessage.sentiment?.needsAttention || aiResult?.needsAttention || fallback.sentiment?.needsAttention;
+      setSentimentAnalysis(assistantMessage.sentiment || fallback.sentiment);
+
+      if (needsAttention) {
         setTimeout(() => {
           const crisisMessage = {
             id: Date.now() + 2,
             role: 'system',
-            content: "🚨 I want to make sure you get the immediate support you need. Here are crisis resources:\n\n📞 988 - Suicide & Crisis Lifeline (24/7)\n💬 Text HOME to 741741 - Crisis Text Line\n🏥 Go to your nearest emergency room\n🚑 Call 911 for immediate emergency help\n\nYou are not alone. Professional counselors are standing by to help.",
+            content: "🚨 I want to make sure you get the immediate support you need. Here are crisis resources:\n\n📞 14416 - Tele-MANAS (24/7)\n📞 1800-599-0019 - KIRAN Helpline (24/7)\n🏥 Go to your nearest emergency room\n🚑 Call 112 for immediate emergency help\n\nYou are not alone. Professional counselors are standing by to help.",
             timestamp: new Date(),
             isAlert: true
           };
           setMessages(prev => [...prev, crisisMessage]);
-        }, 2000);
+        }, 1200);
       }
 
     } catch (error) {
@@ -158,7 +189,7 @@ const ChatInterface = () => {
       const errorMessage = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: "I'm sorry, I'm having trouble responding right now. Your message is important to me. Please try again in a moment. If you need immediate support, please call 988 (Crisis Lifeline) or reach out to a trusted person. 💙",
+        content: "I'm sorry, I'm having trouble responding right now. Your message is important to me. Please try again in a moment. If you need immediate support, please call 14416 (Tele-MANAS) or reach out to a trusted person. 💙",
         timestamp: new Date(),
         isError: true
       };
@@ -183,24 +214,28 @@ const ChatInterface = () => {
   };
 
   const getMessageStyle = (role, isAlert = false, isError = false) => {
-    if (isAlert) return 'bg-red-50 border-red-200 text-red-800';
-    if (isError) return 'bg-yellow-50 border-yellow-200 text-yellow-800';
-    if (role === 'user') return 'bg-gradient-to-r from-blue-400 to-green-400 text-white ml-12';
-    return 'bg-white border border-gray-200 text-gray-800 mr-12 shadow-sm';
+    if (isAlert) return 'bg-red-50 border-2 border-red-200 text-red-800 shadow-lg';
+    if (isError) return 'bg-yellow-50 border-2 border-yellow-200 text-yellow-800 shadow-lg';
+    if (role === 'user') return 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white ml-12 shadow-lg';
+    return 'bg-white border-2 border-gray-100 text-gray-800 mr-12 shadow-lg hover:shadow-xl transition-shadow';
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-green-400 rounded-full flex items-center justify-center shadow-md">
-              <Heart className="h-7 w-7 text-white" />
+        {/* Enhanced Header */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-gray-100 backdrop-blur-sm">
+          <div className="flex items-center space-x-5">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-2xl flex items-center justify-center shadow-xl" style={{boxShadow: '0 8px 25px rgba(20, 184, 166, 0.3)'}}>
+              <MessageCircle className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Mental Health Support Chat</h1>
-              <p className="text-gray-600">A safe space for emotional support and guidance</p>
+              <h1 className="text-3xl font-bold" style={{color: 'var(--neutral-900)'}}>AI Mental Health Support</h1>
+              <p className="text-lg font-medium mt-1" style={{color: 'var(--neutral-600)'}}>A safe, private space for emotional support and guidance</p>
+              <div className="flex items-center space-x-2 mt-2">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-sm font-semibold text-green-600">Available 24/7</span>
+              </div>
             </div>
           </div>
 
@@ -210,7 +245,7 @@ const ChatInterface = () => {
               <Shield className="h-5 w-5 text-blue-500 mt-0.5" />
               <div className="text-sm text-blue-700">
                 <p className="font-medium">Remember:</p>
-                <p>• This is a safe, judgment-free space • Your conversations are private • For emergencies, call 988 or 911</p>
+                <p>• This is a safe, judgment-free space • Your conversations are private • For emergencies, call 14416 or 112</p>
               </div>
             </div>
           </div>
@@ -220,7 +255,7 @@ const ChatInterface = () => {
             <div className="flex items-center space-x-2 text-red-800 text-sm">
               <AlertTriangle className="h-4 w-4" />
               <span className="font-medium">
-                Crisis Support: If you're in immediate danger, call 911. For mental health crisis, call 988.
+                Crisis Support: If you're in immediate danger, call 112. For mental health crisis, call 14416.
               </span>
             </div>
           </div>
@@ -234,17 +269,22 @@ const ChatInterface = () => {
                 key={message.id}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${getMessageStyle(message.role, message.isAlert, message.isError)}`}>
-                  <div className="flex items-start space-x-2">
+                <div className={`max-w-sm lg:max-w-lg px-6 py-4 rounded-3xl ${getMessageStyle(message.role, message.isAlert, message.isError)} backdrop-blur-sm`}>
+                  <div className="flex items-start space-x-3">
                     {message.role !== 'user' && (
-                      <div className="flex-shrink-0 mt-0.5">
-                        {getMessageIcon(message.role, message.isAlert, message.isError)}
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary-400 to-secondary-400 flex items-center justify-center shadow-md">
+                          {getMessageIcon(message.role, message.isAlert, message.isError)}
+                        </div>
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                      <p className="text-xs opacity-70 mt-2">
-                        {message.timestamp.toLocaleTimeString()}
+                      <p className="text-base whitespace-pre-wrap leading-relaxed font-medium">{message.content}</p>
+                      <p className="text-xs opacity-75 mt-3 flex items-center space-x-1">
+                        <span>{message.timestamp.toLocaleTimeString()}</span>
+                        {message.role === 'user' && (
+                          <span className="ml-2 text-xs bg-white/20 px-2 py-1 rounded-full">You</span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -253,11 +293,20 @@ const ChatInterface = () => {
             ))}
             
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-2xl px-4 py-3 max-w-xs">
-                  <div className="flex items-center space-x-2">
-                    <Loader className="h-4 w-4 animate-spin text-blue-500" />
-                    <span className="text-sm text-gray-600">Thinking...</span>
+              <div className="flex justify-start mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 flex items-center justify-center shadow-lg">
+                    <Bot className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="bg-primary-50 border border-primary-200 rounded-2xl px-6 py-4 max-w-xs shadow-md">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-primary-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-primary-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                        <div className="w-2 h-2 bg-primary-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      </div>
+                      <span className="text-sm font-medium text-primary-700">Thinking...</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -267,27 +316,47 @@ const ChatInterface = () => {
           </div>
         </div>
 
-        {/* Input Area */}
-        <div className="bg-white rounded-b-2xl shadow-lg border-t border-gray-100 p-6">
-          <div className="flex space-x-4">
+        {/* Enhanced Input Area */}
+        <div className="bg-white rounded-b-2xl shadow-xl border-t border-gray-100 p-6">
+          <div className="flex space-x-4 items-end">
             <div className="flex-1">
-              <textarea
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Share what's on your mind... (Press Enter to send, Shift+Enter for new line)"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none transition-all duration-200"
-                rows="3"
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <textarea
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Share what's on your mind... (Press Enter to send, Shift+Enter for new line)"
+                  className="w-full px-6 py-4 pr-12 border-2 border-gray-200 rounded-2xl focus:ring-3 focus:ring-primary-200 focus:border-primary-400 resize-none transition-all duration-300 text-base bg-gray-50 hover:bg-white focus:bg-white shadow-inner"
+                  rows="3"
+                  disabled={isLoading}
+                  style={{
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.06)',
+                    fontSize: '16px' // Prevents zoom on mobile
+                  }}
+                />
+                {/* Character counter */}
+                <div className="absolute bottom-2 right-3 text-xs text-gray-400">
+                  {inputMessage.length}/500
+                </div>
+              </div>
             </div>
             <button
               onClick={handleSendMessage}
-              disabled={!inputMessage.trim() || isLoading}
-              className="px-6 py-3 bg-gradient-to-r from-blue-400 to-green-400 text-white rounded-xl hover:from-blue-500 hover:to-green-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2 shadow-md"
+              disabled={!inputMessage.trim() || isLoading || inputMessage.length > 500}
+              className="px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-2xl hover:from-primary-600 hover:to-primary-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+              style={{
+                minHeight: '56px',
+                boxShadow: !inputMessage.trim() || isLoading ? 'none' : '0 8px 25px rgba(20, 184, 166, 0.3)'
+              }}
             >
-              <Send className="h-4 w-4" />
-              <span className="hidden sm:inline">Send</span>
+              {isLoading ? (
+                <Loader className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
+              <span className="hidden sm:inline font-semibold">
+                {isLoading ? 'Sending...' : 'Send'}
+              </span>
             </button>
           </div>
           

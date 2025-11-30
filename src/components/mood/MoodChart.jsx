@@ -104,7 +104,7 @@ const MoodChart = ({ entries, period }) => {
               <span className="text-sm font-medium">{data.anxiety}/5</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-purple-600">Sleep:</span>
+              <span className="text-sm" style={{color: 'var(--primary-600)'}}>Sleep:</span>
               <span className="text-sm font-medium">{data.sleep}/5</span>
             </div>
             <div className="border-t pt-1 mt-2">
@@ -150,7 +150,7 @@ const MoodChart = ({ entries, period }) => {
             <span>Anxiety</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+            <div className="w-3 h-3 rounded-full" style={{backgroundColor: 'var(--primary-500)'}}></div>
             <span>Sleep</span>
           </div>
           <div className="flex items-center space-x-2">
@@ -308,7 +308,7 @@ const MoodChart = ({ entries, period }) => {
               <div className="text-xs text-gray-600">Avg Anxiety</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-purple-600">
+              <div className="text-lg font-bold" style={{color: 'var(--primary-600)'}}>
                 {(chartData.reduce((sum, day) => sum + day.sleep, 0) / chartData.length).toFixed(1)}
               </div>
               <div className="text-xs text-gray-600">Avg Sleep</div>

@@ -1,17 +1,46 @@
-/* 
-// COMMENTED OUT FOR NON-AUTH VERSION
-import { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged,
-  updateProfile
-} from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../services/firebase';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import apiClient, {
+  clearAuth,
+  setAccessToken,
+  setRefreshHandler
+} from '../lib/apiClient.js';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
+const AUTH_STORAGE_KEY = 'mental-health-app.auth';
+
+const getStoredAuth = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.error('Failed to parse stored auth state:', error);
+    return null;
+  }
+};
+
+const persistAuthState = (user, token, refreshToken = null) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (user && token) {
+    const stored = getStoredAuth();
+    window.localStorage.setItem(
+      AUTH_STORAGE_KEY,
+      JSON.stringify({ 
+        user, 
+        token,
+        refreshToken: refreshToken || stored?.refreshToken || null
+      })
+    );
+  } else {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  }
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -20,171 +49,168 @@ export const useAuth = () => {
   }
   return context;
 };
-*/
-
-// Temporary mock auth context for non-auth version
-import { createContext, useContext } from 'react';
-
-const AuthContext = createContext();
-
-export const useAuth = () => {
-  // Return mock user data for non-auth version
-  return {
-    currentUser: { uid: 'mock-user-id', email: 'user@example.com' },
-    userProfile: { name: 'Demo User', avatar: null },
-    signup: () => Promise.resolve(),
-    signin: () => Promise.resolve(),
-    logout: () => Promise.resolve(),
-    loading: false,
-    updateUserProfile: () => Promise.resolve()
-  };
-};
 
 export const AuthProvider = ({ children }) => {
-  /*
-  // COMMENTED OUT FULL AUTH PROVIDER FOR NON-AUTH VERSION
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const storedAuthRef = useRef(getStoredAuth());
+  const [currentUser, setCurrentUser] = useState(storedAuthRef.current?.user ?? null);
+  const [userProfile, setUserProfile] = useState(storedAuthRef.current?.user ?? null);
+  const [loading, setLoading] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+  const accessTokenRef = useRef(storedAuthRef.current?.token ?? null);
 
-  // Sign up function
-  const signup = async (email, password, userData) => {
-    try {
-      const { user } = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update user profile
-      await updateProfile(user, {
-        displayName: `${userData.firstName} ${userData.lastName}`
-      });
-
-      // Create user document in Firestore
-      const userDoc = {
-        uid: user.uid,
-        email: user.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        role: userData.role || 'student',
-        createdAt: new Date().toISOString(),
-        profile: {
-          avatar: null,
-          bio: '',
-          preferences: {
-            notifications: true,
-            privacy: 'private'
-          }
-        }
-      };
-
-      await setDoc(doc(db, 'users', user.uid), userDoc);
-      setUserProfile(userDoc);
-      
-      return user;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Sign in function
-  const signin = async (email, password) => {
-    try {
-      const { user } = await signInWithEmailAndPassword(auth, email, password);
-      return user;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Sign out function
-  const logout = async () => {
-    try {
-      await signOut(auth);
-      setUserProfile(null);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Load user profile from Firestore
-  const loadUserProfile = async (user) => {
-    try {
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-      
-      if (userDocSnap.exists()) {
-        setUserProfile(userDocSnap.data());
-      } else {
-        // Create basic profile if it doesn't exist
-        const basicProfile = {
-          uid: user.uid,
-          email: user.email,
-          firstName: user.displayName?.split(' ')[0] || '',
-          lastName: user.displayName?.split(' ')[1] || '',
-          role: 'student',
-          createdAt: new Date().toISOString(),
-          profile: {
-            avatar: null,
-            bio: '',
-            preferences: {
-              notifications: true,
-              privacy: 'private'
-            }
-          }
-        };
-        await setDoc(userDocRef, basicProfile);
-        setUserProfile(basicProfile);
-      }
-    } catch (error) {
-      console.error('Error loading user profile:', error);
-    }
-  };
-
-  // Update user profile
-  const updateUserProfile = async (updates) => {
-    if (!currentUser) return;
-
-    try {
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      await setDoc(userDocRef, updates, { merge: true });
-      setUserProfile(prev => ({ ...prev, ...updates }));
-    } catch (error) {
-      console.error('Error updating user profile:', error);
-      throw error;
-    }
-  };
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      
-      if (user) {
-        await loadUserProfile(user);
-      } else {
-        setUserProfile(null);
-      }
-      
-      setLoading(false);
-    });
-
-    return unsubscribe;
+  const clearAuthState = useCallback(() => {
+    clearAuth();
+    accessTokenRef.current = null;
+    storedAuthRef.current = null;
+    setCurrentUser(null);
+    setUserProfile(null);
+    persistAuthState(null, null);
   }, []);
 
-  const value = {
-    currentUser,
-    userProfile,
-    signup,
-    signin,
-    logout,
-    updateUserProfile,
-    loading
-  };
+  const handleAuthSuccess = useCallback((user, token, refreshToken = null) => {
+    accessTokenRef.current = token;
+    storedAuthRef.current = { user, token, refreshToken: refreshToken || storedAuthRef.current?.refreshToken };
+    setAccessToken(token);
+    setCurrentUser(user);
+    setUserProfile(user);
+    persistAuthState(user, token, refreshToken);
+    return user;
+  }, []);
+
+  const refreshSession = useCallback(async () => {
+    try {
+      // Send refresh token in body for cross-origin requests where cookies may not work
+      const storedRefreshToken = storedAuthRef.current?.refreshToken;
+      const { data } = await apiClient.post('/auth/refresh', {
+        refreshToken: storedRefreshToken
+      });
+      const { user, accessToken, refreshToken } = data;
+      handleAuthSuccess(user, accessToken, refreshToken);
+      return accessToken;
+    } catch (error) {
+      clearAuthState();
+      throw error;
+    }
+  }, [clearAuthState, handleAuthSuccess]);
+
+  const signup = useCallback(
+    async (email, password, { firstName, lastName, role } = {}) => {
+      setLoading(true);
+      try {
+        const { data } = await apiClient.post('/auth/signup', {
+          email,
+          password,
+          firstName,
+          lastName,
+          role
+        });
+        const { user, accessToken, refreshToken } = data;
+        return handleAuthSuccess(user, accessToken, refreshToken);
+      } catch (error) {
+        throw error.response?.data?.message || 'Unable to create account';
+      } finally {
+        setLoading(false);
+      }
+    },
+    [handleAuthSuccess]
+  );
+
+  const signin = useCallback(
+    async (email, password) => {
+      setLoading(true);
+      try {
+        const { data } = await apiClient.post('/auth/login', {
+          email,
+          password
+        });
+        const { user, accessToken, refreshToken } = data;
+        return handleAuthSuccess(user, accessToken, refreshToken);
+      } catch (error) {
+        throw error.response?.data?.message || 'Invalid email or password';
+      } finally {
+        setLoading(false);
+      }
+    },
+    [handleAuthSuccess]
+  );
+
+  const logout = useCallback(async () => {
+    try {
+      await apiClient.post('/auth/logout');
+    } catch (error) {
+      console.warn('Logout request failed:', error);
+    } finally {
+      clearAuthState();
+    }
+  }, [clearAuthState]);
+
+  const updateUserProfile = useCallback((updates) => {
+    setCurrentUser((prev) => {
+      if (!prev) {
+        return prev;
+      }
+      const nextUser = { ...prev, ...updates };
+      storedAuthRef.current = storedAuthRef.current
+        ? { user: nextUser, token: storedAuthRef.current.token }
+        : { user: nextUser, token: accessTokenRef.current };
+      persistAuthState(nextUser, accessTokenRef.current);
+      return nextUser;
+    });
+
+    setUserProfile((prev) => {
+      if (!prev) {
+        return prev;
+      }
+      return { ...prev, ...updates };
+    });
+  }, []);
+
+  useEffect(() => {
+    const initialiseAuth = async () => {
+      if (accessTokenRef.current) {
+        setAccessToken(accessTokenRef.current);
+      }
+
+      if (!storedAuthRef.current?.token) {
+        setAuthReady(true);
+        return;
+      }
+
+      try {
+        await refreshSession();
+      } catch (error) {
+        console.warn('Session refresh failed:', error);
+      } finally {
+        setAuthReady(true);
+      }
+    };
+
+    initialiseAuth();
+    // No cleanup required beyond axios interceptor reset handled in clearAuthState
+  }, [refreshSession]);
+
+  useEffect(() => {
+    setRefreshHandler(() => refreshSession);
+  }, [refreshSession, currentUser]);
+
+  const value = useMemo(
+    () => ({
+      currentUser,
+      userProfile,
+      loading,
+      authReady,
+      signup,
+      signin,
+      logout,
+      refreshSession,
+      updateUserProfile
+    }),
+    [authReady, currentUser, loading, logout, refreshSession, signin, signup, updateUserProfile, userProfile]
+  );
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
-  */
-  
-  // Simple wrapper that just renders children without auth
-  return <>{children}</>;
 };
