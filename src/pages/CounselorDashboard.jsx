@@ -12,7 +12,10 @@ import {
   Clock,
   CheckCircle,
   TrendingUp,
-  X
+  X,
+  Video,
+  Link,
+  ExternalLink
 } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -35,6 +38,11 @@ const CounselorDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAvailable, setIsAvailable] = useState(userProfile?.isAvailable ?? true);
+  
+  // Google Meet link modal state
+  const [showMeetLinkModal, setShowMeetLinkModal] = useState(false);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+  const [meetingLink, setMeetingLink] = useState('');
 
   useEffect(() => {
     loadDashboard();
@@ -91,6 +99,36 @@ const CounselorDashboard = () => {
       }
     } catch (err) {
       console.error('Failed to update availability:', err);
+    }
+  };
+
+
+  // Open modal to get Google Meet link before confirming
+  const openMeetLinkModal = (id) => {
+    setSelectedAppointmentId(id);
+    setMeetingLink('');
+    setShowMeetLinkModal(true);
+  };
+
+  // Confirm appointment with Google Meet link
+  const handleConfirmWithMeetLink = async () => {
+    if (!selectedAppointmentId) return;
+    
+    try {
+      const response = await fetch(`${API_BASE}/counselor/appointments/${selectedAppointmentId}/confirm`, {
+        method: 'PATCH',
+        headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meetingLink })
+      });
+      if (response.ok) {
+        setShowMeetLinkModal(false);
+        setSelectedAppointmentId(null);
+        setMeetingLink('');
+        loadAppointments();
+        loadDashboard();
+      }
+    } catch (err) {
+      console.error('Failed to confirm appointment:', err);
     }
   };
 
@@ -164,7 +202,7 @@ const CounselorDashboard = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            Counselor Dashboard 🩺
+            Counselor Dashboard ðŸ©º
           </h1>
           <p className="mt-1 text-gray-600">
             Welcome back, {userProfile?.firstName}! Manage resources, view appointments, and help your students.
@@ -343,7 +381,7 @@ const CounselorDashboard = () => {
                         {apt.status === 'pending' && (
                           <>
                             <button
-                              onClick={() => handleConfirmAppointment(apt._id)}
+                              onClick={() => openMeetLinkModal(apt._id)}
                               className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
                             >
                               Confirm
@@ -484,6 +522,68 @@ const CounselorDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Google Meet Link Modal */}
+      {showMeetLinkModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Video className="h-6 w-6 text-green-600" />
+                Add Google Meet Link
+              </h3>
+              <button 
+                onClick={() => setShowMeetLinkModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <p className="text-gray-600 mb-4">
+              Please paste the Google Meet link for this counseling session. The student will use this link to join the meeting.
+            </p>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Meeting Link
+              </label>
+              <div className="relative">
+                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="url"
+                  value={meetingLink}
+                  onChange={(e) => setMeetingLink(e.target.value)}
+                  placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+              {meetingLink && !meetingLink.includes('meet.google.com') && (
+                <p className="text-amber-600 text-sm mt-1">
+                  Please enter a valid Google Meet link
+                </p>
+              )}
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowMeetLinkModal(false)}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmWithMeetLink}
+                disabled={!meetingLink || !meetingLink.includes('meet.google.com')}
+                className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="h-5 w-5" />
+                Confirm Session
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

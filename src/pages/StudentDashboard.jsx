@@ -19,7 +19,9 @@ import {
   Heart,
   Trophy,
   Smile,
-  RefreshCw
+  RefreshCw,
+  Video,
+  ExternalLink
 } from 'lucide-react';
 
 const StudentDashboard = () => {
@@ -366,6 +368,18 @@ const StudentDashboard = () => {
                         }`}>
                           {apt.status}
                         </span>
+                        {apt.status === 'confirmed' && apt.meetingLink && (
+                          <a
+                            href={apt.meetingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 flex items-center gap-2 font-medium transition"
+                          >
+                            <Video className="h-4 w-4" />
+                            Join Meet
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
                         {(apt.status === 'pending' || apt.status === 'confirmed') && (
                           <button
                             onClick={() => handleCancelAppointment(apt._id)}
