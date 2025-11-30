@@ -15,6 +15,9 @@ export const getAchievements = async (req, res) => {
       progress: a.progress
     }));
 
+    // Calculate total XP from unlocked achievements
+    const totalXP = unlockedAchievements.reduce((sum, a) => sum + (a.xp || 0), 0);
+
     // Get all achievements with locked status
     const allAchievements = Object.entries(achievementDefinitions).map(([id, def]) => {
       const unlocked = achievement.achievements.find(a => a.achievementId === id);
@@ -29,6 +32,7 @@ export const getAchievements = async (req, res) => {
     res.json({
       stats: achievement.stats,
       achievements: allAchievements,
+      totalXP,
       unlockedCount: unlockedAchievements.length,
       totalCount: Object.keys(achievementDefinitions).length
     });

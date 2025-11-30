@@ -5,79 +5,92 @@ const achievementDefinitions = {
     name: 'First Check-in',
     description: 'Completed your first daily mood check-in',
     icon: '🌟',
-    category: 'mood'
+    category: 'mood',
+    xp: 10
   },
   'week-streak': {
     name: 'Week Warrior',
     description: 'Checked in for 7 consecutive days',
     icon: '🔥',
-    category: 'mood'
+    category: 'mood',
+    xp: 50
   },
   'month-streak': {
     name: 'Monthly Master',
     description: 'Checked in for 30 consecutive days',
     icon: '👑',
-    category: 'mood'
+    category: 'mood',
+    xp: 200
   },
   'mood-helper-1': {
     name: 'Mood Helper',
     description: 'Helped improve 1 friend\'s mood through chat',
     icon: '💝',
-    category: 'social'
+    category: 'social',
+    xp: 25
   },
   'mood-helper-5': {
     name: 'Caring Friend',
     description: 'Helped improve 5 friends\' moods through chat',
     icon: '🤗',
-    category: 'social'
+    category: 'social',
+    xp: 75
   },
   'mood-helper-10': {
     name: 'Support Champion',
     description: 'Helped improve 10 friends\' moods through chat',
     icon: '🏆',
-    category: 'social'
+    category: 'social',
+    xp: 150
   },
   'mood-helper-25': {
     name: 'Mental Health Hero',
     description: 'Helped improve 25 friends\' moods through chat',
     icon: '🦸',
-    category: 'social'
+    category: 'social',
+    xp: 300
   },
   'first-friend': {
     name: 'Making Connections',
     description: 'Added your first support buddy',
     icon: '🤝',
-    category: 'social'
+    category: 'social',
+    xp: 15
   },
   'five-friends': {
     name: 'Support Network',
     description: 'Built a network of 5 support buddies',
     icon: '👥',
-    category: 'social'
+    category: 'social',
+    xp: 50
   },
   'first-post': {
     name: 'Voice Found',
     description: 'Created your first forum post',
     icon: '📝',
-    category: 'community'
+    category: 'community',
+    xp: 20
   },
   'helpful-comment': {
     name: 'Helpful Voice',
     description: 'Received 10 likes on your comments',
     icon: '💬',
-    category: 'community'
+    category: 'community',
+    xp: 75
   },
   'mood-improved': {
     name: 'Rising Up',
     description: 'Improved your mood from low to good in a day',
     icon: '🌈',
-    category: 'personal'
+    category: 'personal',
+    xp: 30
   },
   'consistent-good': {
     name: 'Positive Streak',
     description: 'Maintained good mood for 5 consecutive days',
     icon: '☀️',
-    category: 'personal'
+    category: 'personal',
+    xp: 100
   }
 };
 

@@ -204,7 +204,7 @@ export default function UserProfilePage() {
       <button
         onClick={handleSendFriendRequest}
         disabled={actionLoading === 'friend'}
-        className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+        className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-primary-600 rounded-lg hover:bg-primary-50 transition-colors shadow-md font-medium"
       >
         {actionLoading === 'friend' ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -343,12 +343,12 @@ export default function UserProfilePage() {
 
             {/* Action Buttons */}
             {!profile.isOwnProfile && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 mt-4 md:mt-0">
                 {renderFriendButton()}
                 <button
                   onClick={handleStartChat}
                   disabled={actionLoading === 'chat'}
-                  className="flex items-center gap-2 px-4 py-2 bg-white text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-primary-600 rounded-lg hover:bg-primary-50 transition-colors shadow-md"
                 >
                   {actionLoading === 'chat' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

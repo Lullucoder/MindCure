@@ -83,8 +83,9 @@ export default function AchievementsSection({ userId = null }) {
     ? ((totalXP / levelInfo.nextXP) * 100).toFixed(0)
     : 100;
 
-  const earnedIds = achievements.map(a => a.achievementId);
-  const lockedAchievements = definitions.filter(d => !earnedIds.includes(d.id));
+  // Filter earned and locked achievements from the data
+  const earnedAchievements = achievements.filter(a => a.unlocked);
+  const lockedAchievements = achievements.filter(a => !a.unlocked);
 
   if (isLoading) {
     return (
@@ -186,7 +187,7 @@ export default function AchievementsSection({ userId = null }) {
             }`}
           >
             <Trophy className="w-5 h-5 inline mr-2" />
-            Earned ({achievements.length})
+            Earned ({earnedAchievements.length})
           </button>
           <button
             onClick={() => setActiveTab('locked')}
@@ -204,7 +205,7 @@ export default function AchievementsSection({ userId = null }) {
         {/* Content */}
         <div className="p-6">
           {activeTab === 'earned' ? (
-            achievements.length === 0 ? (
+            earnedAchievements.length === 0 ? (
               <div className="text-center py-8">
                 <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-500">No achievements earned yet</p>
@@ -214,15 +215,14 @@ export default function AchievementsSection({ userId = null }) {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {achievements.map(achievement => {
-                  const def = definitions.find(d => d.id === achievement.achievementId) || {};
-                  const tier = achievementService.getAchievementTier(def.xp || 0);
+                {earnedAchievements.map(achievement => {
+                  const tier = achievementService.getAchievementTier(achievement.xp || 0);
                   const tierStyle = TIER_STYLES[tier.tier];
-                  const Icon = ACHIEVEMENT_ICONS[achievement.achievementId] || Award;
+                  const Icon = ACHIEVEMENT_ICONS[achievement.id] || Award;
                   
                   return (
                     <div
-                      key={achievement._id}
+                      key={achievement.id}
                       className={`p-4 rounded-xl border-2 ${tierStyle.bg} ${tierStyle.border}`}
                     >
                       <div className="flex items-start gap-3">
@@ -232,18 +232,20 @@ export default function AchievementsSection({ userId = null }) {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <p className={`font-semibold ${tierStyle.text}`}>
-                              {def.name || achievement.achievementId}
+                              {achievement.name || achievement.id}
                             </p>
                             <span className={`text-xs px-2 py-0.5 rounded-full ${tierStyle.bg} ${tierStyle.text}`}>
-                              +{def.xp || 0} XP
+                              +{achievement.xp || 0} XP
                             </span>
                           </div>
                           <p className="text-sm text-gray-600 mt-1">
-                            {def.description}
+                            {achievement.description}
                           </p>
-                          <p className="text-xs text-gray-400 mt-2">
-                            Earned {new Date(achievement.earnedAt).toLocaleDateString()}
-                          </p>
+                          {achievement.unlockedAt && (
+                            <p className="text-xs text-gray-400 mt-2">
+                              Earned {new Date(achievement.unlockedAt).toLocaleDateString()}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -262,13 +264,13 @@ export default function AchievementsSection({ userId = null }) {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {lockedAchievements.map(def => {
-                  const tier = achievementService.getAchievementTier(def.xp || 0);
-                  const Icon = ACHIEVEMENT_ICONS[def.id] || Award;
+                {lockedAchievements.map(achievement => {
+                  const tier = achievementService.getAchievementTier(achievement.xp || 0);
+                  const Icon = ACHIEVEMENT_ICONS[achievement.id] || Award;
                   
                   return (
                     <div
-                      key={def.id}
+                      key={achievement.id}
                       className="p-4 rounded-xl border-2 border-gray-200 bg-gray-50 opacity-75"
                     >
                       <div className="flex items-start gap-3">
@@ -277,13 +279,13 @@ export default function AchievementsSection({ userId = null }) {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <p className="font-semibold text-gray-500">{def.name}</p>
+                            <p className="font-semibold text-gray-500">{achievement.name}</p>
                             <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-500">
-                              +{def.xp} XP
+                              +{achievement.xp || 0} XP
                             </span>
                           </div>
                           <p className="text-sm text-gray-400 mt-1">
-                            {def.description}
+                            {achievement.description}
                           </p>
                         </div>
                       </div>
