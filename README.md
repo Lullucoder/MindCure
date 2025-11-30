@@ -5,6 +5,8 @@
   <img src="https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
 </p>
+![Screenshot_30-11-2025_93155_mind-cure-gamma vercel app](https://github.com/user-attachments/assets/84caf27e-d9b1-4366-ac5c-c6670f95788c)
+
 
 <h1 align="center">🧠 MindCure</h1>
 
