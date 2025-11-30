@@ -99,28 +99,27 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="layout-container">
         <div className="navbar__surface">
-          {/* Logo - Always visible */}
+          {/* Logo - Always visible but smaller on mobile */}
           <Link to="/" className="navbar__brand" aria-label="MindCure home">
             <span className="navbar__logo">
-              <Heart className="h-6 w-6" style={{ color: 'var(--color-primary-500)' }} fill="currentColor" />
+              <Heart className="h-5 w-5 lg:h-6 lg:w-6" style={{ color: 'var(--color-primary-500)' }} fill="currentColor" />
             </span>
-            <span className="navbar__title hidden sm:flex">
+            <span className="navbar__title hidden xs:flex">
               <span>MindCure</span>
-              <span>THERAPY &amp; WELLNESS</span>
+              <span className="hidden sm:block">THERAPY &amp; WELLNESS</span>
             </span>
           </Link>
 
-          {/* Mobile: Only Dashboard button visible */}
-          <div className="flex items-center gap-2 lg:hidden">
+          {/* Mobile: Dashboard + Hamburger only */}
+          <div className="navbar__mobile-right lg:hidden">
             <Link
               to="/dashboard"
-              className={`nav-link-mobile ${isActive('/dashboard') ? 'nav-link-mobile--active' : ''}`}
+              className={`navbar__mobile-dashboard ${isActive('/dashboard') ? 'navbar__mobile-dashboard--active' : ''}`}
             >
               <LayoutDashboard className="h-4 w-4" />
-              <span>Dashboard</span>
+              <span className="hidden xs:inline">Dashboard</span>
             </Link>
             
-            {/* Hamburger Menu Button */}
             <button
               onClick={() => setIsOpen((open) => !open)}
               className="navbar__mobile-toggle"
@@ -128,7 +127,7 @@ const Navbar = () => {
               aria-controls="mobile-nav"
               aria-label={isOpen ? 'Close menu' : 'Open menu'}
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
 

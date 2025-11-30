@@ -514,6 +514,33 @@ img {
   gap: 12px;
 }
 
+/* Mobile Right Section (Dashboard + Hamburger) */
+.navbar__mobile-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.navbar__mobile-dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--color-primary-600);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all var(--duration-base) var(--easing-standard);
+}
+
+.navbar__mobile-dashboard--active {
+  background: var(--color-primary-500);
+  color: white;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+}
+
 .navbar__mobile-toggle {
   align-items: center;
   border-radius: var(--radius-md);
@@ -2562,11 +2589,11 @@ img {
 
 @media (max-width: 767px) {
   :root {
-    --nav-height: 64px;
+    --nav-height: 56px;
   }
 
   .layout-container {
-    padding: 0 12px;
+    padding: 0 10px;
   }
 
   .btn {
@@ -2574,26 +2601,37 @@ img {
   }
 
   .navbar {
-    padding: 8px 0 6px;
+    padding: 6px 0;
   }
 
   .navbar__surface {
-    padding: 8px 12px;
-    gap: 8px;
+    padding: 6px 10px;
+    gap: 6px;
+    min-height: 48px;
   }
 
   .navbar__logo {
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
   }
 
-  .navbar__logo .h-6 {
-    width: 20px;
-    height: 20px;
+  .navbar__title {
+    font-size: 0.9rem;
+  }
+
+  .navbar__title span:last-child {
+    font-size: 0.55rem;
   }
 
   .navbar__mobile-toggle {
-    padding: 8px;
+    padding: 6px;
+    flex-shrink: 0;
+  }
+
+  .navbar__mobile-dashboard {
+    padding: 6px 10px;
+    font-size: 0.75rem;
   }
 
   .landing-hero {
