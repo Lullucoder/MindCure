@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AssessmentHistory from '../components/AssessmentHistory';
@@ -259,7 +259,7 @@ const Dashboard = () => {
 
             <Link
               to="/mood"
-              className="block w-full mt-6 bg-accessible-interactive-primary text-white px-6 py-3 rounded-xl font-semibold text-center hover:bg-accessible-interactive-primary-hover focus:outline-3 focus:outline-yellow-400 focus:outline-offset-2 transition-all duration-200 min-h-[44px] flex items-center justify-center"
+              className="block w-full mt-6 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold text-center hover:from-teal-600 hover:to-teal-700 transition-all duration-200"
             >
               Track Mood Today
             </Link>
@@ -316,7 +316,7 @@ const Dashboard = () => {
               <h3 className="text-xl font-bold text-gray-900 mb-3">Next Steps</h3>
               <p className="text-gray-700 mb-4">Keep momentum with these quick actions:</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Link to="/mood" className="btn-primary text-center">2‑min Check‑in</Link>
+                <Link to="/mood" className="btn-primary text-center">2ΓÇæmin CheckΓÇæin</Link>
                 <Link to="/chat" className="btn-secondary text-center">Open AI Chat</Link>
                 <Link to="/resources" className="btn-outline text-center">Read a tip</Link>
               </div>
@@ -341,8 +341,8 @@ const Dashboard = () => {
                   <BarChart3 className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-gray-900 font-medium">Latest: Anxiety (GAD‑7) • Moderate</div>
-                  <div className="text-sm text-gray-600">Taken on Jan 10, 2024 • Recommendation: Practice anxiety management techniques</div>
+                  <div className="text-gray-900 font-medium">Latest: Anxiety (GADΓÇæ7) ΓÇó Moderate</div>
+                  <div className="text-sm text-gray-600">Taken on Jan 10, 2024 ΓÇó Recommendation: Practice anxiety management techniques</div>
                 </div>
               </div>
             </div>

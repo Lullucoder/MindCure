@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   Brain,
@@ -168,37 +168,6 @@ const toneGradient = (tone) => {
 };
 
 const LandingPage = () => {
-<<<<<<< HEAD
-  const features = [
-    {
-      icon: MessageCircle,
-      title: 'Virtual Counseling & Therapy',
-      description: 'Book private or group sessions with professional counselors',
-      color: 'from-blue-200 to-blue-400'
-    },
-    {
-      icon: BookOpen,
-      title: 'Self-Help Library',
-      description: 'Access resources on mindfulness, stress, and more',
-      color: 'from-green-300 to-green-400'
-    },
-    {
-      icon: Users,
-      title: 'Peer Support Groups',
-      description: 'Join safe, moderated forums to share and connect.',
-      color: 'from-purple-300 to-purple-400'
-    }
-  ];
-
-  const stats = [
-    { number: '10K+', label: 'Students Supported' },
-    { number: '24/7', label: 'Available Support' },
-    { number: '95%', label: 'User Satisfaction' },
-    { number: '500+', label: 'Resources Available' }
-  ];
-
-=======
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
   return (
     <div>
       <section className="landing-hero">
@@ -229,15 +198,6 @@ const LandingPage = () => {
               <p className="landing-hero__subtitle">
                 Access compassionate AI guidance, crisis resources, and restorative practices that meet you exactly where you are.
               </p>
-<<<<<<< HEAD
-              
-              <div className="mb-12">
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center bg-gradient-to-r from-blue-100 to-blue-200 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-200 hover:to-blue-300 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  Get Started
-=======
 
               <div className="landing-hero__actions">
                 <Link to="/chat" className="btn btn--primary">
@@ -251,7 +211,6 @@ const LandingPage = () => {
                 <Link to="/crisis" className="btn btn--outline-accent">
                   <Phone className="h-5 w-5" />
                   <span>Emergency contacts</span>
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
                 </Link>
               </div>
 
@@ -286,7 +245,7 @@ const LandingPage = () => {
                     <Sparkles className="h-6 w-6" />
                   </span>
                   <span className="landing-hero__bubble landing-hero__bubble--user">
-                    “I cannot sleep and my mind keeps racing. I just need something that calms me down right now.”
+                    ΓÇ£I cannot sleep and my mind keeps racing. I just need something that calms me down right now.ΓÇ¥
                   </span>
                   <span className="landing-hero__bubble landing-hero__bubble--ai">
                     <strong>MindCure:</strong> I am with you. Let us slow the rush together with a two-minute breathing reset and a grounding exercise.
@@ -308,29 +267,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-<<<<<<< HEAD
-      {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Trusted by Students Worldwide
-            </h2>
-            <p className="text-xl text-grey-100 max-w-2xl mx-auto">
-              Join thousands of students who have found support and improved their mental wellness
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center group">
-                <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl p-6 group-hover:bg-opacity-30 transition-all duration-500 group-hover:scale-105">
-                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                    {stat.number}
-                  </div>
-                  <div className="text-black font-medium">{stat.label}</div>
-                </div>
-=======
       <section className="landing-steps">
         <div className="layout-container">
           <div className="landing-section-heading">
@@ -345,7 +281,6 @@ const LandingPage = () => {
                 </span>
                 <h3>{step.title}</h3>
                 <p>{step.description}</p>
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
               </div>
             ))}
           </div>
@@ -440,36 +375,6 @@ const LandingPage = () => {
                 <Phone className="h-5 w-5" />
                 <span>Get urgent help</span>
               </Link>
-<<<<<<< HEAD
-              <a
-                href="tel:988"
-                className="group border-2 border-white text-white hover:bg-white hover:text-gray-100 px-10 py-5 rounded-2xl font-semibold text-lg transition-all duration-200 inline-flex items-center"
-              >
-                <Phone className="mr-3 h-6 w-6 group-hover:scale-110 transition-transform" />
-                Need Help Now? Call 988
-              </a>
-            </div>
-
-            {/* Trust indicators */}
-            <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
-              <div className="flex items-center space-x-2 text-gray-400">
-                <CheckCircle className="h-5 w-5" />
-                <span>HIPAA Compliant</span>
-              </div>
-              <div className="flex items-center space-x-2 text-gray-400">
-                <CheckCircle className="h-5 w-5" />
-                <span>End-to-End Encrypted</span>
-              </div>
-              <div className="flex items-center space-x-2 text-gray-400">
-                <CheckCircle className="h-5 w-5" />
-                <span>Licensed Professionals</span>
-              </div>
-              <div className="flex items-center space-x-2 text-gray-400">
-                <CheckCircle className="h-5 w-5" />
-                <span>24/7 Crisis Support</span>
-              </div>
-=======
->>>>>>> 20153298be3676599bf26e94d1eddf7a529ee6dd
             </div>
           </div>
         </div>
