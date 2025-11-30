@@ -5,10 +5,11 @@
   <img src="https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
 </p>
-  <img src="https://github.com/user-attachments/assets/84caf27e-d9b1-4366-ac5c-c6670f95788c" alt="MindCure" />
-
-
 <h1 align="center">🧠 MindCure</h1>
+
+
+  <img src="https://github.com/user-attachments/assets/84caf27e-d9b1-4366-ac5c-c6670f95788c" alt="MindCure" />
+  
 
 <p align="center">
   <strong>A Comprehensive Mental Health & Wellness Platform for Students</strong>
