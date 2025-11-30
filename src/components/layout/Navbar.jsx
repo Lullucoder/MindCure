@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -22,6 +22,23 @@ const Navbar = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { currentUser, userProfile, logout } = useAuth();
   const location = useLocation();
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   // Common navigation for all users
   const commonNav = [
@@ -82,16 +99,40 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="layout-container">
         <div className="navbar__surface">
+          {/* Logo - Always visible */}
           <Link to="/" className="navbar__brand" aria-label="MindCure home">
             <span className="navbar__logo">
               <Heart className="h-6 w-6" style={{ color: 'var(--color-primary-500)' }} fill="currentColor" />
             </span>
-            <span className="navbar__title">
+            <span className="navbar__title hidden sm:flex">
               <span>MindCure</span>
               <span>THERAPY &amp; WELLNESS</span>
             </span>
           </Link>
 
+          {/* Mobile: Only Dashboard button visible */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <Link
+              to="/dashboard"
+              className={`nav-link-mobile ${isActive('/dashboard') ? 'nav-link-mobile--active' : ''}`}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Dashboard</span>
+            </Link>
+            
+            {/* Hamburger Menu Button */}
+            <button
+              onClick={() => setIsOpen((open) => !open)}
+              className="navbar__mobile-toggle"
+              aria-expanded={isOpen}
+              aria-controls="mobile-nav"
+              aria-label={isOpen ? 'Close menu' : 'Open menu'}
+            >
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
+
+          {/* Desktop Navigation Links */}
           <div className="navbar__links hidden lg:flex">
             {commonNav.map((item) => (
               <Link
@@ -162,28 +203,41 @@ const Navbar = () => {
               </Link>
             )}
           </div>
-
-          <button
-            onClick={() => setIsOpen((open) => !open)}
-            className="navbar__mobile-toggle lg:hidden"
-            aria-expanded={isOpen}
-            aria-controls="mobile-nav"
-          >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
         </div>
       </div>
 
+      {/* Mobile Slide-out Panel */}
       {isOpen && (
-        <div id="mobile-nav" className="navbar__mobile-panel lg:hidden">
-          <nav className="navbar__mobile-list" aria-label="Mobile navigation">
+        <div 
+          className="mobile-menu-overlay lg:hidden" 
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      
+      <div 
+        id="mobile-nav" 
+        className={`mobile-menu-panel lg:hidden ${isOpen ? 'mobile-menu-panel--open' : ''}`}
+      >
+        <div className="mobile-menu-header">
+          <h2 className="mobile-menu-title">Menu</h2>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="mobile-menu-close"
+            aria-label="Close menu"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        
+        <nav className="mobile-menu-nav" aria-label="Mobile navigation">
+          <div className="mobile-menu-section">
+            <span className="mobile-menu-section-title">Navigation</span>
             {commonNav.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className="navbar__mobile-link"
-                data-active={isActive(item.href)}
-                aria-current={isActive(item.href) ? 'page' : undefined}
+                className={`mobile-menu-link ${isActive(item.href) ? 'mobile-menu-link--active' : ''}`}
                 onClick={() => setIsOpen(false)}
               >
                 <item.icon className="h-5 w-5" />
@@ -194,64 +248,93 @@ const Navbar = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className="navbar__mobile-link"
-                data-active={isActive(item.href)}
-                aria-current={isActive(item.href) ? 'page' : undefined}
+                className={`mobile-menu-link ${isActive(item.href) ? 'mobile-menu-link--active' : ''}`}
                 onClick={() => setIsOpen(false)}
               >
                 <item.icon className="h-5 w-5" />
                 <span>{item.name}</span>
               </Link>
             ))}
-          </nav>
-          <div className="navbar__mobile-actions">
-            {getRoleBadge() && (
-              <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full mb-2 inline-block">
-                {getRoleBadge()}
-              </span>
-            )}
+          </div>
+          
+          <div className="mobile-menu-section">
+            <span className="mobile-menu-section-title">Account</span>
             {currentUser && (
-              <Link 
-                to="/notifications" 
-                className="btn btn--ghost" 
-                onClick={() => setIsOpen(false)}
-              >
-                <Bell className="h-4 w-4" />
-                <span>Notifications</span>
-              </Link>
-            )}
-            <Link to="/crisis" className="btn btn--secondary" onClick={() => setIsOpen(false)}>
-              <Phone className="h-4 w-4" />
-              <span>Crisis resources</span>
-            </Link>
-            {currentUser ? (
-              <button
-                type="button"
-                className="btn btn--ghost"
-                onClick={() => {
-                  setIsOpen(false);
-                  handleLogout();
-                }}
-                disabled={isSigningOut}
-              >
-                <LogOut className="h-4 w-4" />
-                <span>{isSigningOut ? 'Signing out…' : 'Sign out'}</span>
-              </button>
-            ) : (
-              <div className="flex w-full flex-col gap-2">
-                <Link to="/login" className="btn btn--ghost" onClick={() => setIsOpen(false)}>
-                  <User className="h-4 w-4" />
-                  <span>Sign in</span>
+              <>
+                {getRoleBadge() && (
+                  <span className="mobile-menu-badge">
+                    {getRoleBadge()}
+                  </span>
+                )}
+                <Link 
+                  to="/notifications" 
+                  className="mobile-menu-link"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Bell className="h-5 w-5" />
+                  <span>Notifications</span>
                 </Link>
-                <Link to="/register" className="btn btn--primary" onClick={() => setIsOpen(false)}>
-                  <Sparkles className="h-4 w-4" />
-                  <span>Get Started</span>
+                <Link 
+                  to="/profile" 
+                  className="mobile-menu-link"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <User className="h-5 w-5" />
+                  <span>{accountLabel}</span>
                 </Link>
-              </div>
+              </>
             )}
           </div>
+          
+          <div className="mobile-menu-section">
+            <span className="mobile-menu-section-title">Help & Support</span>
+            <Link 
+              to="/crisis" 
+              className="mobile-menu-link mobile-menu-link--crisis"
+              onClick={() => setIsOpen(false)}
+            >
+              <Phone className="h-5 w-5" />
+              <span>Crisis Resources</span>
+            </Link>
+          </div>
+        </nav>
+        
+        <div className="mobile-menu-footer">
+          {currentUser ? (
+            <button
+              type="button"
+              className="mobile-menu-logout"
+              onClick={() => {
+                setIsOpen(false);
+                handleLogout();
+              }}
+              disabled={isSigningOut}
+            >
+              <LogOut className="h-5 w-5" />
+              <span>{isSigningOut ? 'Signing out…' : 'Sign out'}</span>
+            </button>
+          ) : (
+            <div className="mobile-menu-auth">
+              <Link 
+                to="/login" 
+                className="btn btn--ghost w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <User className="h-4 w-4" />
+                <span>Sign in</span>
+              </Link>
+              <Link 
+                to="/register" 
+                className="btn btn--primary w-full"
+                onClick={() => setIsOpen(false)}
+              >
+                <Sparkles className="h-4 w-4" />
+                <span>Get Started</span>
+              </Link>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </nav>
   );
 };

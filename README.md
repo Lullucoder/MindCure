@@ -5,11 +5,8 @@
   <img src="https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
   <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
 </p>
+
 <h1 align="center">🧠 MindCure</h1>
-
-
-  <img src="https://github.com/user-attachments/assets/84caf27e-d9b1-4366-ac5c-c6670f95788c" alt="MindCure" />
-  
 
 <p align="center">
   <strong>A Comprehensive Mental Health & Wellness Platform for Students</strong>
@@ -26,6 +23,18 @@
   <a href="#-screenshots">Screenshots</a> •
   <a href="#-api-documentation">API</a> •
   <a href="#-contributing">Contributing</a>
+</p>
+
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="MindCure Dashboard" width="100%" />
+</p>
+
+<p align="center">
+  <em>Beautiful, intuitive dashboard with mood tracking, appointments, and quick access to all features</em>
 </p>
 
 ---
@@ -139,7 +148,7 @@ Google Gemini API Key
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/MindCure.git
+git clone https://github.com/Lullucoder/MindCure.git
 cd MindCure
 
 # 2. Install frontend dependencies
@@ -218,21 +227,6 @@ MindCure/
 
 ---
 
-## 📱 Screenshots
-
-<p align="center">
-  <em>Screenshots coming soon...</em>
-</p>
-
-<!-- 
-Add screenshots here:
-![Dashboard](./docs/screenshots/dashboard.png)
-![Mood Tracker](./docs/screenshots/mood-tracker.png)
-![AI Chat](./docs/screenshots/ai-chat.png)
--->
-
----
-
 ## 🎨 Design System
 
 ### Color Palette
@@ -251,12 +245,6 @@ Add screenshots here:
 - **Body**: Clean, Readable fonts
 - **Responsive**: Scales beautifully across devices
 
-### Components
-- **Cards**: Rounded corners, subtle shadows, hover effects
-- **Buttons**: Multiple variants (primary, secondary, ghost, danger)
-- **Forms**: Accessible inputs with clear validation states
-- **Modals**: Smooth animations, backdrop blur
-
 ---
 
 ## 📱 Responsive Design
@@ -265,9 +253,9 @@ MindCure is fully responsive and optimized for all devices:
 
 | Device | Features |
 |--------|----------|
-| 📱 **Mobile** | Bottom navigation, touch-friendly controls, compact layouts |
+| 📱 **Mobile** | Bottom navigation, touch-friendly controls, hamburger menu |
 | 📱 **Tablet** | Optimized layouts, touch interface |
-| 💻 **Desktop** | Full-featured experience with sidebar navigation |
+| 💻 **Desktop** | Full-featured experience with expanded navigation |
 
 ---
 
