@@ -479,9 +479,15 @@ img {
 }
 
 .navbar__links {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 12px;
+}
+
+@media (min-width: 1024px) {
+  .navbar__links {
+    display: flex;
+  }
 }
 
 .nav-link {
@@ -509,17 +515,29 @@ img {
 }
 
 .navbar__actions {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 12px;
 }
 
-/* Mobile Right Section (Dashboard + Hamburger) */
+@media (min-width: 1024px) {
+  .navbar__actions {
+    display: flex;
+  }
+}
+
+/* Mobile Right Section (Dashboard + Hamburger) - Hidden on desktop */
 .navbar__mobile-right {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-left: auto;
+}
+
+@media (min-width: 1024px) {
+  .navbar__mobile-right {
+    display: none;
+  }
 }
 
 .navbar__mobile-dashboard {
