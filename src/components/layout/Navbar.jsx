@@ -101,7 +101,7 @@ const Navbar = () => {
         <div className="navbar__surface">
           {/* Logo - Always visible but smaller on mobile */}
           <Link to="/" className="navbar__brand" aria-label="MindCure home">
-            <img src="/src/assets/logo.png" alt="MindCure Logo" className="h-8 w-8 lg:h-10 lg:w-10 object-contain" />
+            <img src="/logo.png" alt="MindCure Logo" className="h-8 w-8 lg:h-10 lg:w-10 object-contain" />
             <span className="navbar__title hidden xs:flex">
               <span>MindCure</span>
               <span className="hidden sm:block">THERAPY &amp; WELLNESS</span>
