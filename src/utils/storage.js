@@ -3,7 +3,7 @@
  * Centralized localStorage operations with type safety and error handling
  */
 
-const STORAGE_PREFIX = 'mental-health-app';
+const STORAGE_PREFIX = 'mindcure';
 
 /**
  * Storage keys used throughout the application

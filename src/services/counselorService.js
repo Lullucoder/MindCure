@@ -1,7 +1,7 @@
 // Counselor Service - API calls for counselor dashboard
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-const AUTH_STORAGE_KEY = 'mental-health-app.auth';
+const AUTH_STORAGE_KEY = 'mindcure.auth';
 
 const getAuthHeader = () => {
   try {

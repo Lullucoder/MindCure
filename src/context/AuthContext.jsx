@@ -6,7 +6,7 @@ import apiClient, {
 } from '../lib/apiClient.js';
 
 const AuthContext = createContext(null);
-const AUTH_STORAGE_KEY = 'mental-health-app.auth';
+const AUTH_STORAGE_KEY = 'mindcure.auth';
 
 const getStoredAuth = () => {
   if (typeof window === 'undefined') {

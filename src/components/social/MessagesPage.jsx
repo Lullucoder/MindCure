@@ -40,7 +40,7 @@ export default function MessagesPage({ initialConversation, onConversationOpened
   // Get current user
   const getCurrentUser = () => {
     try {
-      const authData = localStorage.getItem('mental-health-app.auth');
+      const authData = localStorage.getItem('mindcure.auth');
       if (authData) {
         const parsed = JSON.parse(authData);
         return parsed.user;

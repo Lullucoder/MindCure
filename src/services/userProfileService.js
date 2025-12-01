@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mindcure-api.onren
 // Get auth token from localStorage
 const getAuthToken = () => {
   try {
-    const authData = localStorage.getItem('mental-health-app.auth');
+    const authData = localStorage.getItem('mindcure.auth');
     if (authData) {
       const parsed = JSON.parse(authData);
       return parsed.token;

@@ -50,7 +50,7 @@ const Navbar = () => {
   // Role-based navigation
   const getRoleBasedNav = () => {
     const role = userProfile?.role || 'student';
-    
+
     switch (role) {
       case 'admin':
         return [
@@ -101,9 +101,7 @@ const Navbar = () => {
         <div className="navbar__surface">
           {/* Logo - Always visible but smaller on mobile */}
           <Link to="/" className="navbar__brand" aria-label="MindCure home">
-            <span className="navbar__logo">
-              <Heart className="h-5 w-5 lg:h-6 lg:w-6" style={{ color: 'var(--color-primary-500)' }} fill="currentColor" />
-            </span>
+            <img src="/src/assets/logo.png" alt="MindCure Logo" className="h-8 w-8 lg:h-10 lg:w-10 object-contain" />
             <span className="navbar__title hidden xs:flex">
               <span>MindCure</span>
               <span className="hidden sm:block">THERAPY &amp; WELLNESS</span>
@@ -119,7 +117,7 @@ const Navbar = () => {
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden xs:inline">Dashboard</span>
             </Link>
-            
+
             <button
               onClick={() => setIsOpen((open) => !open)}
               className="navbar__mobile-toggle"
@@ -167,9 +165,9 @@ const Navbar = () => {
                     {getRoleBadge()}
                   </span>
                 )}
-                <Link 
-                  to="/notifications" 
-                  className="btn btn--ghost notification-btn" 
+                <Link
+                  to="/notifications"
+                  className="btn btn--ghost notification-btn"
                   aria-label="View notifications"
                   title="Notifications"
                 >
@@ -207,15 +205,15 @@ const Navbar = () => {
 
       {/* Mobile Slide-out Panel */}
       {isOpen && (
-        <div 
-          className="mobile-menu-overlay lg:hidden" 
+        <div
+          className="mobile-menu-overlay lg:hidden"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
       )}
-      
-      <div 
-        id="mobile-nav" 
+
+      <div
+        id="mobile-nav"
         className={`mobile-menu-panel lg:hidden ${isOpen ? 'mobile-menu-panel--open' : ''}`}
       >
         <div className="mobile-menu-header">
@@ -228,7 +226,7 @@ const Navbar = () => {
             <X className="h-6 w-6" />
           </button>
         </div>
-        
+
         <nav className="mobile-menu-nav" aria-label="Mobile navigation">
           <div className="mobile-menu-section">
             <span className="mobile-menu-section-title">Navigation</span>
@@ -255,7 +253,7 @@ const Navbar = () => {
               </Link>
             ))}
           </div>
-          
+
           <div className="mobile-menu-section">
             <span className="mobile-menu-section-title">Account</span>
             {currentUser && (
@@ -265,16 +263,16 @@ const Navbar = () => {
                     {getRoleBadge()}
                   </span>
                 )}
-                <Link 
-                  to="/notifications" 
+                <Link
+                  to="/notifications"
                   className="mobile-menu-link"
                   onClick={() => setIsOpen(false)}
                 >
                   <Bell className="h-5 w-5" />
                   <span>Notifications</span>
                 </Link>
-                <Link 
-                  to="/profile" 
+                <Link
+                  to="/profile"
                   className="mobile-menu-link"
                   onClick={() => setIsOpen(false)}
                 >
@@ -284,11 +282,11 @@ const Navbar = () => {
               </>
             )}
           </div>
-          
+
           <div className="mobile-menu-section">
             <span className="mobile-menu-section-title">Help & Support</span>
-            <Link 
-              to="/crisis" 
+            <Link
+              to="/crisis"
               className="mobile-menu-link mobile-menu-link--crisis"
               onClick={() => setIsOpen(false)}
             >
@@ -297,7 +295,7 @@ const Navbar = () => {
             </Link>
           </div>
         </nav>
-        
+
         <div className="mobile-menu-footer">
           {currentUser ? (
             <button
@@ -314,16 +312,16 @@ const Navbar = () => {
             </button>
           ) : (
             <div className="mobile-menu-auth">
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="btn btn--ghost w-full"
                 onClick={() => setIsOpen(false)}
               >
                 <User className="h-4 w-4" />
                 <span>Sign in</span>
               </Link>
-              <Link 
-                to="/register" 
+              <Link
+                to="/register"
                 className="btn btn--primary w-full"
                 onClick={() => setIsOpen(false)}
               >
