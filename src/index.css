@@ -199,12 +199,11 @@ a:focus-visible {
 }
 
 .nav-link:focus {
-  outline: 3px solid #fbbf24;
-  outline-offset: 2px;
-  background-color: #fef5e7;
-  border-radius: 4px;
-  padding: 2px 4px;
-  color: #1a365d;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.4);
+  background-color: rgba(2, 132, 199, 0.08);
+  border-radius: var(--radius-full);
+  color: var(--color-primary-600);
 }
 
 /* Enhanced button accessibility */
@@ -215,8 +214,8 @@ button {
 }
 
 button:focus {
-  outline: 3px solid #fbbf24;
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.4);
 }
 
 /* Ensure interactive elements are large enough (minimum 44px touch target) */
@@ -1084,6 +1083,12 @@ img {
   background: rgba(2, 132, 199, 0.12);
 }
 
+.navbar__mobile-toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.4);
+  border-radius: var(--radius-md);
+}
+
 .navbar__mobile-panel {
   background: hsla(0, 0%, 100%, 0.95);
   border-top: 1px solid rgba(2, 132, 199, 0.12);
@@ -1114,6 +1119,11 @@ img {
   color: var(--color-primary-600);
 }
 
+.navbar__mobile-link:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.4);
+}
+
 .navbar__mobile-link[data-active="true"] {
   background: rgba(2, 132, 199, 0.14);
   color: var(--color-primary-600);
@@ -1140,6 +1150,11 @@ img {
   gap: 6px;
   padding: 8px 14px;
   transition: all var(--duration-base) var(--easing-standard);
+}
+
+.nav-link-mobile:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.4);
 }
 
 .nav-link-mobile--active {

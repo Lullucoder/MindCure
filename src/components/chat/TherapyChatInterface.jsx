@@ -137,11 +137,20 @@ const TherapyChatInterface = () => {
   };
 
   const scrollToBottom = (smooth = true) => {
-    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Use setTimeout to ensure DOM has updated before scrolling
+    const timer = setTimeout(() => {
+      scrollToBottom(false);
+    }, 100);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   const handleScroll = () => {
@@ -306,6 +315,13 @@ const TherapyChatInterface = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={startNewConversation}
+            className="p-2 text-emerald-600 bg-emerald-50 rounded-full hover:bg-emerald-100 transition-colors border border-emerald-200"
+            title="New Chat"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
           <button
             onClick={() => setShowHistory(true)}
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white rounded-full hover:bg-gray-100 transition-colors border border-gray-200"

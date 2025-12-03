@@ -101,14 +101,23 @@ const ChatInterface = () => {
   const [sessionInsights, setSessionInsights] = useState(null);
   const [showInsights, setShowInsights] = useState(false);
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const { userProfile } = useAuth();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   const handleSendMessage = async () => {
@@ -262,7 +271,7 @@ const ChatInterface = () => {
         </div>
 
         {/* Messages Container */}
-        <div className="bg-white shadow-lg max-h-96 overflow-y-auto">
+        <div ref={messagesContainerRef} className="bg-white shadow-lg max-h-96 overflow-y-auto">
           <div className="p-6 space-y-4">
             {messages.map((message) => (
               <div
