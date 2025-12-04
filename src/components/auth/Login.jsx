@@ -83,7 +83,7 @@ const Login = () => {
         <div className="auth-header">
           <div className="auth-logo-container">
             <div className="auth-logo">
-              <Heart className="h-7 w-7 text-white" fill="white" />
+              <img src="/logo.png" alt="MindCure Logo" className="h-8 w-8 object-contain" />
             </div>
             <div className="auth-brand">
               <span className="auth-brand-name">MindCure</span>
