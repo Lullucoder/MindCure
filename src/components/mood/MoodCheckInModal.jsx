@@ -264,7 +264,7 @@ export default function MoodCheckInModal({
                           onClick={() => toggleActivity(activity.id)}
                           className={`px-3 py-2 rounded-lg text-sm transition-all flex items-center gap-2 ${
                             selectedActivities.includes(activity.id)
-                              ? 'bg-primary-500 text-white'
+                              ? 'bg-blue-500 text-white shadow-md'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -283,9 +283,9 @@ export default function MoodCheckInModal({
                         <button
                           key={tag.id}
                           onClick={() => toggleTag(tag.id)}
-                          className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                             selectedTags.includes(tag.id)
-                              ? 'bg-primary-500 text-white'
+                              ? 'bg-emerald-500 text-white shadow-md'
                               : tag.color
                           }`}
                         >
