@@ -202,7 +202,7 @@ const CounselorDashboard = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            Counselor Dashboard ðŸ©º
+            Counselor Dashboard <TrendingUp className="h-6 w-6 text-green-500" />
           </h1>
           <p className="mt-1 text-gray-600">
             Welcome back, {userProfile?.firstName}! Manage resources, view appointments, and help your students.
