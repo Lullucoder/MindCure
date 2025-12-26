@@ -30,7 +30,7 @@
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/dashboard.png" alt="MindCure Dashboard" width="100%" />
+  <img width="1920" height="1080" alt="dashboard mindcure" src="https://github.com/user-attachments/assets/9adc44df-c4d6-4a0b-83b4-43d76e16a67d" alt="MindCure Dashboard" width="100%"/>
 </p>
 
 <p align="center">
